@@ -1,0 +1,13 @@
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+node_modules/
+__pycache__/
+.venv/
+dist/
+*.gguf
+*.safetensors
+drafts/telegram-bus/bus.db*
+drafts/telegram-bus/.env
