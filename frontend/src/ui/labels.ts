@@ -10,7 +10,7 @@ export const purposeLabels = {
 export const stateLabels = {
   DRAFT: 'Черновик', SUBMITTED: 'Заявка отправлена', VALIDATION: 'Проверяем заявку',
   ENRICHMENT: 'Собираем сведения', ASSESSMENT: 'Оцениваем заявку', MANUAL_REVIEW: 'Рассматривает специалист',
-  INFO_REQUESTED: 'Нужны сведения', OFFER_ISSUED: 'Предложение готово', DECLINED: 'Отказ',
+  INFO_REQUESTED: 'Нужно ваше действие', OFFER_ISSUED: 'Предложение готово', DECLINED: 'Отказ',
   SIGNING: 'Ожидает подписания', SIGNED: 'Подписано', DISBURSED: 'Деньги выданы',
   WITHDRAWN: 'Заявка отозвана', EXPIRED: 'Срок истёк',
 } satisfies Record<components['schemas']['ApplicationListItem']['state'], string>;

@@ -1,8 +1,10 @@
-import { Anchor, Button, Container, Group, Loader, Paper, Select, Stack, Text, Title } from '@mantine/core';
+import { Anchor, AppShell, Button, Container, Group, Loader, Select, Stack, Text, Title } from '@mantine/core';
+import { useMediaQuery } from '@mantine/hooks';
+import css from './screens/application/Card.module.css';
 import { Notifications } from '@mantine/notifications';
 import { useQuery } from '@tanstack/react-query';
 import { useSyncExternalStore } from 'react';
-import { Link, Navigate, Outlet, Route, Routes } from 'react-router';
+import { Link, Navigate, Outlet, Route, Routes, useLocation } from 'react-router';
 import { api } from './api/client';
 import type { components } from './api/schema';
 import { getToken, setToken, subscribeSession } from './auth/session';
@@ -17,24 +19,24 @@ type Me = components['schemas']['MeResponse'];
 function Shell({ me }: { me: Me }) {
   const { companyId, membership, setCompanyId } = useCompany();
   const home = me.user.role === 'UNDERWRITER' ? '/bank/queue' : '/app';
-  return (
-    <>
-      <Paper component="header" withBorder radius={0} p="md">
-        <Group justify="space-between" wrap="wrap">
-          <Anchor component={Link} to={home} c="red" fw={700}>Кредитный кабинет</Anchor>
-          <Group>
-            <Text size="sm">{me.user.full_name}</Text>
-            {me.companies.length === 1 && <Text size="sm" c="dimmed">{membership?.company.name}</Text>}
-            {me.companies.length > 1 && <Select id="company" label="Компания" value={companyId ?? me.companies[0]?.company.id} onChange={setCompanyId} allowDeselect={false} data={me.companies.map(({ company }) => ({ value: company.id, label: company.name }))} />}
-            {me.user.role === 'CLIENT' && <Anchor component={Link} to="/app/applications/new">Новая заявка</Anchor>}
-            {me.user.role === 'UNDERWRITER' && <><Anchor component={Link} to="/bank/queue">Очередь</Anchor><Anchor component={Link} to="/bank/journal">Журнал банка</Anchor></>}
-            <Button variant="default" onClick={() => setToken(null)}>Выйти</Button>
-          </Group>
-        </Group>
-      </Paper>
-      <Container component="main" size="lg" py="xl"><Outlet /></Container>
-    </>
-  );
+  const desktop = useMediaQuery('(min-width: 62em)');
+  const { pathname } = useLocation();
+  const links = me.user.role === 'UNDERWRITER'
+    ? (desktop ? [] : [['/bank/queue', 'Очередь'], ['/bank/journal', 'Журнал банка']])
+    : [['/app', 'Мои заявки'], ['/app/applications/new', desktop ? 'Получить финансирование' : 'Новая заявка']];
+  const company = me.companies.length > 1
+    ? <Select id="company" label="Компания" value={companyId ?? me.companies[0]?.company.id} onChange={setCompanyId} allowDeselect={false} data={me.companies.map(({ company }) => ({ value: company.id, label: company.name }))} />
+    : membership && <span className={css.muted}>{membership.company.name}</span>;
+  return <AppShell navbar={{ width: 240, breakpoint: 'md', collapsed: { mobile: true } }}>
+    {desktop ? <AppShell.Navbar className={css.navbar} component="nav" aria-label="Главная навигация">
+      <div className={css.navTop}><Link className={css.brand} to={home}>Кредитный кабинет</Link>{me.companies.length > 1 && company}<div className={css.navLinks}>{links.map(([to, label]) => <Link key={to} to={to!} className={css.navLink} aria-current={(to === '/app' ? pathname.startsWith('/app') && pathname !== '/app/applications/new' : pathname === to) ? 'page' : undefined}>{label}</Link>)}</div></div>
+      <div className={css.navBottom}><span style={{ fontWeight: 500 }}>{me.user.full_name}</span><button type="button" className={css.textButton} style={{ alignSelf: 'flex-start', height: 'auto', fontSize: 'var(--mantine-font-size-sm)', fontWeight: 400 }} onClick={() => setToken(null)}>Выйти</button></div>
+    </AppShell.Navbar> : null}
+    <AppShell.Main>
+      {!desktop && <header className={css.mobileHeader}><Group justify="space-between" wrap="wrap"><Anchor component={Link} to={home} c="signal" fw={700}>Кредитный кабинет</Anchor><Group><Text size="sm">{me.user.full_name}</Text>{company}{links.filter(([to]) => to !== '/app').map(([to, label]) => <Anchor key={to} component={Link} to={to!}>{label}</Anchor>)}<Button variant="default" onClick={() => setToken(null)}>Выйти</Button></Group></Group></header>}
+      <div className={css.shellMain}><Outlet /></div>
+    </AppShell.Main>
+  </AppShell>;
 }
 
 export default function App() {
