@@ -28,6 +28,38 @@ function fixture(state: Application['state']) {
 }
 function serve(application: Application) { server.use(http.get('*/api/v1/applications/:id', () => HttpResponse.json<Application>(application))); }
 
+it.each([[22, '22\u00a0%'], [21.5, '21,5\u00a0%']])('ставка %s без лишних нулей', async (rate, expected) => {
+  const application = { ...applications[0]!, offer: { ...applications[0]!.offer!, rate: Number(rate) } };
+  serve(application); open(application);
+  expect(await screen.findByText(String(expected).replace(/\s/g, ' '))).toBeTruthy();
+});
+
+it('светлый бейдж действия и источник сведений о компании', async () => {
+  const application = fixture('INFO_REQUESTED'); serve(application); open(application);
+  const labels = await screen.findAllByText('Нужно ваше действие');
+  const badge = labels.map((label) => label.closest<HTMLElement>('[data-variant]')).find(Boolean);
+  expect(badge?.dataset.variant).toBe('light');
+  expect(badge?.style.background).toBe('var(--mantine-color-wait-0)');
+  expect(badge?.style.borderColor).toBe('var(--mantine-color-wait-2)');
+  expect(await screen.findByText('Данные из ЕГРИП на 23.10.2026')).toBeTruthy();
+});
+
+it.each([
+  ['VALIDATION', 'Идёт сейчас: Проверка данных'],
+  ['INFO_REQUESTED', 'Банк попросил уточнить данные'],
+  ['OFFER_ISSUED', 'Предложение готово'],
+  ['DECLINED', 'Банк отказал'],
+  ['DISBURSED', 'Деньги зачислены'],
+] as const)('история %s: фраза, дата заголовка, время строки', async (state, phrase) => {
+  const application = fixture(state); serve(application); open(application);
+  const history = await screen.findByRole('region', { name: 'История заявки' });
+  expect(within(history).getByText(phrase)).toBeTruthy();
+  expect(within(history).getByText('23.10.2026')).toBeTruthy();
+  const rows = within(history).getAllByRole('listitem');
+  for (const row of rows) expect(row.querySelector('time')?.textContent).toMatch(/^\d{2}:\d{2}$/);
+  expect(within(history).getByText('Заявка отправлена')).toBeTruthy();
+});
+
 it('VALIDATION: шесть серверных этапов, текущая проверка и панель без кнопки', async () => {
   const application = fixture('VALIDATION'); serve(application); open(application);
   const timeline = await screen.findByRole('list', { name: 'Этапы заявки' });
@@ -42,7 +74,7 @@ it('VALIDATION: шесть серверных этапов, текущая пр�
   expect(within(panel).queryByRole('link')).toBeNull();
   const badge = screen.getByText('Проверяем заявку').closest<HTMLElement>('[data-variant]');
   expect(badge?.style.background).toBe('var(--mantine-color-gray-0)');
-  expect(badge?.style.color).toBe('var(--mantine-color-gray-9)');
+  expect(badge?.style.color).toBe('var(--mantine-color-gray-7)');
 });
 
 it('опрос каждые 2 с сам показывает предложение и прекращается в OFFER_ISSUED', async () => {
@@ -67,7 +99,7 @@ it.each([['APPROVED', 'ok'], ['COUNTER', 'wait']] as const)('панель пре
 
 it('INFO_REQUESTED: второму этапу нужно действие, ссылка ведёт на пустой якорь', async () => {
   const application = fixture('INFO_REQUESTED'); serve(application); open(application);
-  const link = await screen.findByRole('link', { name: 'Ответить банку' });
+  const link = await screen.findByRole('link', { name: 'Ответить на вопросы банка' });
   const stages = within(screen.getByRole('list', { name: 'Этапы заявки' })).getAllByRole('listitem');
   expect(stages[1]!.textContent).toContain('Нужно ваше действие');
   fireEvent.click(link);
@@ -82,7 +114,7 @@ it('COUNTER: сумма и срок в шапке и цифрах из offer, т
   expect(headline.textContent).toContain('24 мес.');
   const figures = screen.getByRole('region', { name: 'Ключевые цифры' });
   expect(figures.textContent?.replace(/\s/g, ' ')).toContain('149 264 ₽');
-  expect(figures.textContent).toContain('23,00%');
+  expect(figures.textContent).toContain('23\u00a0%');
   expect(figures.textContent).not.toContain('около');
 });
 
@@ -152,10 +184,10 @@ it('без оферты делает один расчёт, показывает
   server.events.on('request:start', ({ request }) => { if (request.url.endsWith('/calculator')) calculations++; });
   open(application);
   const figures = await screen.findByRole('region', { name: 'Ключевые цифры' });
-  await waitFor(() => expect(figures.textContent).toContain('около 24,00%'));
+  await waitFor(() => expect(figures.textContent).toContain('около 24\u00a0%'));
   expect(calculations).toBe(1);
   const history = screen.getByRole('list', { name: 'История этапов' });
-  expect(within(history).getAllByRole('listitem')[0]!.textContent).toContain('Оценка');
+  expect(within(history).getAllByRole('listitem')[0]!.textContent).toContain('Идёт сейчас: Оценка');
   expect(within(history).getAllByRole('listitem')).toHaveLength(3);
 });
 

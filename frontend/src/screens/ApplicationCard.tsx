@@ -1,16 +1,17 @@
-import { Anchor, Badge, Button, Group, Loader, Modal, Notification, Paper, SimpleGrid, Stack, Text, Title, VisuallyHidden } from '@mantine/core';
+import { Anchor, Button, Group, Loader, Modal, Notification, Stack, Text, Title, VisuallyHidden } from '@mantine/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { api } from '../api/client';
 import type { components } from '../api/schema';
 import { stateLabels } from '../ui/labels';
-import { formatMoney, stageStatusColor, stageStatusIcon } from '../ui/status';
+import { formatMoney, stageStatusColor } from '../ui/status';
 import Timeline from './application/Timeline';
 import StatusPanel from './application/StatusPanel';
 import KeyFigures from './application/KeyFigures';
 import Details from './application/Details';
 import History from './application/History';
+import css from './application/Card.module.css';
 
 class CardError extends Error {
   constructor(readonly status: number) { super('Не удалось загрузить заявку. Попробуйте ещё раз.'); }
@@ -41,6 +42,11 @@ function CardContent({ id, companies, userId }: CardProps & { id: string }) {
     if (error || !estimate) throw new Error('Расчёт недоступен.');
     return estimate;
   }, enabled: !!data && !data.offer, retry: false, staleTime: Infinity, gcTime: 0, refetchOnWindowFocus: false, refetchOnReconnect: false });
+  const profile = useQuery({ queryKey: ['company-profile', data?.company_id, userId], queryFn: async ({ signal }) => {
+    const { data: company, error } = await api.GET('/companies/{id}/profile', { params: { path: { id: data!.company_id } }, signal });
+    if (error || !company) throw new Error('Сведения о компании недоступны.');
+    return company;
+  }, enabled: !!data && companies.some(({ company }) => company.id === data.company_id), retry: false });
   const withdraw = useMutation({ mutationFn: async () => {
     const result = await api.POST('/applications/{id}/withdraw', { params: { path: { id } } });
     if (result.error) {
@@ -62,26 +68,25 @@ function CardContent({ id, companies, userId }: CardProps & { id: string }) {
   if (application.isError || !data || products.isError) return <Stack align="flex-start">{pageHeading}<Text role="alert">Не удалось загрузить заявку. Попробуйте ещё раз.</Text><Button variant="default" onClick={() => { void application.refetch(); if (products.isError) void products.refetch(); }}>Повторить</Button><Anchor component={Link} to="/app">К моим заявкам</Anchor></Stack>;
   const current = data.timeline.find((step) => step.stage_code === data.stage.code);
   const status = current?.status ?? 'pending';
-  const color = stageStatusColor(status);
-  const icon = stageStatusIcon(status);
-  return <Stack gap="xl" key={id}>
+  const color = data.state === 'OFFER_ISSUED' && data.offer?.kind === 'APPROVED' ? 'ok' : stageStatusColor(status);
+  return <div className={css.page} key={id}>
     {pageHeading}
-    <Stack gap="sm"><Anchor component={Link} to="/app" size="sm" c="dimmed">К моим заявкам</Anchor>
-      <Group gap="sm"><Text size="sm" c="dimmed">Заявка № {data.number}</Text><Badge color={color} c={`${color}.${status === 'current' ? 9 : 6}`} bg={`${color}.0`} variant="light" leftSection={<span aria-hidden="true">{icon === 'number' ? data.stage.index : icon}</span>}>{data.state === 'WITHDRAWN' ? 'Отозвана' : stateLabels[data.state]}</Badge></Group>
-      <Title order={2} size="h2" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: '0 12px' }}><Text component="span" inherit c="dimmed">{products.data?.find((product) => product.code === data.product_code)?.name ?? 'Загружаем продукт…'} ·</Text><Text component="span" inherit fz={{ base: 28, sm: 40 }} c="gray.9">{formatMoney(data.offer?.amount ?? data.amount)}</Text><Text component="span" inherit c="dimmed">на {data.offer?.term_months ?? data.term_months} мес.</Text></Title>
-    </Stack>
-    <Paper withBorder p={{ base: 'md', sm: 'xl' }}><Stack gap="xl"><Timeline timeline={data.timeline} /><StatusPanel application={data} status={status} /></Stack></Paper>
+    <header className={css.header}>
+      <div className={css.meta}><span className={css.muted}>Заявка № {data.number}</span><span className={css.badge} data-variant="light" style={{ background: `var(--mantine-color-${color}-0)`, borderColor: `var(--mantine-color-${color}-2)`, color: `var(--mantine-color-${color}-7)` }}><span aria-hidden="true" className={css.dot} style={{ background: `var(--mantine-color-${color}-${color === 'wait' ? 4 : color === 'gray' ? 9 : 6})` }} />{data.state === 'WITHDRAWN' ? 'Отозвана' : stateLabels[data.state]}</span></div>
+      <h2 className={css.heading}><span className={css.headingCopy}>{products.data?.find((product) => product.code === data.product_code)?.name ?? 'Загружаем продукт…'} ·</span><span className={css.amount}>{formatMoney(data.offer?.amount ?? data.amount)}</span><span className={css.headingCopy}>на {data.offer?.term_months ?? data.term_months} мес.</span></h2>
+    </header>
+    <div className={`${css.card} ${css.stageCard}`}><Timeline timeline={data.timeline} /><StatusPanel application={data} status={status} /></div>
     {message && <Notification role="alert" color="stop" withCloseButton={false}>{message}</Notification>}
-    <SimpleGrid cols={{ base: 1, md: 2 }} spacing="xl" style={{ alignItems: 'start' }}>
-      <Paper withBorder p={{ base: 'md', sm: 'xl' }}><Stack gap="lg"><Title order={2} size="h3">Параметры заявки</Title><KeyFigures application={data} calculation={calculation.data} error={calculation.isError} onRetry={() => void calculation.refetch()} /><Details application={data} company={companies.find(({ company }) => company.id === data.company_id)?.company} />
-        {data.allowed_actions.includes('WITHDRAW') && <Anchor component="button" type="button" c="gray.9" ta="left" onClick={() => { setMessage(''); setConfirm(true); }}>Отозвать заявку</Anchor>}
-      </Stack></Paper>
+    <div className={css.columns}>
+      <section className={css.card} aria-label="Параметры заявки"><h3 className={css.title}>Параметры заявки</h3><KeyFigures application={data} calculation={calculation.data} error={calculation.isError} onRetry={() => void calculation.refetch()} /><Details application={data} company={companies.find(({ company }) => company.id === data.company_id)?.company} sourceNote={profile.data?.source_note} />
+        {data.allowed_actions.includes('WITHDRAW') && <div className={css.withdraw}><button type="button" className={css.textButton} onClick={() => { setMessage(''); setConfirm(true); }}>Отозвать заявку</button></div>}
+      </section>
       <History timeline={data.timeline} />
-    </SimpleGrid>
+    </div>
     {data.client_reason && <Stack gap="xs"><Text>{data.client_reason.text}</Text>{data.client_reason.action && <Text>{data.client_reason.action}</Text>}{data.client_reason.retry_after && <Text>Подать новую заявку можно с {new Date(data.client_reason.retry_after).toLocaleDateString('ru-RU', { timeZone: 'Europe/Moscow' })}</Text>}</Stack>}
     <section id="decision" /><section id="info-request" /><section id="submit" /><section id="signing" />
     <Modal opened={confirm} onClose={() => { if (!withdraw.isPending) setConfirm(false); }} title={`Отозвать заявку № ${data.number}? Это действие нельзя отменить.`} centered>
       <Group justify="flex-end"><Button variant="default" disabled={withdraw.isPending} onClick={() => setConfirm(false)}>Не отзывать</Button><Button loading={withdraw.isPending} onClick={() => withdraw.mutate()}>Отозвать</Button></Group>
     </Modal>
-  </Stack>;
+  </div>;
 }

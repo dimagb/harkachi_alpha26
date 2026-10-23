@@ -117,6 +117,14 @@ applicationScenarios.push({
   allowed_actions: [],
 });
 
+// Visual-only detail route; the public demo lists and existing personas stay stable.
+const visualInfo = applicationScenarios.find((item) => item.state === 'INFO_REQUESTED')!;
+applicationScenarios.push({
+  ...visualInfo, id: '30000000-0000-4000-8000-000000001042', number: 1042,
+  timeline: visualInfo.timeline.map((step, index) => ({ ...step, at: index < 2 ? '2026-10-23T11:02:00Z' : null })),
+  info_request: { ...visualInfo.info_request!, due_at: '2026-10-30T20:59:59Z' },
+});
+
 // Catalog: docs/TASKS.md F-01 and the product showcase in contracts/codes.md.
 export const products: Schema['Product'][] = [
   { code: 'EXPRESS', name: 'Экспресс-кредит', description: 'На любые цели бизнеса', purposes: ['WORKING_CAPITAL', 'CASH_GAP', 'EQUIPMENT', 'OTHER'], min_amount: 300000, max_amount: 5000000, min_term_months: 6, max_term_months: 36, rate_from: 22.00, requires_guarantor_ooo: true, key_rate: 14.00, key_rate_date: '2026-10-23' },

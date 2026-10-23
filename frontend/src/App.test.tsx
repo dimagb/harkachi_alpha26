@@ -115,8 +115,8 @@ it('показывает ApiError уведомлением и ошибки по�
   open();
   await login('unknown');
   expect(await screen.findByText('Проверьте данные для входа')).toBeTruthy();
-  expect(screen.getByText('Неизвестный логин')).toBeTruthy();
-  expect(screen.getByText('Проверьте пароль')).toBeTruthy();
+  expect(await screen.findByText('Неизвестный логин')).toBeTruthy();
+  expect(await screen.findByText('Проверьте пароль')).toBeTruthy();
   expect(sessionStorage.getItem('access_token')).toBeNull();
 });
 
