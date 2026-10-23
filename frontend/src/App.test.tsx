@@ -9,7 +9,7 @@ import { afterAll, afterEach, beforeAll, expect, it } from 'vitest';
 import App from './App';
 import { api } from './api/client';
 import type { components } from './api/schema';
-import { products } from './mocks/fixtures';
+import { applications, products } from './mocks/fixtures';
 
 type Me = components['schemas']['MeResponse'];
 const client: Me = {
@@ -79,10 +79,11 @@ it.each([['ip_good', '/bank/journal', '/app', 'Мои заявки'], ['underwri
 
 it.each([
   ['ip_good', '/app/applications/new', 'Зачем нужны деньги?'],
-  ['ip_good', '/app/applications/123', 'Карточка заявки'],
+  ['ip_good', '/app/applications/123', /Экспресс-кредит/],
   ['underwriter', '/bank/applications/123', 'Карточка андеррайтера'],
   ['underwriter', '/bank/journal', 'Журнал банка'],
 ])('восстанавливает сессию %s и открывает %s', async (token, path, title) => {
+  if (path === '/app/applications/123') server.use(http.get('*/api/v1/applications/123', () => HttpResponse.json({ ...applications[0]!, id: '123', company_id: 'company-1' })));
   sessionStorage.setItem('access_token', token);
   open(path);
   await screen.findByRole('heading', { name: title });
