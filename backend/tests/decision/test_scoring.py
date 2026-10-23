@@ -52,7 +52,9 @@ def test_months_without_receipts(zero_months, points, persona_data, build_inputs
     [
         (89_999, 15),
         (90_000, 10),
+        (189_999, 10),
         (190_000, 4),
+        (289_999, 4),
         (290_000, 0),
     ],
 )

@@ -1,6 +1,5 @@
 """Проверка → стоп-факторы → скоринг → политика → маршрутизация."""
 
-import calendar
 import statistics as st
 from dataclasses import replace
 from datetime import date
@@ -108,15 +107,19 @@ def _stops(inputs: DecisionInputs, cfg: DecisionConfig) -> list[RuleFired]:
     ]
 
 
-def _stop_action(code: str, inputs: DecisionInputs, cfg: DecisionConfig) -> str:
-    reg = inputs.company.reg_date
-    month_index = reg.year * 12 + reg.month - 1 + cfg.stop_min_age
+def eligible_date(reg_date: date, cfg: DecisionConfig) -> date:
+    """Первый день месяца, в котором бизнес проходит SF_AGE."""
+    month_index = reg_date.year * 12 + reg_date.month - 1 + cfg.stop_min_age
     year, month = month_index // 12, month_index % 12 + 1
-    eligible = date(year, month, min(reg.day, calendar.monthrange(year, month)[1]))
+    return date(year, month, 1)
+
+
+def _stop_action(code: str, inputs: DecisionInputs, cfg: DecisionConfig) -> str:
+    eligible = eligible_date(inputs.company.reg_date, cfg)
     return {
         "SF_INACTIVE": "Проверьте сведения в ЕГРЮЛ/ЕГРИП.",
         "SF_BANKRUPTCY": "Есть сведения о процедуре банкротства.",
-        "SF_AGE": f"Подайте заявку после {eligible.isoformat()}.",
+        "SF_AGE": f"Подайте заявку с {eligible:%d.%m.%Y}",
         "SF_OVERDUE": "Погасите просроченную задолженность; повторная заявка через "
         f"{cfg.retry_overdue_days} дней.",
         "SF_TAX_DEBT": "Погасите задолженность перед бюджетом или по исполнительным "
@@ -213,7 +216,9 @@ def decide(inputs: DecisionInputs, cfg: DecisionConfig) -> DecisionResult:
         if outcome == "COUNTER" or reason == "HIGH_LOAD":
             maximum = max_at_term(inputs, cfg, policy.rate, inputs.app.term_months)
             what_if.append(
-                f"Одобрение при сумме ≤ {money(maximum)} "
+                "Рассмотрите овердрафт или подайте заявку позже"
+                if maximum < cfg.products[inputs.app.product_code].min_amount
+                else f"Одобрение при сумме ≤ {money(maximum)} "
                 f"на {inputs.app.term_months} мес."
             )
         result = DecisionResult(
