@@ -897,7 +897,7 @@ uv run --no-project --python 3.12 --with pytest --with httpx --with jsonschema p
 
 - **B-08.** Очередь (`QueueItem`, сортировка по ожиданию), `ApplicationBank` со всем протоколом, `POST /underwriting/{id}/decision` со всеми исходами; событие `UNDERWRITER_OVERRIDE` при расхождении с рекомендацией. Клиентская схема не содержит внутренних полей — тест сериализации для `ooo_aml`.
 - **B-09.** Принять или отклонить оферту (`offer_version`), подпись участников (`party`), SIGNED → DISBURSED с графиком платежей, отзыв, возражение ИП (≤30 дней после авто-отказа).
-- **B-10.** Планировщик истечений (`due_at`, `expires_at`), `POST /demo/time-shift`, `GET /bank/applications` (`Page`), загрузка `data/background.json` через тот же конвейер до `target_state`.
+- **B-10.** Планировщик истечений (`due_at`, `expires_at`), `POST /demo/time-shift`, `GET /bank/applications` (`Page`), загрузка `data/background.json` через тот же конвейер до `target_state`. Из ревью B-07a: `expires_at` оферты и `due_at` дозапроса считать от демо-часов, а не от системного времени; `recover_stale` — периодически в цикле worker'а (иначе задача `RUNNING` после быстрого перезапуска зависает); согласие БКИ — с проверкой `expires_at`.
 - **A-05.** Коллекция Bruno (`docs/api-collection/`): вход каждым персонажем и полный путь `ip_good` и `ooo_gap`. Проходит на запущенном стенде.
 - **A-06.** Репетиция на чистом ПК строго по README; отчёт `docs/demo/rehearsal-T20.md`: время каждого шага, ошибки, скриншоты.
 - **F-02…F-09** — по макетам человека (D6) и `screens.md`. Карточки уточняются после получения токенов (24.10 ~11:00).
