@@ -11,9 +11,6 @@ import { CompanyProvider, useCompany } from './company/CompanyContext';
 import MyApplications from './screens/MyApplications';
 import NewApplication from './screens/NewApplication';
 
-// TODO(lead): обновить App.test.tsx: вместо заглушки «Заявка» теперь подбор;
-// тестам маршрутов нужны обработчики /products и /applications (файл вне F-03).
-
 type Me = components['schemas']['MeResponse'];
 
 function Shell({ me }: { me: Me }) {
