@@ -41,7 +41,7 @@
 | B-08 | Андеррайтер: очередь, карточка банка, решение | Аня | 25.10 | нет | B-07 | [черновик] |
 | B-09 | Оферта, подпись, выдача, отзыв, возражение | Аня | 25.10 | нет | B-07 | [черновик] |
 | B-10 | Истечения, `time-shift`, журнал банка, фоновые заявки | Аня | 25.10 | нет | B-09, A-02 | [черновик] |
-| F-05 | Решение: оферта, встречное, отказ, дозапрос (ключевой экран 2) | Лана | 25.10 | да | F-04 | [черновик] |
+| F-05 | Решение и дозапрос в карточке заявки (ключевой экран 2) | Лана | 24.10 | нет | F-04b ✔ | [готова] |
 | F-06 | Подача с согласиями и OTP, подписание, участники | Лана | 25.10 | да | F-04 | [черновик] |
 | F-07 | Экраны андеррайтера: очередь и карточка (ключевой экран 3) | человек (Codex Ани) | 24.10 8–15 | нет | F-04 ✔, контракт B-08 | [готова] |
 | F-08 | Журнал банка, демо-управление временем, печать протокола | Катя | 24.10 с 15:00 | нет | F-07 (BankLayout) | [черновик] |
@@ -1121,7 +1121,7 @@ uv run --no-project --python 3.12 --with pytest --with httpx --with jsonschema p
 | Платёж в рекомендации | считаем на фронтенде аннуитетом (п. 6) | в `recommendation` нет платежа |
 | Названия признаков | чистые подписи из `factorMeta` (п. 5), а не `factor.title` с техническими пометками в обратных кавычках | читаемость для жюри |
 
-**Файлы (новые):** `frontend/src/screens/bank/BankLayout.tsx`, `Queue.tsx`, `UnderwriterCard.tsx`, `screens/bank/underwriter/*.tsx` (части карточки), `*.module.css` рядом; `frontend/src/screens/bank/labels.ts` (подписи `route_reason`, `outcome`, `event_type`, `effect`, источников); `frontend/src/screens/bank/factorMeta.ts`; `frontend/src/mocks/bank/fixtures.ts`, `frontend/src/mocks/bank/handlers.ts` (`export function createBankHandlers()`); тесты `frontend/src/screens/bank/*.test.tsx`, `frontend/src/mocks/bank/handlers.test.ts`.
+**Файлы (новые):** `frontend/visual/underwriter.mjs`, `frontend/src/screens/bank/BankLayout.tsx`, `Queue.tsx`, `UnderwriterCard.tsx`, `screens/bank/underwriter/*.tsx` (части карточки), `*.module.css` рядом; `frontend/src/screens/bank/labels.ts` (подписи `route_reason`, `outcome`, `event_type`, `effect`, источников); `frontend/src/screens/bank/factorMeta.ts`; `frontend/src/mocks/bank/fixtures.ts`, `frontend/src/mocks/bank/handlers.ts` (`export function createBankHandlers()`); тесты `frontend/src/screens/bank/*.test.tsx`, `frontend/src/mocks/bank/handlers.test.ts`.
 **Файлы (общие, последним шагом, только эти строки):** `frontend/src/App.tsx` — маршруты `/bank/queue` и `/bank/applications/:id` (и `/bank/journal` — оставить заглушку) переносятся под `<BankLayout>` вместо общего `Shell`; `frontend/src/mocks/handlers.ts` — одна строка `...createBankHandlers()` в возвращаемом массиве; `frontend/src/App.test.tsx` — только ожидания маршрутов андеррайтера.
 
 **Читать:** `contracts/api-types.ts` (раздел «Андеррайтер и банк»: `QueueItem`, `FactorLine`, `RuleFired`, `PolicyCalc`, `DecisionBank`, `ExternalCheckBank`, `EventBank`, `ApplicationBank`, `UnderwriterDecisionRequest`; `RouteReason`, `UnderwriterOutcome`, `ClientReasonCategory`, `Grade`); `contracts/api.md` (строки `/underwriting/*`); `contracts/codes.md` («Причины маршрутизации», «Решения андеррайтера», «Коды причин», «Типы событий журнала»); `contracts/external-mocks.md` (поля ответов ЕГРЮЛ, БКИ, ФНС); `contracts/personas.json` (`ooo_border`, `ooo_aml`: `bki`, `fns`, `turnover`, `demo.expected`); `docs/screens.md` строки 11–12 §3 и «Ключевой 3»; макет.
@@ -1177,11 +1177,73 @@ uv run --no-project --python 3.12 --with pytest --with httpx --with jsonschema p
   - `SOURCE_UNAVAILABLE`: есть «Повторить сбор сведений», БКИ «Не ответил (3 попытки)»; у `ooo_border` этого пункта нет;
   - `ooo_aml`: бейдж «Признаки AML», правило `SF_ADDITIONAL` со «Стоп-фактор», формы нет.
 - Нет шестнадцатеричных цветов вне `theme.ts`, `styles/tokens.css`, `theme.test.ts`; нет `eslint-disable`, `ts-ignore`, `any`; нет библиотек графиков.
-- **Вид:** если к моменту PR F-04b слита — добавить блоки андеррайтера (шапка, строка фактора, рекомендация, форма) в `visual/compare.mjs` (фикстура `ooo_border`) и приложить вывод; иначе — пары скриншотов «макет / наш» по этим блокам. Скриншоты очереди и карточки 1440 и 375 px — в PR (не в репозиторий).
+- **Вид:** отдельный скрипт `visual/underwriter.mjs` по образцу `visual/compare.mjs` (запуск `node visual/underwriter.mjs`; `compare.mjs` и `package.json` не менять — их же трогает F-05): блоки андеррайтера (шапка, строка фактора, рекомендация, форма), фикстура `ooo_border`, таблица computed-стилей; вывод — в PR. Скриншоты очереди и карточки 1440 и 375 px — в PR (не в репозиторий).
 - Самопроверка `/review` — в PR.
 - **После слияния B-08** (делает тимлид): на стенде вход `underwriter` → `ooo_border` в очереди → карточка с реальными данными → «Одобрить» → клиент `ooo_border` видит оферту. Расхождения MSW и API — отдельной правкой.
 
 **Не делать:** журнал банка, демо-управление временем, печать протокола (F-08); не менять `contracts/`, `schema.d.ts`, `theme.ts`, бэкенд, компоненты `screens/application/*` и `ui/status.ts` (только импорт).
+
+### F-05 — Решение и дозапрос в карточке заявки (ключевой экран 2) · Лана · Облако: нет (нужны скриншоты) · ≤4 ч
+**Зачем.** Момент истины для клиента и для жюри (F11–F13, критерии кейса): понятно, что банк решил и почему; одобрение и встречное предложение — с условиями и сроком; отказ — без извинений, с причиной, что сделать и когда можно снова; дозапрос — ответить прямо в карточке. Принятие и отказ от оферты, возражение делает бэкенд B-09 (сейчас 501), поэтому они строятся **по контракту на MSW**; ответ на дозапрос на бэкенде уже есть (B-07b).
+
+**Параллельно с F-07 (человек).** Общие файлы с F-07: `mocks/handlers.ts` и визуальная сверка. Правила: свои обработчики — в новом `mocks/client/decision.ts` (`export function createDecisionHandlers()`), в `mocks/handlers.ts` — **одна строка** `...createDecisionHandlers(),` **первой** в возвращаемом массиве (F-07 добавляет свою строку в конец); сверка — отдельный скрипт `visual/decision.mjs` (запуск `node visual/decision.mjs`), `visual/compare.mjs` и `package.json` не менять.
+
+**Макет:** `docs/design/screens/decision.html` (1a одобрено, 1b встречное, 1c отказ, 1d лента 375 px). Метод и приоритет — как в F-04b: (1) контракт и `codes.md` — какие данные и тексты; (2) решения этой карточки; (3) макет — как выглядит, разметка блоков переносится из HTML в CSS-модули, значения — токены; уже готовые блоки F-04b (бейдж, панель, плитки, лента) переиспользовать, не дублировать.
+
+**Решения по спорным местам макета:**
+| Место | Делаем | Основание |
+| --- | --- | --- |
+| «Вы просили»: ставка и платёж | ставки нет; платёж — «около {N} ₽» через `POST /calculator` (продукт заявки, `requested.amount`, `requested.term_months`) | в `requested` только сумма и срок |
+| Пояснение встречного | `offer.counter_reason` как есть | контракт |
+| Поручитель для ООО | «Для ООО нужен поручитель — учредитель с долей больше 50%. Поручительство подписывается на следующем шаге» — только если `requires_guarantor_ooo` у продукта и компания ООО; без «Это вы» | в клиентском API нет долей |
+| «Почему одобрили» | `offer.explanation` (1–3 строки) с зелёными галочками | контракт (B-07c) |
+| Отказ: «Что можно сделать» | `client_reason.action`; строка «Подать новую заявку можно с ДД.ММ.ГГГГ» из `retry_after` — только если в `action` нет даты; при `action = null` — «Можно подать новую заявку» и кнопка | `codes.md` |
+| Категория причины | `client_reason.category`; если `null` — без подписи категории | контракт |
+| «Попросить пересмотр» | только если в `allowed_actions` есть `OBJECT` | контракт (условия — B-09) |
+
+**Файлы:** `frontend/src/screens/application/sections/DecisionSection.tsx`, `InfoRequestSection.tsx`, `ObjectionBlock.tsx` и `*.module.css` (новые); `frontend/src/screens/ApplicationCard.tsx` (секции `#decision`, `#info-request` вместо пустых, заголовок и бейдж по состоянию — п. 1); `frontend/src/screens/application/*.tsx` — только если нужно переиспользовать блок F-04b (без изменения вида); `frontend/src/mocks/client/decision.ts` (новый), `frontend/src/mocks/fixtures.ts` (только фикстуры этой задачи), `frontend/src/mocks/handlers.ts` (одна строка); `frontend/visual/decision.mjs` (новый); тесты `frontend/src/screens/application/sections/*.test.tsx`, `ApplicationCard.test.tsx` (только затронутые ожидания).
+
+**Читать:** макет; `docs/screens.md` §2 и «Ключевой 2»; `contracts/api-types.ts` (`OfferClient`, `ClientReason`, `InfoRequestClient`, `InfoRequestItem`, `InfoResponseRequest`, `AcceptOfferRequest`, `ObjectionRequest`, `ApplicationClient.objection`, `ClientAction`); `contracts/api.md` (строки `info-response`, `offer/accept`, `offer/reject`, `objection`); `contracts/codes.md` («Пункты дозапроса», «Клиентские тексты причин», «Лента и действия по состояниям»); `contracts/personas.json` (`ip_good`, `ooo_load`, `ip_bad` → `demo.expected`); код F-04b (`screens/application/`, `Card.module.css`, `visual/compare.mjs` — как образец).
+
+**Сделать:**
+1. **Шапка по состоянию** (как в макете): `OFFER_ISSUED` + `APPROVED` — бейдж «Одобрено» (`ok`), заголовок «Банк одобрил {offer.amount}»; `OFFER_ISSUED` + `COUNTER` — бейдж «Другие условия» (`wait`), «Банк готов выдать {offer.amount} на {offer.term_months} мес.»; `DECLINED` — бейдж «Отказ» (`stop`), «Банк не может выдать кредит сейчас». В остальных состояниях шапка F-04b без изменений. Над заголовком — «Заявка № N · {продукт}».
+2. **`#decision` — одобрено / встречное** (при `offer.status = ACTIVE`), под лентой и панелью, над «Параметрами заявки»:
+   - карточка «Условия»: плитки «Ставка» (`22 %`), «Срок» (`24 мес.`), «Платёж в месяц» (`77 817 ₽`; для `OVERDRAFT` — «Проценты — только за использованные дни»), строка «Предложение действует до ДД.ММ.ГГГГ» (`expires_at`, по Москве);
+   - справа «Почему одобрили» — `explanation`;
+   - встречное: над условиями — `counter_reason`, сравнение «Вы просили» (сумма, срок, «около …» платёж) / «Мы предлагаем» (сумма, срок, ставка, платёж) — вторая колонка выделена рамкой `gray.9` как в макете; строка про поручителя (по таблице);
+   - кнопки при `ACCEPT_OFFER` / `REJECT_OFFER` в `allowed_actions`: «Принять предложение» (главная) → `POST /offer/accept` с `{ offer_version: offer.version }` → ответ заменяет данные экрана (дальше подписание — F-06); «Отказаться» → модальное окно «Отказаться от предложения? Заявка будет закрыта, это действие нельзя отменить» («Отказаться» / «Вернуться») → `POST /offer/reject`;
+   - нет `ACCEPT_OFFER` (бухгалтер без права подписи): кнопок нет, строка «Принять предложение может руководитель или сотрудник с правом подписи»;
+   - 409 `OFFER_EXPIRED` → «Срок предложения истёк» и перезагрузка данных; 409 `CONFLICT_VERSION` → «Условия изменились — проверьте их ещё раз» и перезагрузка; 501 → «Действие пока недоступно, попробуйте позже» (до слияния B-09 на стенде).
+3. **`#decision` — отказ** (`DECLINED`): блок «Причина» (рамка `stop`, подпись «Причина», категория 600, `text`) и «Что можно сделать» (`action`, дата по таблице решений); ниже — `ObjectionBlock`; кнопки «Подать новую заявку» (при `NEW_APPLICATION`) и «Вернуться к заявкам». Для `ooo_aml` (`ADDITIONAL_CHECKS`) — только нейтральный текст из `client_reason`, никаких других деталей.
+4. **`ObjectionBlock`:** при `OBJECT` — серый блок «Не согласны с решением? Его пересмотрит специалист банка» и кнопка «Попросить пересмотр» → модальное окно с полем «Почему вы не согласны» (10–2000 символов, счётчик) → `POST /objection` `{ text }` → данные экрана из ответа. Если `objection` есть: `PENDING` — «Ваше обращение рассматривает специалист банка» (`wait`), `RESOLVED` — `outcome_text`.
+5. **`#info-request`** (при `info_request != null`): заголовок «Вопросы банка», «Ответьте до ДД.ММ.ГГГГ» (`due_at`); по каждому пункту — `question`; для `requires_value` (`REVENUE_CONFIRM`) — поле «Выручка за год, ₽» (целое > 0, разделители тысяч) и «Пояснение»; для остальных — «Ответ»; комментарий 3–1000 символов со счётчиком. «Отправить ответ» → `POST /info-response` `{ answers: [{ item_code, value?, comment }] }` — ровно по одному ответу на каждый пункт, `value` только при `requires_value` → данные экрана из ответа (лента снова «Идёт сейчас», автообновление F-04 подхватит). 409 → «Запрос уже закрыт» и перезагрузка; 422 → ошибки под полями.
+6. **Кнопка панели** («Посмотреть предложение», «Ответить на вопросы банка») плавно прокручивает к секции.
+7. **MSW** (`mocks/client/decision.ts` + фикстуры):
+   - `ip_good` — `OFFER_ISSUED`, `APPROVED`, условия **ровно из `personas.json` `ip_good.demo.expected.offer`** (числа переносятся в фикстуру с комментарием-ссылкой; `contracts/` в `src/` не импортировать — образ `web` собирается из `frontend/`; тест сверяет через `node:fs`), 3 строки `explanation`;
+   - `ooo_load` — `COUNTER` по `ooo_load.demo.expected.offer`, `requested` 4 000 000 ₽ / 12 мес., `counter_reason`;
+   - `ip_bad` — `DECLINED`, `SF_OVERDUE`: тексты из `codes.md`, категория «Кредитная история», `retry_after`, `allowed_actions` с `OBJECT` и `NEW_APPLICATION`;
+   - `ooo_aml` — `DECLINED`, `ADDITIONAL_CHECKS`, без `OBJECT`;
+   - `INFO_REQUESTED` c `REVENUE_CONFIRM` (можно взять фикстуру № 1042 из F-04b);
+   - обработчики `offer/accept` (проверка `offer_version`, иначе 409 `CONFLICT_VERSION`; → `SIGNING`), `offer/reject` (→ `WITHDRAWN`, `CLIENT_REJECTED_OFFER`), `objection` (10–2000, иначе 422; → `MANUAL_REVIEW`, `objection.status = PENDING`), `info-response` (ровно пункты запроса, `value > 0` для `REVENUE_CONFIRM`, иначе 422 `details.fields`; → `VALIDATION`, `info_request = null`). Лента и `allowed_actions` в ответах — по `codes.md`.
+8. **Визуальная сверка** `node visual/decision.mjs` (по образцу `compare.mjs`): макет `decision.html` 1a/1b/1c и наш экран на фикстурах `ip_good`, `ooo_load`, `ip_bad`, 1440 px; вырезки блоков «Условия», «Почему одобрили», «Вы просили / Мы предлагаем», «Причина / Что можно сделать», «Не согласны» в `visual/out/decision-*`; таблица computed-стилей с отступлениями по таблице решений; 375 px — скриншот.
+
+**Приёмка:**
+- `npm run lint && npm run typecheck && npm test && npm run build` — зелёный; CI зелёный.
+- Тесты (MSW):
+  - `ip_good`: заголовок «Банк одобрил 1 500 000 ₽», плитки `22 %`, `24 мес.`, `77 817 ₽`, «Предложение действует до …», 3 строки «Почему одобрили»; числа сверяются с `personas.json` в тесте;
+  - «Принять предложение» шлёт ровно `{ offer_version: <version> }` → экран в `SIGNING`; 409 `CONFLICT_VERSION` → текст и перезагрузка; 501 → «Действие пока недоступно…»;
+  - «Отказаться» → модальное окно; «Вернуться» не шлёт запрос; подтверждение → `WITHDRAWN`, панель «Вы отказались от предложения»;
+  - `ooo_load`: «Банк готов выдать 2 850 000 ₽ на 24 мес.», колонка «Вы просили» с 4 000 000 ₽ и «около …», строка про поручителя;
+  - бухгалтер `ooo_load_accountant`: условия видны, кнопок нет, строка про право подписи;
+  - `ip_bad`: «Банк не может выдать кредит сейчас», категория «Кредитная история», текст и действие из `codes.md`, «Попросить пересмотр» → модальное окно, 9 символов — ошибка, 10+ → «Ваше обращение рассматривает специалист банка»;
+  - `ooo_aml`: нейтральный текст, нет «Попросить пересмотр», в DOM нет `SF_ADDITIONAL`;
+  - дозапрос: без выручки или с пояснением короче 3 символов — ошибки, запрос не уходит; корректный ответ → тело ровно `{ answers: [{ item_code: 'REVENUE_CONFIRM', value, comment }] }`, секция исчезает, лента «Идёт сейчас».
+- Вывод `node visual/decision.mjs` и вырезки «макет / наш» — в PR (картинки не в репозиторий).
+- Самопроверка `/review` — в PR.
+- **Вручную на стенде:** `ip_good` → подача → оферта на экране; «Принять» даёт 501 и понятный текст (до B-09). `ooo_gap` → дозапрос → ответ → оферта (полный путь на настоящем бэкенде). Скриншоты в PR.
+- Нет шестнадцатеричных цветов вне `theme.ts`, `styles/tokens.css`, `theme.test.ts`; нет `eslint-disable`, `ts-ignore`, `any`.
+
+**Не делать:** подписание, OTP, согласия, участники (F-06); не менять `contracts/`, `schema.d.ts`, `theme.ts`, бэкенд, `visual/compare.mjs`, `package.json`; не менять вид блоков F-04b.
 
 ---
 
