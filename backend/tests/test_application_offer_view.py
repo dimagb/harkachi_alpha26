@@ -1,5 +1,8 @@
 """Client projections exercised through the real committed pipeline."""
 
+import os
+import subprocess
+import sys
 from contextlib import contextmanager
 from datetime import UTC, date, datetime, timedelta
 
@@ -8,7 +11,7 @@ from fastapi.testclient import TestClient
 from pipeline.conftest import persona_data as persona_data
 from pipeline.conftest import pipeline_factory as pipeline_factory
 from pipeline.test_pipeline import drain, providers_for, submit_persona
-from sqlalchemy import select
+from sqlalchemy import delete, select, text
 
 from app.auth.deps import current_user
 from app.db import get_session
@@ -37,6 +40,29 @@ CLIENT_EXPLANATIONS = [
     ("bureau_inquiries_30d", "Мало обращений за кредитами в последний месяц"),
     ("payment_discipline", "Нет долгов по налогам и судебных взысканий"),
 ]
+
+
+@pytest.fixture
+def seeded_pipeline(pipeline_factory):
+    # Load the actual demo seeds in this test's isolated schema.
+    with pipeline_factory.begin() as session:
+        schema = session.scalar(text("SELECT current_schema()"))
+        url = session.get_bind().url.update_query_dict(
+            {"options": f"-csearch_path={schema}"}
+        )
+        # The idempotent seed preserves existing rows; remove fixture placeholders.
+        session.execute(delete(ReasonCatalog))
+    subprocess.run(
+        [sys.executable, "-m", "app.seed"],
+        env={
+            **os.environ,
+            "DATABASE_URL": url.render_as_string(hide_password=False),
+            "DEMO_PASSWORD": "b07c-test-password",
+        },
+        check=True,
+        capture_output=True,
+    )
+    return pipeline_factory
 
 
 @contextmanager
@@ -109,7 +135,8 @@ def test_pipeline_offer(pipeline_factory, persona_data, code):
 @pytest.mark.parametrize(
     "code,reason", [("ip_bad", "SF_OVERDUE"), ("ooo_aml", "ADDITIONAL_CHECKS")]
 )
-def test_pipeline_decline(pipeline_factory, persona_data, code, reason):
+def test_pipeline_decline(seeded_pipeline, persona_data, code, reason):
+    pipeline_factory = seeded_pipeline
     application_id, _ = completed(pipeline_factory, persona_data, code)
     with pipeline_factory.begin() as session:
         catalog = session.scalar(
@@ -192,11 +219,20 @@ def test_explanation_falls_back_without_public_strengths(
 @pytest.mark.parametrize(
     "code", ["ip_good", "ip_bad", "ooo_load", "ooo_gap", "ooo_border", "ooo_aml"]
 )
-def test_client_json_has_no_internal_details(pipeline_factory, persona_data, code):
+def test_client_json_has_no_internal_details(seeded_pipeline, persona_data, code):
+    pipeline_factory = seeded_pipeline
     application_id, _ = completed(pipeline_factory, persona_data, code)
     with client_for(pipeline_factory, code) as client:
         response = client.get(f"/api/v1/applications/{application_id}")
     assert response.status_code == 200, response.text
+    if code == "ooo_aml":
+        assert response.json()["client_reason"] == {
+            "code": "ADDITIONAL_CHECKS",
+            "category": "Дополнительные проверки",
+            "text": "Заявка не прошла дополнительные проверки банка",
+            "action": None,
+            "retry_after": None,
+        }
     for internal in (
         "SF_ADDITIONAL",
         "internal_reasons",
