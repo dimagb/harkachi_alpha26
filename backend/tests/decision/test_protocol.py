@@ -1,3 +1,4 @@
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -58,3 +59,26 @@ def test_validation_protocol(persona_data, build_inputs):
         ("VAL_REVENUE_MISMATCH", "INFO")
     ]
     assert all(r.value and r.threshold for r in result.rules_fired)
+
+
+@pytest.mark.parametrize(
+    "existing_payment,term,outcome",
+    [(600_000, 12, "DECLINE"), (590_000, 12, "DECLINE"), (550_000, 3, "COUNTER")],
+)
+def test_what_if_below_product_minimum(
+    existing_payment, term, outcome, persona_data, build_inputs
+):
+    persona = next(p for p in persona_data["personas"] if p["code"] == "ooo_load")
+    inputs = build_inputs(persona)
+    inputs = replace(
+        inputs,
+        bureau=replace(inputs.bureau, monthly_payments_total=existing_payment),
+        app=replace(inputs.app, term_months=term),
+    )
+    result = decide(inputs, DEFAULT_CONFIG)
+    assert result.outcome == outcome
+    if outcome == "DECLINE":
+        assert result.reason_code == "HIGH_LOAD"
+    else:
+        assert result.offer.amount >= 500_000
+    assert result.what_if == ["Рассмотрите овердрафт или подайте заявку позже"]

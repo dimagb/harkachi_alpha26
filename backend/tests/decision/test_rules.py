@@ -1,11 +1,11 @@
 import copy
 from dataclasses import FrozenInstanceError, replace
-from datetime import date
+from datetime import date, timedelta
 from types import MappingProxyType
 
 import pytest
 
-from app.decision import DEFAULT_CONFIG, decide
+from app.decision import DEFAULT_CONFIG, decide, eligible_date
 from app.decision.config import ScoreBand
 from app.decision.scoring import rub, score
 
@@ -163,9 +163,35 @@ def test_as_of_is_input_and_no_input_mutation(persona_data, build_inputs):
     earlier = replace(inputs, as_of=date(2026, 9, 23))
     result = decide(earlier, DEFAULT_CONFIG)
     assert result.reason_code == "SF_AGE"
-    assert result.what_if == ["Подайте заявку после 2026-10-23."]
+    assert result.what_if == ["Подайте заявку с 01.10.2026"]
     assert inputs == original
     assert decide(inputs, DEFAULT_CONFIG) == decide(inputs, DEFAULT_CONFIG)
+
+
+@pytest.mark.parametrize(
+    "reg_date,first_eligible,expected_text",
+    [
+        (date(2026, 4, 15), date(2026, 10, 1), "Подайте заявку с 01.10.2026"),
+        (date(2026, 3, 31), date(2026, 9, 1), "Подайте заявку с 01.09.2026"),
+        (date(2025, 10, 31), date(2026, 4, 1), "Подайте заявку с 01.04.2026"),
+    ],
+)
+def test_business_age_first_eligible_day(
+    reg_date, first_eligible, expected_text, persona_data, build_inputs
+):
+    assert eligible_date(reg_date, DEFAULT_CONFIG) == first_eligible
+    inputs = build_inputs(persona_data["personas"][0])
+    inputs = replace(
+        inputs,
+        company=replace(inputs.company, reg_date=reg_date),
+        as_of=first_eligible - timedelta(days=1),
+    )
+    before = decide(inputs, DEFAULT_CONFIG)
+    assert before.reason_code == "SF_AGE"
+    assert before.what_if == [expected_text]
+    eligible = decide(replace(inputs, as_of=first_eligible), DEFAULT_CONFIG)
+    assert "SF_AGE" not in {rule.code for rule in eligible.rules_fired}
+    assert eligible.state == "OFFER_ISSUED"
 
 
 def test_frozen_models_and_config(persona_data, build_inputs):
