@@ -24,7 +24,7 @@
 | A-01 | Мок-сервис внешних источников | Катя | 23.10 после M0 | **да** | T-00 | [готова] |
 | B-03 | Модели БД, миграция, сиды | Аня (ведёт человек) | 23.10 ночь — 24.10 | нет | T-00 | [готова] |
 | F-01 | Оболочка фронтенда: вход, маршруты, роли, клиент API, MSW | Лана | 24.10 8:00 | нет | B-01 | [готова] |
-| B-04 | Вход, `/me`, продукты, калькулятор, профиль | Аня | 24.10 с утра | нет | B-01, B-03 | [черновик] |
+| B-04 | Вход, `/me`, продукты, калькулятор, профиль | Аня | 23.10 вечер (часть 1), после B-01 — часть 2 | нет | B-03 ✔, B-01 (часть 2) | [готова] |
 | B-05 | Заявка: создание и правка, автомат состояний, журнал, лента | Аня | 24.10 15:00 | нет | B-04 | [черновик] |
 | B-06 | OTP, согласия, подача, просьба подписать | Аня | 24.10 вечер | нет | B-05 | [черновик] |
 | B-07 | Worker: конвейер до решения, дозапрос | Аня | 24.10 вечер | нет | B-02, B-05, A-01 | [черновик] |
@@ -344,6 +344,92 @@
 
 **Не делать:** эндпоинтов не писать; модели не импортируются в `app/decision/`.
 
+### B-04 — Вход, `/me`, продукты, калькулятор, профиль · Аня · Облако: нет · ≤4 ч
+**Зачем.** Вход тестовыми учётками (T5), разграничение доступа по ролям и компаниям (банк не показывает чужое), первые настоящие эндпоинты для фронтенда (F-01, F-03).
+
+**Две части в одном PR.** Часть 1 не зависит от B-01 и делается сразу. Часть 2 — только после того, как B-01 слит в `main` (проверка: `git fetch origin && git ls-tree -r origin/main --name-only | grep '^backend/app/api/'` — непусто). Если часть 1 готова, а B-01 ещё не в `main`: запушить ветку, открыть PR как **draft** (`gh pr create --draft`), отправить `notify QUESTION B-04 "часть 1 готова, жду B-01"` и остановиться. Продолжение — в том же чате: `git fetch origin && git rebase origin/main`, затем часть 2.
+
+**Файлы:**
+- `backend/app/auth/*.py` (токены, вход, зависимости доступа);
+- `backend/app/catalog/*.py` (новый: продукты, калькулятор);
+- `backend/app/companies/*.py` (новый: профиль);
+- `backend/app/integrations/__init__.py`, `backend/app/integrations/registry.py` (новые: адаптер реестра);
+- часть 2: роутеры B-01 в `backend/app/api/` — **только** обработчики `POST /auth/login`, `GET /me`, `GET /products`, `POST /calculator`, `GET /companies/{id}/profile` и подключение общей зависимости проверки токена (см. п. 6). Сигнатуры, `response_model`, `responses`, `summary` B-01 не менять;
+- часть 2: `backend/app/main.py` — только `dependencies=[...]` в `include_router`, если общую зависимость удобнее подключить там;
+- часть 2: `backend/app/errors.py` — **только** если в классе исключения B-01 этого нет: необязательный параметр `headers` и сохранение переданных `message`, `details`, `headers` в ответе (тексты по умолчанию для статуса B-01 не менять);
+- часть 1 (временно): `backend/app/auth/errors.py` — класс `ApiErrorException(status, code, message, details=None, headers=None)` с `TODO(lead): заменить импортом из app.errors после B-01`; после rebase на B-01 файл удалить, импорты перевести на `app.errors`;
+- часть 2: `backend/tests/test_contract_paths.py` — **только** в фикстуре теста 501: `app.dependency_overrides[current_user] = lambda: User(id=uuid4(), role="CLIENT", login="t", full_name="t", password_hash="")` и снятие подмены после теста (без токена заглушки теперь отвечают 401; БД этот тест не использует). Логику `current_user` ради теста не менять;
+- `backend/pyproject.toml`, `backend/uv.lock` — только `pyjwt` и перенос `httpx` из `dev` в основные зависимости;
+- тесты: `backend/tests/test_auth.py`, `backend/tests/test_catalog.py`, `backend/tests/test_profile.py`, `backend/tests/test_access_matrix.py` (новые).
+
+**Читать:** `contracts/api.md` (строки этих 5 эндпоинтов и столбец «Роль»), `contracts/api-types.ts` (разделы «Аутентификация», «Каталог и калькулятор», «Профиль компании», `ApiError`), `contracts/codes.md` (раздел «Продукты, цели» с подразделом «Витрина продуктов»), `contracts/external-mocks.md` (раздел «ЕГРЮЛ / ЕГРИП»), `contracts/decision_reference.py` (функции `annuity`, `rub`), `backend/app/models/`, `backend/app/security.py`, `backend/tests/conftest.py`.
+
+**Сделать — часть 1 (сразу):**
+1. **Токены** (`app/auth/tokens.py`), библиотека PyJWT. Алгоритм только HS256 (при проверке `algorithms=["HS256"]`), ключ — `settings.jwt_secret`. Поля: `sub` = `user.id` (строка UUID), `role`, `iat`, `exp` = сейчас + `settings.jwt_ttl_hours`. `expires_in` в ответе = `jwt_ttl_hours * 3600`.
+2. **Вход** (`app/auth/service.py`): поиск `user` по `login`, проверка `verify_password` из `app/security.py`. Неизвестный логин и неверный пароль — **одинаковая** ошибка 401 `UNAUTHORIZED` «Неверный логин или пароль» (нельзя по ответу узнать, есть ли такой логин). Пароль и токен не пишутся в логи.
+3. **Зависимости доступа** (`app/auth/deps.py`) — их будут использовать все следующие задачи, имена фиксированы:
+   - `current_user` → объект `User`. Нет заголовка, не `Bearer`, неверная подпись, `alg` не HS256 (в том числе `none`), истёк `exp`, пользователя с таким `sub` нет → 401 `UNAUTHORIZED` «Требуется вход» с заголовком `WWW-Authenticate: Bearer`. В части 1 `current_user(credentials: HTTPAuthorizationCredentials | None, session)` получает учётные данные параметром. В части 2 к нему подключается **тот же объект** `HTTPBearer(auto_error=False)`, что объявил B-01 (найти: `grep -rn HTTPBearer backend/app/api`; импортировать, не создавать новый), иначе изменится `openapi.json`. `jwt.decode(..., algorithms=["HS256"], options={"require": ["exp", "iat", "sub"]})` — токен без `exp` недействителен;
+   - `require_roles(*roles)` → чужая роль → 403 `FORBIDDEN` «Недостаточно прав»;
+   - `member_company(company_id, user, session)` — **обычная функция, не `Depends`** (иначе FastAPI сделает `company_id` query-параметром и изменит контракт); её вызывает обработчик после проверки роли; → `(Company, CompanyMember)`; если компании нет **или** пользователь в ней не состоит → 404 `NOT_FOUND` «Компания не найдена» (одинаково, чтобы не раскрывать чужие компании).
+
+   Ошибки — исключение `ApiErrorException` (в части 1 — временный класс из `app/auth/errors.py`, в части 2 — класс B-01 из `app/errors.py`), тексты на русском, `message` у каждого случая свой (как написано в этой карточке).
+4. **Продукты** (`app/catalog/products.py`): `list_products(session)` → список `Product` по подразделу «Витрина продуктов» в `codes.md`: границы из `product.params`, `rate_from` = `key_rate` активной `decision_config` + `params.spread.A`, `key_rate` и `key_rate_date` (`YYYY-MM-DD`) — из неё же, `purposes` и `requires_guarantor_ooo` — из таблицы витрины (константа в модуле), порядок — как в таблице. Нет активной `decision_config` → 503 `SERVICE_UNAVAILABLE`.
+5. **Калькулятор** (`app/catalog/calculator.py`):
+   - строки `product` с таким кодом нет в БД → 503 `SERVICE_UNAVAILABLE` (неизвестный код отсекает схема B-01 ещё до обработчика); `amount` вне `[min, max]` продукта или `term_months` вне `[tmin, tmax]` → 422 `VALIDATION_ERROR` с `details.fields.amount` («Сумма от 300 000 до 5 000 000 ₽») или `details.fields.term_months` («Срок от 6 до 36 мес.»), числа — из параметров продукта, разделитель разрядов — обычный пробел U+0020;
+   - `rate_estimate` = `rate_from` (оценка A, справочно);
+   - `monthly_payment` = аннуитет, рубли, `ROUND_HALF_UP`; для `OVERDRAFT` — `null`. Если в `app/decision/` уже есть функция аннуитета (B-02 слит) — использовать её; иначе своя функция в `calculator.py` с `TODO(lead): заменить на функцию B-02`. В обоих случаях тест сверяет результат с `annuity` + `rub` эталона на сетке значений.
+6. **Адаптер реестра** (`app/integrations/registry.py`): `RegistryRecord` (поля ответа `GET /registry/{inn}` из `external-mocks.md`; `director.inn: str | None` — в `personas.json` его нет; лишние поля ответа мока игнорируются, наружу идут только поля `CompanyProfile`), протокол `RegistryProvider.get(inn) -> RegistryRecord`, `HttpRegistryProvider` (`httpx`, база — `settings.mocks_url`, таймаут 3 с, без повторов: повторы — в worker B-07) и `FakeRegistryProvider` (из словаря, для тестов). Ответ 404 мока → `None`; таймаут, ошибка соединения, 5xx → исключение `ProviderUnavailable`. Зависимость FastAPI `get_registry_provider()`, подменяемая в тестах через `dependency_overrides`.
+7. **Профиль** (`app/companies/profile.py`): `CompanyProfile` = поля компании из БД (`id`, `inn`, `ogrn`, `kind`, `name`, `reg_date`, `okved_main`, `address`) + из реестра `status`, `director_full_name` (= `director.full_name`), `founders`; `avg_monthly_turnover` = среднее `account_turnover.credit_turnover` компании, рубли, `ROUND_HALF_UP` (нет оборотов → 0); `source_note` = «Данные из ЕГРЮЛ на ДД.ММ.ГГГГ» для `OOO`, «Данные из ЕГРИП на …» для `IP`, дата — `date.today()` с `TODO(lead): заменить на демо-часы B-10`. `ProviderUnavailable` → 503 `SERVICE_UNAVAILABLE` «Реестр временно недоступен, попробуйте позже»; реестр вернул `None` → 404 `NOT_FOUND`.
+
+**Тесты части 1** — сервисы и зависимости без роутеров B-01: тестовое приложение `FastAPI()` создаётся внутри тестового файла. В `app/api/` и `main.py` в части 1 **ничего не создавать и не менять**. HTTP-тесты через `app.main` — только в части 2.
+
+**Сделать — часть 2 (после слияния B-01):**
+8. Заполнить 5 обработчиков вместо `NOT_IMPLEMENTED`:
+   - `POST /auth/login` — без токена;
+   - `GET /me` — любая роль; `companies` — членства пользователя, по `company.name`; у андеррайтера `[]`;
+   - `GET /products` и `POST /calculator` — `require_roles("CLIENT")`;
+   - `GET /companies/{id}/profile` — `require_roles("CLIENT")` + `member_company`.
+9. **Все** остальные пути API, кроме `/auth/login`, `/health`, `/ready`, получают зависимость `current_user` (на уровне роутера; если в роутере есть `/auth/login` — на каждый эндпоинт, а не на роутер): без токена → 401, с токеном → по-прежнему 501. Проверку ролей у заглушек не добавлять: это делают задачи, которые их реализуют.
+10. Пересобрать `contracts/openapi.json` и `frontend/src/api/schema.d.ts` командами из `AGENTS.md` §2. **Дифф обоих файлов должен быть пустым**: B-04 не меняет контракт. Если дифф не пуст — сначала искать причину у себя (новая схема безопасности, изменённый `response_model`); если без изменения контракта не обойтись — `notify QUESTION`.
+
+**Приёмка:**
+- `cd backend && uv run pytest -q -rA` с заданным `TEST_DATABASE_URL` — зелёный, 0 skipped. Тесты API используют фикстуру `migrated_database` из `conftest.py` (схема с сидами, пароль демо-учёток в ней — `b03-test-password`) и подменяют через `dependency_overrides` `get_session` и `get_registry_provider` (на `FakeRegistryProvider` из `personas.json`) — **во всех** API-тестах, включая `test_access_matrix.py`: в CI моков нет; `conftest.py` не менять, свои фикстуры — в своих тестовых файлах.
+- `test_auth.py`:
+  - вход каждым логином из `personas.json` и `underwriter` → 200, `token_type = "bearer"`, `expires_in = 28800`, `user.role` верная; токен декодируется, `sub` = id пользователя;
+  - неверный пароль и неизвестный логин → 401 с **одинаковым** телом;
+  - токен с истёкшим `exp`, с чужим ключом, с `alg: none`, испорченный, без `Bearer` → 401 и `WWW-Authenticate: Bearer`;
+  - `GET /me` для `ooo_load_accountant`: одна компания, `can_sign = false`; для `underwriter`: `companies = []`.
+- `test_catalog.py`:
+  - `GET /products` → 3 продукта в порядке `EXPRESS`, `WORKING_CAPITAL`, `OVERDRAFT`; `EXPRESS`: `min_amount = 300000`, `max_amount = 5000000`, `rate_from = 22.0`, `key_rate = 14.0`, `key_rate_date = "2026-10-23"`; `purposes` и `requires_guarantor_ooo` — точно как в таблице витрины `codes.md` (тест разбирает таблицу);
+  - калькулятор, точные значения: `EXPRESS 1 500 000 / 24` → `22.0`, `77817`; `WORKING_CAPITAL 4 000 000 / 12` → `21.0`, `372455`; `EXPRESS 300 000 / 6` → `53257`; `WORKING_CAPITAL 15 000 000 / 24` → `770785`; `OVERDRAFT` → `monthly_payment = null`;
+  - сверка с эталоном (`annuity` + `rub`, модуль загружается из `contracts/decision_reference.py` через `importlib`) на сетке: `EXPRESS` и `WORKING_CAPITAL` × 3 суммы (`min`, `(min+max)//2`, `max`) × 3 срока (`tmin`, `(tmin+tmax)//2`, `tmax`); `OVERDRAFT` → `monthly_payment is None`, `rate_estimate == 24.0`;
+  - границы: `amount = min − 1`, `max + 1`, `term = tmin − 1`, `tmax + 1` → 422, `details.fields` сверяется строкой целиком: `"Сумма от 300 000 до 5 000 000 ₽"` (EXPRESS), `"Срок от 3 до 24 мес."` (WORKING_CAPITAL); `amount = min` и `max` → 200;
+  - нет активной `decision_config` (тест снимает флаг `active` в своей транзакции и откатывает её) → `GET /products` 503.
+- `test_profile.py` (реестр — `FakeRegistryProvider` из данных `personas.json`):
+  - `ip_good` → `avg_monthly_turnover = 1200000`, `source_note` начинается с «Данные из ЕГРИП на »; `ooo_border` → `912500`, «Данные из ЕГРЮЛ на »; `status`, `director_full_name`, `founders` совпадают с `personas.json`;
+  - реестр недоступен → 503 `SERVICE_UNAVAILABLE`; `HttpRegistryProvider` проверен через `httpx.MockTransport`: 200 → запись, 404 → `None`, 500 и таймаут → `ProviderUnavailable`.
+- `test_access_matrix.py` — одна параметризованная таблица «эндпоинт × кто → код»:
+
+  | Эндпоинт | без токена | CLIENT своей компании | CLIENT чужой компании | UNDERWRITER |
+  | --- | --- | --- | --- | --- |
+  | `GET /me` | 401 | 200 | — | 200 |
+  | `GET /products` | 401 | 200 | — | 403 |
+  | `POST /calculator` | 401 | 200 | — | 403 |
+  | `GET /companies/{id}/profile` | 401 | 200 | 404 | 403 |
+  | `GET /companies/{случайный uuid}/profile` | 401 | 404 | — | 403 |
+
+  Плюс: каждый путь из `api.md`, кроме `/auth/login`, `/health`, `/ready`, без токена → 401 (тот же разбор таблицы, что в `test_contract_paths.py`; тела и параметры — валидные, из `tests/fixtures_bodies.py`). Все ответы с ошибкой — валидный `ApiError` с кодом из `codes`, сообщения на русском (в `message` есть кириллица).
+- `uv run ruff check . && uv run ruff format --check .` — зелёный.
+- `git diff --exit-code contracts/openapi.json frontend/src/api/schema.d.ts` после пересборки — пусто.
+- Вручную на стенде (`docker compose up -d --build --wait`):
+  ```
+  curl -s -X POST localhost:8080/api/v1/auth/login -H "Content-Type: application/json" -d '{"login":"ip_good","password":"demo2026"}'
+  ```
+  → токен; `GET /api/v1/me`, `GET /api/v1/products` с этим токеном → 200. `GET /api/v1/companies/{id}/profile` → 200, если A-01 (моки) уже в `main`; иначе 503 — это ожидаемо, указать в PR. Вывод вставить в PR.
+- CI зелёный.
+
+**Не делать:** не трогать `conftest.py`, модели, миграции, сиды и `contracts/`; не реализовывать другие эндпоинты; не добавлять повторы запросов к реестру; не хранить токены в БД; не логировать пароли и токены.
+
 ### F-01 — Оболочка фронтенда · Лана · Облако: нет (ставит новые npm-пакеты, нужен скриншот) · ≤3 ч
 **Зачем.** Каркас всех экранов: вход тестовыми учётками, маршруты по ролям, единая обработка ошибок, работа без бэкенда на моках (MSW) до готовности API.
 **Файлы:** `frontend/src/**` (кроме `src/api/schema.d.ts` и `src/theme.ts`), `frontend/package.json`, `frontend/package-lock.json`, `frontend/public/mockServiceWorker.js`. Импорт из `../contracts` или `../../contracts` внутри `src/` **запрещён** (в Docker-сборке их нет). Данные персонажей для MSW копируются в `src/mocks/fixtures.ts`.
@@ -379,7 +465,6 @@
 
 ## Карточки [черновик] (тимлид уточнит перед стартом)
 
-- **B-04.** `POST /auth/login` (JWT на 8 ч, ошибки 401 и 422), `GET /me`, проверка роли на каждом эндпоинте, доступ клиента только к своим компаниям (чужая компания → 404). `GET /products` из таблицы `product` и `decision_config`. `POST /calculator` — ставка по оценке A и аннуитет. `GET /companies/{id}/profile` — реестр через адаптер плюс средний оборот. Тесты на роли: таблица «эндпоинт × роль → код ответа».
 - **B-05.**
   - Модуль `applications/state_machine.py`: таблица переходов из `state-machine.md` как данные. Недопустимый переход → 409 `INVALID_TRANSITION`; каждый переход пишет событие в `application_event`.
   - Вычисление `stage`, `timeline` и `allowed_actions` по `codes.md`.
@@ -394,7 +479,7 @@
   - Постановка задачи `job` для worker.
 - **B-07.**
   - Worker с `SELECT … FOR UPDATE SKIP LOCKED`, идемпотентные шаги.
-  - Шаги: VALIDATION (через `decide()`) → ENRICHMENT (адаптеры `RegistryProvider`, `BureauProvider`, `TaxProvider`: HTTP к мокам и фейк для тестов; 3 повтора с паузой, затем `MANUAL_REVIEW` / `SOURCE_UNAVAILABLE`) → ASSESSMENT (`decide()`, запись `decision` с `inputs_snapshot`) → `OFFER_ISSUED` / `DECLINED` / `MANUAL_REVIEW` / `INFO_REQUESTED`.
+  - Шаги: VALIDATION (через `decide()`) → ENRICHMENT (адаптеры `RegistryProvider` — уже есть из B-04, `BureauProvider`, `TaxProvider` — по его образцу в `app/integrations/`: HTTP к мокам и фейк для тестов; 3 повтора с паузой, затем `MANUAL_REVIEW` / `SOURCE_UNAVAILABLE`) → ASSESSMENT (`decide()`, запись `decision` с `inputs_snapshot`) → `OFFER_ISSUED` / `DECLINED` / `MANUAL_REVIEW` / `INFO_REQUESTED`.
   - `info-response` возвращает заявку в VALIDATION.
   - Демо-пауза 1–2 с на шаг.
   - Веха M1.

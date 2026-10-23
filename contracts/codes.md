@@ -19,6 +19,15 @@
 ## Продукты, цели
 Продукты: `EXPRESS`, `WORKING_CAPITAL`, `OVERDRAFT`. Цели (`purpose`): `WORKING_CAPITAL` (оборотные средства), `CASH_GAP` (кассовый разрыв), `EQUIPMENT` (оборудование и развитие), `OTHER` (нужен `purpose_text`).
 
+### Витрина продуктов (`GET /products`, поля вне `product.params`)
+| code | name | description | purposes | requires_guarantor_ooo |
+| --- | --- | --- | --- | --- |
+| `EXPRESS` | Экспресс-кредит | На любые цели бизнеса | `WORKING_CAPITAL`, `CASH_GAP`, `EQUIPMENT`, `OTHER` | да |
+| `WORKING_CAPITAL` | Оборотный кредит | На пополнение оборотных средств | `WORKING_CAPITAL`, `CASH_GAP` | да |
+| `OVERDRAFT` | Овердрафт | На покрытие кассовых разрывов | `CASH_GAP`, `WORKING_CAPITAL` | да |
+
+`name` и `description` берутся из таблицы `product` (сиды B-03, совпадают с этой таблицей). `rate_from` = `decision_config.key_rate` активной версии + `params.spread.A` продукта; `min_amount`/`max_amount`/`min_term_months`/`max_term_months` = `params.min`/`max`/`tmin`/`tmax`. Порядок выдачи — как в этой таблице. Цель заявки вне `purposes` продукта — 422 (проверяет B-05).
+
 ## Действия клиента (`allowed_actions`)
 `EDIT_DRAFT`, `SUBMIT`, `REQUEST_SIGNATURE` (у пользователя без `can_sign`: просит подписанта, в продукте, без почты), `ANSWER_INFO_REQUEST`, `ACCEPT_OFFER`, `REJECT_OFFER`, `SIGN` (свою или за участника, где `party.user_id` = текущий пользователь), `WITHDRAW`, `OBJECT`, `NEW_APPLICATION`.
 
