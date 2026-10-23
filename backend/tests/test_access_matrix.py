@@ -2,10 +2,11 @@ import re
 from uuid import uuid4
 
 import pytest
-from fastapi.testclient import TestClient
+from fixtures_bodies import BODIES, ID
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from test_auth import PERSONAS, make_test_app
+from test_auth import PERSONAS, api_client
+from test_contract_paths import ROWS
 
 from app.models import Company
 
@@ -38,7 +39,7 @@ def test_access_matrix(migrated_database, method, path, actor, expected):
         provider = FakeRegistryProvider(
             {persona["inn"]: persona for persona in PERSONAS}
         )
-        with TestClient(make_test_app(session, provider)) as client:
+        with api_client(session, provider) as client:
             own = session.scalar(
                 select(Company).where(Company.inn == PERSONAS[0]["inn"])
             )
@@ -76,3 +77,32 @@ def test_access_matrix(migrated_database, method, path, actor, expected):
                 )
                 assert re.search("[А-Яа-яЁё]", data["error"]["message"])
                 assert isinstance(data["error"]["details"], dict)
+
+
+PROTECTED = [
+    row
+    for row in ROWS
+    if row[1] not in {"/api/v1/auth/login", "/api/v1/health", "/api/v1/ready"}
+]
+
+
+@pytest.mark.parametrize("method,path,role,body_type,transition", PROTECTED)
+def test_every_contract_path_requires_token(
+    migrated_database, method, path, role, body_type, transition
+):
+    from app.errors import ApiError
+
+    engine, _ = migrated_database
+    with Session(engine) as session, api_client(session) as client:
+        response = client.request(
+            method,
+            path.replace("/api/v1", "", 1).replace("{id}", ID),
+            params={"company_id": ID} if path == "/api/v1/applications" else {},
+            headers={"If-Match": "1"},
+            json=BODIES.get(body_type),
+        )
+    assert response.status_code == 401, response.text
+    error = ApiError.model_validate(response.json()).error
+    assert error.code == "UNAUTHORIZED"
+    assert re.search("[А-Яа-яЁё]", error.message)
+    assert response.headers["WWW-Authenticate"] == "Bearer"

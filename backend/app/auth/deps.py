@@ -1,17 +1,22 @@
+from typing import Annotated
 from uuid import UUID
 
 import jwt
+from fastapi import Depends, Request
 from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.auth.errors import ApiErrorException
+from app.api.routes import bearer
 from app.auth.tokens import settings
+from app.db import get_session
+from app.errors import ApiErrorException
 from app.models import Company, CompanyMember, User
 
 
 def current_user(
-    credentials: HTTPAuthorizationCredentials | None, session: Session
+    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(bearer)],
+    session: Annotated[Session, Depends(get_session)],
 ) -> User:
     unauthorized = ApiErrorException(
         401,
@@ -37,8 +42,14 @@ def current_user(
     return user
 
 
+def bind_current_user(
+    request: Request, user: Annotated[User, Depends(current_user)]
+) -> None:
+    request.state.user = user
+
+
 def require_roles(*roles: str):
-    def check_role(user: User) -> User:
+    def check_role(user: Annotated[User, Depends(current_user)]) -> User:
         if user.role not in roles:
             raise ApiErrorException(403, "FORBIDDEN", "Недостаточно прав")
         return user

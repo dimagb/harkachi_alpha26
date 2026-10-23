@@ -2,10 +2,9 @@ from datetime import date
 
 import httpx
 import pytest
-from fastapi.testclient import TestClient
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
-from test_auth import PERSONAS, make_test_app
+from test_auth import PERSONAS, api_client
 
 from app.models import AccountTurnover, Company
 
@@ -19,7 +18,7 @@ def profile_context(migrated_database):
         provider = FakeRegistryProvider(
             {persona["inn"]: persona for persona in PERSONAS}
         )
-        with TestClient(make_test_app(session, provider)) as client:
+        with api_client(session, provider) as client:
             yield client, session
         session.rollback()
 
@@ -111,7 +110,7 @@ def test_registry_profile_errors(migrated_database, missing, expected):
     engine, _ = migrated_database
     with Session(engine) as session:
         provider = FakeRegistryProvider({}) if missing else UnavailableRegistry()
-        with TestClient(make_test_app(session, provider)) as client:
+        with api_client(session, provider) as client:
             token = client.post(
                 "/auth/login",
                 json={"login": "ip_good", "password": "b03-test-password"},

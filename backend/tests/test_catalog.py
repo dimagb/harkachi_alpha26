@@ -3,10 +3,9 @@ import re
 from pathlib import Path
 
 import pytest
-from fastapi.testclient import TestClient
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
-from test_auth import make_test_app
+from test_auth import api_client
 
 from app.models import DecisionConfig, Product
 
@@ -14,7 +13,7 @@ from app.models import DecisionConfig, Product
 @pytest.fixture
 def catalog_context(migrated_database):
     engine, _ = migrated_database
-    with Session(engine) as session, TestClient(make_test_app(session)) as client:
+    with Session(engine) as session, api_client(session) as client:
         token = client.post(
             "/auth/login", json={"login": "ip_good", "password": "b03-test-password"}
         ).json()["access_token"]

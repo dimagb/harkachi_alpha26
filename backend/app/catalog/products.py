@@ -1,37 +1,18 @@
 from decimal import Decimal
-from typing import Literal
 
-from pydantic import BaseModel, ConfigDict
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.auth.errors import ApiErrorException
+from app.errors import ApiErrorException
 from app.models import DecisionConfig
 from app.models import Product as ProductRow
+from app.schemas.api import Product, ProductCode, Purpose
 
-ProductCode = Literal["EXPRESS", "WORKING_CAPITAL", "OVERDRAFT"]
-Purpose = Literal["WORKING_CAPITAL", "CASH_GAP", "EQUIPMENT", "OTHER"]
 PRODUCT_CATALOG: dict[ProductCode, tuple[list[Purpose], bool]] = {
     "EXPRESS": (["WORKING_CAPITAL", "CASH_GAP", "EQUIPMENT", "OTHER"], True),
     "WORKING_CAPITAL": (["WORKING_CAPITAL", "CASH_GAP"], True),
     "OVERDRAFT": (["CASH_GAP", "WORKING_CAPITAL"], True),
 }
-
-
-class Product(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-    code: ProductCode
-    name: str
-    description: str
-    purposes: list[Purpose]
-    min_amount: int
-    max_amount: int
-    min_term_months: int
-    max_term_months: int
-    rate_from: float
-    requires_guarantor_ooo: bool
-    key_rate: float
-    key_rate_date: str
 
 
 def active_config(session: Session) -> DecisionConfig:

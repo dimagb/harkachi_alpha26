@@ -1,25 +1,12 @@
 from decimal import ROUND_HALF_UP, Decimal
 
-from pydantic import BaseModel, ConfigDict, StrictInt
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.auth.errors import ApiErrorException
-from app.catalog.products import ProductCode, active_config, rate_from
+from app.catalog.products import active_config, rate_from
+from app.errors import ApiErrorException
 from app.models import Product
-
-
-class CalculatorRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-    product_code: ProductCode
-    amount: StrictInt
-    term_months: StrictInt
-
-
-class CalculatorResponse(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-    rate_estimate: float
-    monthly_payment: int | None
+from app.schemas.api import CalculatorRequest, CalculatorResponse
 
 
 def annuity(amount: int, rate: Decimal, term_months: int) -> int:

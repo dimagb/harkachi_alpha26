@@ -1,14 +1,11 @@
 import json
+from contextlib import contextmanager
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Annotated
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 import jwt
 import pytest
-from fastapi import Depends, FastAPI
-from fastapi.responses import JSONResponse
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.testclient import TestClient
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -26,78 +23,29 @@ PERSONAS = json.loads(
 LOGINS = [user["login"] for persona in PERSONAS for user in persona["users"]]
 
 
-def make_test_app(session, provider=None):
-    """Part 1 exercises services through an isolated app, without B-01 routers."""
-    from app.auth.deps import current_user, member_company, require_roles
-    from app.auth.errors import ApiErrorException
-    from app.auth.service import LoginRequest, login, me
-    from app.catalog.calculator import CalculatorRequest, calculate
-    from app.catalog.products import list_products
-    from app.companies.profile import company_profile
-    from app.integrations.registry import (
-        FakeRegistryProvider,
-        RegistryProvider,
-        get_registry_provider,
-    )
+@contextmanager
+def api_client(session, provider=None):
+    """Exercise the real API with a migrated DB and an isolated registry provider."""
+    from app.db import get_session
+    from app.integrations.registry import FakeRegistryProvider, get_registry_provider
+    from app.main import app
 
-    app = FastAPI()
-    bearer = HTTPBearer(auto_error=False)
+    def override_session():
+        yield session
 
-    @app.exception_handler(ApiErrorException)
-    async def handle_error(request, error):
-        return JSONResponse(
-            status_code=error.status,
-            content={
-                "error": {
-                    "code": error.code,
-                    "message": error.message,
-                    "details": error.details,
-                }
-            },
-            headers=error.headers,
+    if provider is None:
+        provider = FakeRegistryProvider(
+            {persona["inn"]: persona for persona in PERSONAS}
         )
-
-    def authenticated_user(
-        credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(bearer)],
-    ):
-        return current_user(credentials, session)
-
-    app.dependency_overrides[get_registry_provider] = lambda: (
-        provider if provider is not None else FakeRegistryProvider({})
-    )
-    client_role = require_roles("CLIENT")
-
-    def authorized_client(user: Annotated[User, Depends(authenticated_user)]):
-        return client_role(user)
-
-    @app.post("/auth/login")
-    def login_route(body: LoginRequest):
-        return login(session, body.login, body.password)
-
-    @app.get("/me")
-    def me_route(user: Annotated[User, Depends(authenticated_user)]):
-        return me(session, user)
-
-    @app.get("/products")
-    def products_route(user: Annotated[User, Depends(authorized_client)]):
-        return list_products(session)
-
-    @app.post("/calculator")
-    def calculator_route(
-        body: CalculatorRequest, user: Annotated[User, Depends(authorized_client)]
-    ):
-        return calculate(session, body)
-
-    @app.get("/companies/{company_id}/profile")
-    def profile_route(
-        company_id: UUID,
-        user: Annotated[User, Depends(authorized_client)],
-        registry: Annotated[RegistryProvider, Depends(get_registry_provider)],
-    ):
-        company, membership = member_company(company_id, user, session)
-        return company_profile(session, company, registry)
-
-    return app
+    previous = app.dependency_overrides.copy()
+    app.dependency_overrides[get_session] = override_session
+    app.dependency_overrides[get_registry_provider] = lambda: provider
+    try:
+        with TestClient(app, base_url="http://testserver/api/v1/") as client:
+            yield client
+    finally:
+        app.dependency_overrides.clear()
+        app.dependency_overrides.update(previous)
 
 
 @pytest.fixture
@@ -110,7 +58,7 @@ def auth_session(migrated_database):
 
 @pytest.fixture
 def auth_client(auth_session):
-    with TestClient(make_test_app(auth_session)) as client:
+    with api_client(auth_session) as client:
         yield client
 
 
@@ -126,6 +74,18 @@ def test_token_claims():
     assert payload["role"] == "CLIENT"
     assert before <= payload["iat"] <= int(datetime.now(UTC).timestamp())
     assert payload["exp"] - payload["iat"] == settings.jwt_ttl_hours * 3600
+
+
+def test_shared_current_user_dependency(auth_session):
+    from app.auth.deps import current_user
+    from app.main import app
+
+    user = auth_session.scalar(select(User).where(User.login == "ip_good"))
+    with api_client(auth_session) as client:
+        app.dependency_overrides[current_user] = lambda: user
+        response = client.get("/me")
+        assert response.status_code == 200, response.text
+        assert response.json()["user"]["id"] == str(user.id)
 
 
 @pytest.mark.parametrize("login_name", [*LOGINS, "underwriter"])

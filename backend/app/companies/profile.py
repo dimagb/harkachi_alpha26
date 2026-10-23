@@ -1,38 +1,13 @@
 from datetime import date
 from decimal import ROUND_HALF_UP, Decimal
-from typing import Literal
-from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.auth.errors import ApiErrorException
+from app.errors import ApiErrorException
 from app.integrations.registry import ProviderUnavailable, RegistryProvider
 from app.models import AccountTurnover, Company
-
-
-class Founder(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-    full_name: str
-    share_pct: float
-
-
-class CompanyProfile(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-    id: UUID
-    inn: str
-    ogrn: str
-    kind: Literal["IP", "OOO"]
-    name: str
-    status: Literal["ACTIVE", "LIQUIDATING", "LIQUIDATED"]
-    reg_date: date
-    okved_main: str
-    address: str
-    director_full_name: str
-    founders: list[Founder]
-    avg_monthly_turnover: int
-    source_note: str
+from app.schemas.api import CompanyProfile
 
 
 def company_profile(
@@ -56,17 +31,17 @@ def company_profile(
     # TODO(lead): заменить на демо-часы B-10.
     today = date.today()
     return CompanyProfile(
-        id=company.id,
+        id=str(company.id),
         inn=company.inn,
         ogrn=company.ogrn,
         kind=company.kind,
         name=company.name,
         status=record.status,
-        reg_date=company.reg_date,
+        reg_date=company.reg_date.isoformat(),
         okved_main=company.okved_main,
         address=company.address,
         director_full_name=record.director.full_name,
-        founders=[Founder(**founder.model_dump()) for founder in record.founders],
+        founders=[founder.model_dump() for founder in record.founders],
         avg_monthly_turnover=turnover,
         source_note=f"Данные из {source} на {today:%d.%m.%Y}",
     )
