@@ -610,7 +610,7 @@ uv run --no-project --python 3.12 --with pytest --with httpx --with jsonschema p
 
 **Сделать:**
 1. `theme.ts` = `docs/design/tokens/theme.ts` **без изменений значений**. Править можно только то, что не компилируется в Mantine 9.7.3 или противоречит `tsc`/`eslint`; каждую такую правку перечислить в PR с причиной.
-2. `styles/tokens.css` = `docs/design/tokens/tokens.css` байт в байт; импорт в `main.tsx` после стилей Mantine.
+2. `styles/tokens.css` = `docs/design/tokens/tokens.css` байт в байт, **кроме строки `@import url('https://fonts.googleapis.com/…')` — её удалить** (шрифт локальный, п. 3); импорт в `main.tsx` после стилей Mantine. Запись `' ₽'` в `money` — это настоящий неразрывный пробел в строке TypeScript, её не менять.
 3. Шрифт Onest — **локально** через `@fontsource/onest` (веса 400, 500, 600; импорт в `main.tsx`). Ссылок на `fonts.googleapis.com` в `frontend/` нет: стенд должен работать без интернета (T14).
 4. `ui/status.ts` — единые цвета статусов для всех следующих экранов:
    - `stageStatusColor(status)`: `done` → `ok`, `current` → `flow`, `action_required` → `wait`, `failed` → `stop`, `cancelled` → `gray`, `pending` → `gray`;
