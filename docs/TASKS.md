@@ -25,7 +25,7 @@
 | B-03 | Модели БД, миграция, сиды | Аня (ведёт человек) | 23.10 ночь — 24.10 | нет | T-00 | слит (PR #3) |
 | F-01 | Оболочка фронтенда: вход, маршруты, роли, клиент API, MSW | Лана | 24.10 8:00 | нет | B-01 | слит (PR #8) |
 | B-04 | Вход, `/me`, продукты, калькулятор, профиль | Аня | 23.10 вечер (часть 1), после B-01 — часть 2 | нет | B-03 ✔, B-01 (часть 2) | слит (PR #6) |
-| B-05 | Заявка: создание и правка, автомат состояний, журнал, лента | Аня | 24.10 15:00 | нет | B-04 | [готова] |
+| B-05 | Заявка: создание и правка, автомат состояний, журнал, лента | Аня | 24.10 15:00 | нет | B-04 | слит (PR #10) |
 | B-06 | OTP, согласия, подача, просьба подписать | Аня | 24.10 вечер | нет | B-05 | [готова] |
 | B-07 | Worker: конвейер до решения, дозапрос | Аня | 24.10 вечер | нет | B-02, B-05, A-01 | [черновик] |
 | A-03 | Сквозные тесты персонажей через API | Катя | 23.10 вечер / 24.10 | **да** | B-01 ✔ | слит (PR #9); прогон на стенде — M1/M2 |
@@ -644,6 +644,7 @@ uv run --no-project --python 3.12 --with pytest --with httpx --with jsonschema p
 - `backend/alembic/versions/` — **одна новая** миграция (создана `autogenerate`, вычитана) только для таблицы `otp`;
 - `backend/app/api/routes.py` — **только** тела `POST /applications/{id}/otp`, `/submit`, `/request-signature` и `Depends(...)`;
 - `backend/tests/test_contract_paths.py` — **только** +3 пути в `IMPLEMENTED`, `len` = 12;
+- попутно, замечания ревью B-05: в `routes.py` добавить 404 в `errors(...)` у `POST /applications` и `GET /applications` и пересобрать `contracts/openapi.json` и `frontend/src/api/schema.d.ts` — **это единственный разрешённый дифф контракта** (тимлид одобрил); `backend/app/applications/service.py` — явный список полей, которые правит PATCH (без `state`), и `created_at=datetime.now(UTC)` у события создания; тест в `test_applications_api.py`, что PATCH не может изменить `state`;
 - тесты: `backend/tests/test_otp.py`, `backend/tests/test_submit.py` (новые).
 
 **Читать:** `docs/state-machine.md` (строка `DRAFT → SUBMITTED`, раздел «Участники подписи»), `docs/data-model.md` (`party`, `consent`, `signature`, `job`, `otp`), `docs/assumptions.md` (A5), `contracts/api-types.ts` (`OtpRequest`, `OtpResponse`, `SubmitRequest`, коды ошибок), `contracts/codes.md` («Служебные перечисления», «Типы событий журнала», «Лента и действия по состояниям»), `backend/app/applications/`.
@@ -689,7 +690,7 @@ uv run --no-project --python 3.12 --with pytest --with httpx --with jsonschema p
   - повторная подача → 409;
   - `ooo_load_accountant`: `submit` → 403; `request-signature` → 200, `awaiting_signature = true`, одно событие; повтор — 200 без второго события; затем директор видит `awaiting_signature = true` в списке и подаёт заявку → флаг сброшен;
   - `ooo_load` (`can_sign`) → `request-signature` → 403.
-- `ruff check` и `ruff format --check` — чисто; `openapi.json` и `schema.d.ts` после пересборки — без диффа.
+- `ruff check` и `ruff format --check` — чисто; в `openapi.json` и `schema.d.ts` после пересборки — только два добавленных ответа 404.
 - Вручную на стенде: вход `ip_good` → создание → `otp` → `submit` → вывод `GET /applications/{id}` в PR. Если worker уже работает, заявка двинется дальше — это нормально.
 - CI зелёный.
 
