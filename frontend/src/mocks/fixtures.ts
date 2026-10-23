@@ -19,6 +19,23 @@ export const accounts: Record<string, Schema['MeResponse']> = {
   },
 };
 
+// Public registry responses for the existing personas, checked against the local API.
+export const companyProfiles: Record<string, Schema['CompanyProfile']> = {
+  '20000000-0000-4000-8000-000000000001': {
+    ...accounts.ip_good!.companies[0]!.company,
+    ogrn: '322774600012345', status: 'ACTIVE', reg_date: '2022-09-01', okved_main: '56.10',
+    address: 'г. Москва, ул. Покровка, д. 12', director_full_name: 'Смирнова Анна Викторовна', founders: [],
+    avg_monthly_turnover: 1200000, source_note: 'Данные из ЕГРИП на 23.10.2026',
+  },
+  '20000000-0000-4000-8000-000000000002': {
+    ...accounts.ooo_load!.companies[0]!.company,
+    ogrn: '1237700012345', status: 'ACTIVE', reg_date: '2023-03-01', okved_main: '52.10',
+    address: 'г. Москва, Складской пр., д. 4', director_full_name: 'Петров Илья Игоревич',
+    founders: [{ full_name: 'Петров Илья Игоревич', share_pct: 100 }],
+    avg_monthly_turnover: 2000000, source_note: 'Данные из ЕГРЮЛ на 23.10.2026',
+  },
+};
+
 const at = '2026-10-23T09:00:00Z';
 const draftStage: Schema['Stage'] = { index: 1, code: 'APPLICATION', title: 'Заявка', what_happens: 'Заявка сохранена как черновик.', what_to_do: 'Заполните и отправьте заявку.' };
 
