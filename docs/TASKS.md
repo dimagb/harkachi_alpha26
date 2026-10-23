@@ -28,7 +28,8 @@
 | B-04 | Вход, `/me`, продукты, калькулятор, профиль | Аня | 23.10 вечер (часть 1), после B-01 — часть 2 | нет | B-03 ✔, B-01 (часть 2) | слит (PR #6) |
 | B-05 | Заявка: создание и правка, автомат состояний, журнал, лента | Аня | 24.10 15:00 | нет | B-04 | слит (PR #10) |
 | B-06 | OTP, согласия, подача, просьба подписать | Аня | 24.10 вечер | нет | B-05 | слит (PR #12) |
-| B-07 | Worker: конвейер до решения, дозапрос | Аня | 24.10 вечер | нет | B-02, B-05, A-01 | [черновик] |
+| B-07a | Worker: очередь и конвейер до решения | Аня | 24.10 с 15:00 | нет | B-02 ✔, B-06 ✔ | [готова] |
+| B-07b | Конвейер для клиента: оферта, отказ, дозапрос; M1 на стенде | Аня | 24.10 вечер | нет | B-07a | [готова] |
 | A-03 | Сквозные тесты персонажей через API | Катя | 23.10 вечер / 24.10 | **да** | B-01 ✔ | слит (PR #9); прогон на стенде — M1/M2 |
 | F-02 | Тема из токенов дизайна | Лана | 24.10 11:00 | нет | F-01, токены | [готова] |
 | F-03 | Главная клиента, калькулятор, форма заявки | Лана | 24.10 | да | F-01 | [черновик] |
@@ -713,6 +714,151 @@ uv run --no-project --python 3.12 --with pytest --with httpx --with jsonschema p
 
 **Не делать:** не менять пороги, баллы и исходы; не трогать `decision_reference.py`.
 
+### B-07a — Worker: очередь и конвейер до решения · Аня · Облако: нет · ≤5 ч
+**Зачем.** Ядро вехи M1: поданная заявка сама проходит проверку, сбор сведений и оценку и доходит до оферты, отказа, дозапроса или андеррайтера. Каждый шаг виден в журнале, решение сохраняется с протоколом и снимком входов (F9–F13, F19).
+
+**Начинать после слияния B-02 и B-06** (обе уже в `main`).
+
+**Соглашения:**
+- состояние меняет только `transition`;
+- движок вызывается только через `app.decision`, его логику не дублировать;
+- в `application_event.reason_code` пишутся **только** коды из `reason_catalog` (`SF_*`, `LOW_SCORE`, `HIGH_LOAD`, `ADDITIONAL_CHECKS`): там стоит внешний ключ и CHECK. Правило проверки и причина маршрутизации идут в `payload` — `{"validation_rule": …}` или `{"route_reason": …}`, при этом `reason_code = NULL`.
+
+**Файлы:**
+- `backend/app/pipeline/*.py` (новые: `queue.py`, `steps.py`, `inputs.py`, `persist.py`);
+- `backend/app/worker.py` — главный цикл вместо заглушки;
+- `backend/app/integrations/bureau.py`, `backend/app/integrations/tax.py` (новые, по образцу `registry.py`: протокол, HTTP-реализация, фейк, `get_…_provider()`);
+- `backend/app/decision/engine.py`, `backend/app/decision/__init__.py` — **только** две публичные функции, которые использует и сам `decide`:
+  - `validation_rule(app: AppParams, turnover, answered_items, cfg) -> str | None`;
+  - `eligible_date(reg_date, cfg) -> date` — первая дата, когда возраст бизнеса проходит `SF_AGE`.
+
+  Логика не меняется, тесты движка проходят **без правок**;
+- `backend/app/models/process.py` и **одна новая** миграция — **только** колонки `decision.policy` (JSONB, nullable) и `decision.what_if` (JSONB, по умолчанию `[]`) и аннотация `decision.factors` → `list`; в том же PR — `docs/data-model.md`, строка `decision`: дописать `policy (json), what_if (json)` после `recommendation (json)`;
+- `backend/app/config.py` — **только** `pipeline_step_delay_sec: float = 2`, `source_retry_pause_sec: float = 1`, `info_due_days: int = 5`, `offer_valid_days: int = 30`;
+- `backend/tests/test_models_seed.py` — **только** новые колонки в ожиданиях, если тест их перечисляет;
+- тесты: `backend/tests/pipeline/*.py` (новые).
+
+**Читать:** `docs/state-machine.md` (таблица переходов), `docs/decision-model.md` §6a, `contracts/external-mocks.md`, `contracts/codes.md` («Пункты дозапроса», «Причины маршрутизации», «Типы событий журнала», «Служебные перечисления»), `contracts/api-types.ts` (`DecisionBank`, `ExternalCheckBank`), `contracts/personas.json` (`_meta.as_of`, `demo`), `backend/app/decision/`, `backend/app/integrations/registry.py`, `backend/app/signing/`, `backend/app/applications/state_machine.py`, `backend/app/models/`.
+
+**Сделать:**
+1. **Очередь** (`queue.py`):
+   - захват — `SELECT … FROM job WHERE status = 'PENDING' AND run_after <= now() ORDER BY run_after FOR UPDATE SKIP LOCKED LIMIT 1` → `RUNNING`, `attempts += 1`, коммит;
+   - шаг завершён → `DONE`; исключение → `FAILED`, `last_error` = класс и короткий текст без секретов, лог `ERROR`;
+   - при старте worker'а задачи в `RUNNING` старше 60 с возвращаются в `PENDING`;
+   - `run_once(session_factory, providers, today: Callable[[], date]) -> bool` — обработала ли задачу;
+   - `worker.py` крутит её в цикле: пауза 0,5 с, если задач нет; `today = date.today` с `TODO(lead): демо-часы B-10`; `HEARTBEAT_PATH` обновляется на **каждой** итерации и между попытками источников (проверка здоровья требует свежести < 15 с).
+2. **Транзакции.** Каждый `transition` в шаге — **отдельный коммит**: клиент должен увидеть промежуточные состояния. Перед каждым `transition` — `time.sleep(pipeline_step_delay_sec)` вне транзакции (в тестах 0). HTTP-запросы к источникам — вне транзакции, которая держит заявку. Повторный запуск шага продолжает с текущего состояния заявки; если она не в ожидаемом состоянии шага — задача `DONE` без изменений.
+3. **Шаг `VALIDATION`** (заявка в `SUBMITTED` или `VALIDATION`):
+   - если `SUBMITTED` → переход в `VALIDATION`;
+   - `validation_rule` по параметрам заявки, оборотам из `account_turnover` (12 месяцев по порядку) и `answered_items` — кодам пунктов всех отвеченных дозапросов с `source = SYSTEM`;
+   - правило сработало → `info_request(source=SYSTEM, items=[{item_code, question, requires_value}], due_at = сейчас + info_due_days)`: вопросы **дословно** из «Пунктов дозапроса», `requires_value = true` только у `REVENUE_CONFIRM`; `VALIDATION → INFO_REQUESTED`, `payload = {"validation_rule": …}`;
+   - иначе `VALIDATION → ENRICHMENT` и задача `ENRICHMENT`.
+4. **Шаг `ENRICHMENT`:** опрашиваются **все три** источника, даже если один отказал: ЕГРЮЛ (`EGRUL`), БКИ (`BKI`, `kind = FULL`, `consent_id` = id согласия `BKI`), ФНС (`FNS`).
+   - на каждый — строка `external_check` (`request`, `response`, `status`, `attempts`, `fetched_at`) и события `CHECK_REQUESTED`, затем `CHECK_RECEIVED` или `CHECK_FAILED`;
+   - до 3 попыток с паузой `source_retry_pause_sec`; 404 реестра — тоже неудача;
+   - хотя бы один источник не ответил → `decision(kind=AUTO, outcome=MANUAL, route_reason=SOURCE_UNAVAILABLE, grade/score = NULL, factors = [], rules_fired = [], inputs_snapshot = {"registry": …|null, "bki": …|null, "fns": …|null, "failed": [...]})`, `ENRICHMENT → MANUAL_REVIEW`, `payload = {"route_reason": "SOURCE_UNAVAILABLE"}`; задача — `DONE`;
+   - иначе `ENRICHMENT → ASSESSMENT` и задача `ASSESSMENT`.
+5. **Шаг `ASSESSMENT`:**
+   - `DecisionInputs` (`inputs.py`):
+     - компания — из ответа реестра + `mass_director`, `mass_address` из ФНС;
+     - `bki.summary`, налоги из ФНС, `risk_flag` компании, параметры заявки, обороты;
+     - `auto_decision_consent` = `granted` согласия `AUTO_DECISION` (строки нет → `False`; у ООО движок поле не учитывает);
+     - `answered_items`;
+     - `as_of = today()`; конфигурация — `DEFAULT_CONFIG`.
+   - `decide()` → `decision(kind=AUTO)` (`persist.py`):
+     - `outcome` — исход; при `MANUAL_REVIEW` → `MANUAL`;
+     - `route_reason`, `grade`, `score`;
+     - `factors = [asdict(f)]`, `rules_fired = [asdict(r)]`, `policy = asdict(policy) | None`, `what_if`;
+     - `internal_reasons = [r.code for r in rules_fired if r.effect == "STOP"]`;
+     - `client_reason_code`;
+     - `recommendation = {outcome, amount, term_months, rate}` (как в `DecisionBank`; без оферты — `amount`/`term_months`/`rate` = `null`; нет рекомендации — `null`);
+     - `config_version` — активная `decision_config`;
+     - `inputs_snapshot` = `asdict(inputs)`, даты — ISO, `answered_items` — отсортированный список.
+
+     Событие `DECISION_MADE`, `payload = {outcome, grade}`.
+   - `OFFER_ISSUED` → `offer(version=1, kind = APPROVED | COUNTER, product_code, amount, term_months, rate, monthly_payment, status=ACTIVE, expires_at = сейчас + offer_valid_days)`, `application.current_offer_id`, переход, событие `OFFER_ISSUED`;
+   - `DECLINED` → переход с `reason_code` = `client_reason_code` (он есть в каталоге: `ADDITIONAL_CHECKS`, а не `SF_ADDITIONAL`);
+   - `MANUAL_REVIEW` → переход, `payload = {"route_reason": …}`;
+   - `INFO_REQUESTED` на этом шаге → задача `FAILED` (проверка уже пройдена).
+
+**Приёмка:**
+- `cd backend && uv run pytest -q -rA` с `TEST_DATABASE_URL` — зелёный, 0 skipped; `git diff --stat origin/main -- backend/tests/decision backend/tests/test_otp.py backend/tests/test_submit.py` — пусто; миграция `downgrade -1 && upgrade head` проходит.
+- `tests/pipeline/`:
+  - без сети, фейковые провайдеры строятся из `personas.json`;
+  - `today` = `_meta.as_of` из `personas.json`;
+  - задачи гоняются `run_once` до пустой очереди.
+- **golden**, все 6 персонажей: создание и подача (функции B-06), конвейер → итог **ровно** `demo.expected` (ожидания из файла, руками не вписывать):
+  - `state`;
+  - `offer` (`amount`, `term_months`, `rate`, `monthly_payment`);
+  - `decision.client_reason_code`, `decision.internal_reasons[0]` = `reason_code` (для отказов);
+  - `grade`, `score`, `{f["code"]: f["points"]}` = `points`; `ptr_pct` не сверяется;
+  - `ooo_border`: `route_reason = GRADE_C`, `recommendation.outcome` и `amount`/`term_months`/`rate` = `demo.expected.recommendation`;
+  - `ooo_gap`: `INFO_REQUESTED`, пункт `REVENUE_CONFIRM`, `requires_value = true`, `payload.validation_rule = VAL_REVENUE_MISMATCH`. Дальше тест сам записывает ответ в `info_request` и ставит задачу `VALIDATION`, как сделает B-07b → итог `demo.expected.after_info`.
+- **Сбой:**
+  - фейковое БКИ падает 3 раза → `MANUAL_REVIEW`, `external_check(BKI).attempts = 3`, 3 события `CHECK_FAILED`, запрос к ФНС всё равно ушёл, `inputs_snapshot.failed = ["BKI"]`, `decision.outcome = MANUAL`, задача `DONE`;
+  - падает 2 раза, затем отвечает → конвейер идёт дальше.
+- **Конкуренция:** два потока с `threading.Barrier`. Поток A захватил задачу, его провайдер блокируется на `Event`, пока поток B вызывает `run_once` → B возвращает `False`. Переход в журнале один.
+- **Повтор и восстановление:**
+  - повторный запуск выполненной задачи (статус вручную возвращён в `PENDING`) — ни одного нового события;
+  - зависшая `RUNNING` старше 60 с при старте возвращается в `PENDING`.
+- **Журнал `ip_good`:**
+  - `STATE_CHANGED` по цепочке `SUBMITTED → VALIDATION → ENRICHMENT → ASSESSMENT → OFFER_ISSUED`, каждый переход — отдельный коммит (разные `created_at`);
+  - 3×`CHECK_REQUESTED`, 3×`CHECK_RECEIVED`, `DECISION_MADE`, `OFFER_ISSUED`;
+  - ни у одного события нет `reason_code` вне `reason_catalog`.
+- **HTTP-адаптеры** через `httpx.MockTransport`: БКИ отправляет `consent_id`; 403 и 503 → неудача попытки; 200 → разобранный ответ.
+- `ruff` чисто; `openapi.json` и `schema.d.ts` — без диффа; CI зелёный.
+
+**Не делать:** клиентский сериализатор, `info-response`, стенд — это B-07b; решение андеррайтера, оферта, подпись, выдача, истечения — B-08…B-10.
+
+### B-07b — Конвейер для клиента: оферта, причина отказа, дозапрос; проверка M1 на стенде · Аня · Облако: нет · ≤3 ч
+**Начинать после слияния B-07a.**
+
+**Файлы:**
+- `backend/app/applications/serializers.py` — **только** заполнение `offer`, `client_reason`, `info_request`;
+- `backend/app/api/routes.py` — **только** тело `POST /applications/{id}/info-response` и `Depends(...)`;
+- `backend/tests/test_contract_paths.py` — **только** +1 путь в `IMPLEMENTED`, `len` = 13;
+- тесты: `backend/tests/test_application_offer_view.py`, `backend/tests/test_info_response.py` (новые).
+
+**Читать:** `contracts/api-types.ts` (`OfferClient`, `ClientReason`, `InfoRequestClient`, `InfoResponseRequest`), `contracts/codes.md` («Клиентские тексты причин», «Пункты дозапроса»), `backend/app/pipeline/`, `backend/app/applications/serializers.py`, `backend/app/decision/__init__.py` (`eligible_date`).
+
+**Сделать:**
+1. **`offer`** — из `current_offer_id`:
+   - `explanation` — до 3 строк «<title> — <value>» для признаков из `decision.factors` с `points = max_points`, в порядке таблицы, без баллов;
+   - `requested` и `counter_reason` — только у `COUNTER`. Тексты: кредит — «Платёж по запрошенным условиям был бы слишком большим для текущих оборотов. Предлагаем условия, при которых платёж не превышает 30% среднемесячных поступлений на счёт»; овердрафт — «Лимит овердрафта ограничен 40% среднемесячных поступлений на счёт».
+2. **`client_reason`** при `DECLINED`:
+   - `code` = `decision.client_reason_code` (никогда `SF_ADDITIONAL`);
+   - `category`, `text`, `action` — из `reason_catalog`; `{date}` в `action` → `eligible_date` в формате `ДД.ММ.ГГГГ`;
+   - `retry_after` (ISO-дата): `SF_OVERDUE` — `decision.created_at` + 30 дней (не «сегодня»); `SF_AGE` — `eligible_date`; иначе `null`.
+3. **`info_request`** — последний дозапрос заявки без `responded_at`.
+4. **`POST /applications/{id}/info-response`** (`client_user`, своя заявка):
+   - не `INFO_REQUESTED` → 409;
+   - ответы ровно на все пункты открытого дозапроса, иначе 422 `details.fields.answers`;
+   - у `REVENUE_CONFIRM` нужен `value > 0`, иначе 422 `details.fields.value`;
+   - сохранить `response`, `responded_at`; `REVENUE_CONFIRM.value` → `application.declared_revenue_year`;
+   - `source = SYSTEM` → `INFO_REQUESTED → VALIDATION` (`actor_type = CLIENT`) + задача `VALIDATION`;
+   - `source = UNDERWRITER` → `INFO_REQUESTED → MANUAL_REVIEW`, `payload = {"route_reason": "INFO_RESPONSE"}`;
+   - ответ — `to_client`.
+
+**Приёмка:**
+- `pytest` с `TEST_DATABASE_URL` — зелёный, 0 skipped.
+- `test_application_offer_view.py`, конвейер из B-07a:
+  - `ip_good`: `offer` с числами `demo.expected`, `requested = null`;
+  - `ooo_load`: `COUNTER`, `requested` = `demo.app`, `counter_reason` — текст кредита дословно;
+  - `ip_bad`: `client_reason.code = SF_OVERDUE`, `retry_after` = дата решения + 30 дней;
+  - `ooo_aml`: `ADDITIONAL_CHECKS`, в сыром JSON нет `SF_ADDITIONAL`;
+  - `explanation` — 1–3 строки без цифр баллов.
+- `test_info_response.py`:
+  - `ooo_gap`: ответ из `demo.info_response` → `VALIDATION`, затем `run_once` → итог `after_info`;
+  - пропущенный пункт, `REVENUE_CONFIRM` без `value` или без `comment` → 422;
+  - повторный ответ → 409; не в `INFO_REQUESTED` → 409;
+  - дозапрос `source = UNDERWRITER` (тест создаёт строку сам) → `MANUAL_REVIEW` с `payload.route_reason = INFO_RESPONSE`.
+- **Стенд (веха M1):** `docker compose up -d --build --wait`, затем
+  ```
+  uv run --no-project --python 3.12 --with pytest --with httpx --with jsonschema python -X utf8 -m pytest -q -rA tests/e2e/api/test_personas.py -k test_persona
+  ```
+  Ожидание: все 6 проходят клиентскую часть (для `ooo_gap` — с дозапросом) и падают на шаге `bank` с `501` — экран андеррайтера делает B-08. Вывод и время прохождения `ip_good` — в PR.
+- `ruff` чисто; `openapi.json` и `schema.d.ts` — без диффа; CI зелёный.
+
 ### F-01 — Оболочка фронтенда · Лана · Облако: нет (ставит новые npm-пакеты, нужен скриншот) · ≤3 ч
 **Зачем.** Каркас всех экранов: вход тестовыми учётками, маршруты по ролям, единая обработка ошибок, работа без бэкенда на моках (MSW) до готовности API.
 **Файлы:** `frontend/src/**` (кроме `src/api/schema.d.ts` и `src/theme.ts`), `frontend/package.json`, `frontend/package-lock.json`, `frontend/public/mockServiceWorker.js`. Импорт из `../contracts` или `../../contracts` внутри `src/` **запрещён** (в Docker-сборке их нет). Данные персонажей для MSW копируются в `src/mocks/fixtures.ts`. Каталог продуктов в MSW (ответ на вопрос 23.10): `name`, `description`, `purposes`, `requires_guarantor_ooo` — из «Витрины продуктов» `contracts/codes.md`; границы — `EXPRESS` 300 000–5 000 000 ₽, 6–36 мес., `rate_from` 22.0; `WORKING_CAPITAL` 500 000–15 000 000 ₽, 3–24 мес., 21.0; `OVERDRAFT` 100 000–5 000 000 ₽, 12–12 мес., 24.0; `key_rate` 14.0, `key_rate_date` "2026-10-23". Пароль демо-учёток в MSW — `demo2026` (как `DEMO_PASSWORD` бэкенда).
@@ -748,12 +894,6 @@ uv run --no-project --python 3.12 --with pytest --with httpx --with jsonschema p
 
 ## Карточки [черновик] (тимлид уточнит перед стартом)
 
-- **B-07.**
-  - Worker с `SELECT … FOR UPDATE SKIP LOCKED`, идемпотентные шаги.
-  - Шаги: VALIDATION (через `decide()`) → ENRICHMENT (адаптеры `RegistryProvider` — уже есть из B-04, `BureauProvider`, `TaxProvider` — по его образцу в `app/integrations/`: HTTP к мокам и фейк для тестов; 3 повтора с паузой, затем `MANUAL_REVIEW` / `SOURCE_UNAVAILABLE`) → ASSESSMENT (`decide()`, запись `decision` с `inputs_snapshot`) → `OFFER_ISSUED` / `DECLINED` / `MANUAL_REVIEW` / `INFO_REQUESTED`.
-  - `info-response` возвращает заявку в VALIDATION.
-  - Демо-пауза 1–2 с на шаг.
-  - Веха M1.
 - **B-08.** Очередь (`QueueItem`, сортировка по ожиданию), `ApplicationBank` со всем протоколом, `POST /underwriting/{id}/decision` со всеми исходами; событие `UNDERWRITER_OVERRIDE` при расхождении с рекомендацией. Клиентская схема не содержит внутренних полей — тест сериализации для `ooo_aml`.
 - **B-09.** Принять или отклонить оферту (`offer_version`), подпись участников (`party`), SIGNED → DISBURSED с графиком платежей, отзыв, возражение ИП (≤30 дней после авто-отказа).
 - **B-10.** Планировщик истечений (`due_at`, `expires_at`), `POST /demo/time-shift`, `GET /bank/applications` (`Page`), загрузка `data/background.json` через тот же конвейер до `target_state`.
