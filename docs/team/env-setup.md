@@ -90,18 +90,13 @@ Codex Cloud входит в Plus. Задача выполняется на се�
 - **В облаке нет Docker и базы данных**, поэтому туда — только задачи с этой пометкой (без БД: модель решения, проверки, генератор, компоненты интерфейса).
 - Своим аккаунтом не делиться: задачу запускает только владелица аккаунта.
 
-## 7. MCP и скиллы для Codex (делать сейчас, 10 минут)
+## 7. MCP для Codex (делать сейчас, 5 минут; PowerShell, не внутри Codex)
 ```powershell
 codex mcp add context7 -- npx -y @upstash/context7-mcp          # всем: актуальная документация библиотек
 codex mcp add playwright npx "@playwright/mcp@latest"           # только Лане: посмотреть экран в браузере
-git clone https://github.com/obra/superpowers.git $HOME\.codex\superpowers
-New-Item -ItemType Directory -Force $HOME\.agents\skills | Out-Null
-foreach ($s in 'test-driven-development','systematic-debugging','verification-before-completion') {
-  Copy-Item -Recurse -Force "$HOME\.codex\superpowers\skills\$s" "$HOME\.agents\skills\$s"
-}
 codex mcp list                                                  # должен показать context7 (и playwright у Ланы)
 ```
-Ставим только эти три скилла из superpowers. Не ставим `using-superpowers` и остальные: они заставляют агента вызывать скиллы на каждом шаге и тратят лимит Plus. Других скиллов и плагинов не искать и не ставить. Скиллы `gh-fix-ci` и `gh-address-comments` по желанию: `$skill-installer gh-fix-ci` внутри Codex.
+Скиллы ставить не нужно: три скилла из superpowers (`test-driven-development`, `systematic-debugging`, `verification-before-completion`) уже лежат в репозитории в `.agents/skills/`, Codex берёт их сам — на ноутбуке и в облаке. Других скиллов и плагинов не искать и не ставить. Скиллы `gh-fix-ci` и `gh-address-comments` по желанию: `$skill-installer gh-fix-ci` внутри Codex.
 
 ## 8. Уведомления в Telegram (`.notify.env`)
 Человек создаёт бота и присылает каждой участнице токен и id чата личным сообщением, не в общий чат. В корне клона сначала исключить файл из git, затем создать его:
