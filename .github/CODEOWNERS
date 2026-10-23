@@ -1,0 +1,15 @@
+# Владельцы папок (D8). В приватном репозитории на бесплатном тарифе GitHub
+# обязательное ревью не включается — это соглашение, а не защита; сливает тимлид или человек.
+*                         @dimagb
+/backend/                 @manynya556 @svinokun @dimagb
+/frontend/                @svinokun @dimagb
+/mocks/                   @katelishka @dimagb
+/data/                    @katelishka @dimagb
+/tests/e2e/               @katelishka @dimagb
+/docs/test-scenarios.md   @katelishka @dimagb
+/docs/demo/               @katelishka @dimagb
+/contracts/               @dimagb
+/contracts/openapi.json   @dimagb @manynya556 @svinokun
+/.github/                 @dimagb
+/docker-compose.yml       @dimagb
+/AGENTS.md                @dimagb

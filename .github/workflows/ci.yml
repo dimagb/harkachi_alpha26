@@ -14,6 +14,19 @@ jobs:
     defaults:
       run:
         working-directory: backend
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: credit
+          POSTGRES_PASSWORD: credit
+          POSTGRES_DB: credit_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U credit -d credit_test"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      TEST_DATABASE_URL: postgresql+psycopg://credit:credit@localhost:5432/credit_test
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: astral-sh/setup-uv@94527f2e458b27549849d47d273a16bec83a01e9 # v7
