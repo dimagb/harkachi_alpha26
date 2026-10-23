@@ -434,7 +434,7 @@
 
 ### F-01 — Оболочка фронтенда · Лана · Облако: нет (ставит новые npm-пакеты, нужен скриншот) · ≤3 ч
 **Зачем.** Каркас всех экранов: вход тестовыми учётками, маршруты по ролям, единая обработка ошибок, работа без бэкенда на моках (MSW) до готовности API.
-**Файлы:** `frontend/src/**` (кроме `src/api/schema.d.ts` и `src/theme.ts`), `frontend/package.json`, `frontend/package-lock.json`, `frontend/public/mockServiceWorker.js`. Импорт из `../contracts` или `../../contracts` внутри `src/` **запрещён** (в Docker-сборке их нет). Данные персонажей для MSW копируются в `src/mocks/fixtures.ts`.
+**Файлы:** `frontend/src/**` (кроме `src/api/schema.d.ts` и `src/theme.ts`), `frontend/package.json`, `frontend/package-lock.json`, `frontend/public/mockServiceWorker.js`. Импорт из `../contracts` или `../../contracts` внутри `src/` **запрещён** (в Docker-сборке их нет). Данные персонажей для MSW копируются в `src/mocks/fixtures.ts`. Каталог продуктов в MSW (ответ на вопрос 23.10): `name`, `description`, `purposes`, `requires_guarantor_ooo` — из «Витрины продуктов» `contracts/codes.md`; границы — `EXPRESS` 300 000–5 000 000 ₽, 6–36 мес., `rate_from` 22.0; `WORKING_CAPITAL` 500 000–15 000 000 ₽, 3–24 мес., 21.0; `OVERDRAFT` 100 000–5 000 000 ₽, 12–12 мес., 24.0; `key_rate` 14.0, `key_rate_date` "2026-10-23". Пароль демо-учёток в MSW — `demo2026` (как `DEMO_PASSWORD` бэкенда).
 **Читать:** `docs/screens.md` (список экранов и маршрутов), `contracts/api-types.ts`: аутентификация, `ApiError`, `MeResponse`.
 
 **Сделать:**
