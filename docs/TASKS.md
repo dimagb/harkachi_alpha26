@@ -24,8 +24,8 @@
 | A-01 | Мок-сервис внешних источников | Катя | 23.10 после M0 | **да** | T-00 | слит (PR #4) |
 | B-03 | Модели БД, миграция, сиды | Аня (ведёт человек) | 23.10 ночь — 24.10 | нет | T-00 | слит (PR #3) |
 | F-01 | Оболочка фронтенда: вход, маршруты, роли, клиент API, MSW | Лана | 24.10 8:00 | нет | B-01 | [готова] |
-| B-04 | Вход, `/me`, продукты, калькулятор, профиль | Аня | 23.10 вечер (часть 1), после B-01 — часть 2 | нет | B-03 ✔, B-01 (часть 2) | идёт: часть 1 — draft PR #6, часть 2 разблокирована |
-| B-05 | Заявка: создание и правка, автомат состояний, журнал, лента | Аня | 24.10 15:00 | нет | B-04 | [черновик] |
+| B-04 | Вход, `/me`, продукты, калькулятор, профиль | Аня | 23.10 вечер (часть 1), после B-01 — часть 2 | нет | B-03 ✔, B-01 (часть 2) | слит (PR #6) |
+| B-05 | Заявка: создание и правка, автомат состояний, журнал, лента | Аня | 24.10 15:00 | нет | B-04 | [готова] |
 | B-06 | OTP, согласия, подача, просьба подписать | Аня | 24.10 вечер | нет | B-05 | [черновик] |
 | B-07 | Worker: конвейер до решения, дозапрос | Аня | 24.10 вечер | нет | B-02, B-05, A-01 | [черновик] |
 | A-03 | Golden-тесты через API | Катя | 24.10 15:00 | нет | B-01 | [черновик] |
@@ -432,6 +432,106 @@
 
 **Не делать:** не трогать `conftest.py`, модели, миграции, сиды и `contracts/`; не реализовывать другие эндпоинты; не добавлять повторы запросов к реестру; не хранить токены в БД; не логировать пароли и токены.
 
+### B-05 — Заявка: создание и правка, автомат состояний, журнал, лента · Аня · Облако: нет · ≤6 ч
+**Зачем.** Ядро процесса: заявка проходит только разрешённые переходы (F19, T10), каждый переход виден в журнале (аудит), клиент на каждом шаге понимает, что происходит и что от него нужно (лента — ключевой экран 1).
+
+**Порядок работы.** Два коммита в одном PR: сначала автомат и `test_state_machine.py`, затем API и сериализатор. Если к концу 4-го часа второй коммит не готов — запушить, открыть draft PR, `notify QUESTION B-05 "автомат готов, API в работе"` и продолжать. Ослаблять тесты ради времени нельзя.
+
+**Соглашение (с B-04):** пользователя в обработчик передавать только через зависимости `authenticated_user` / `client_user` из `app/api/routes.py`; свой способ не изобретать.
+
+**Файлы:**
+- `backend/app/applications/*.py` (`state_machine.py`, `service.py`, `serializers.py`);
+- `backend/app/api/routes.py` — **только** тела обработчиков `POST /applications`, `PATCH /applications/{id}`, `GET /applications`, `GET /applications/{id}` и параметры `Depends(...)`; что видно в OpenAPI, не менять;
+- `backend/app/schemas/api.py` — **только** удалить `model_validator` `require_other_purpose` из `ApplicationCreate` и `ApplicationPatch`: проверка переезжает в сервис (п. 2–3), в OpenAPI валидаторы не видны;
+- `backend/tests/test_schemas_validation.py` — **только** случай `({"purpose": "OTHER"}, "request")`: перенести в `test_applications_api.py` как API-тест с ожиданием `details.fields.purpose_text`;
+- `backend/app/catalog/calculator.py` — **только** вынести проверку границ продукта в функцию `validate_terms(session, product_code, amount, term_months)`, возвращающую строку `Product` (модель `app.models.Product`, в B-04 импортирована как `ProductRow`); тексты ошибок те же, `calculate` вызывает её;
+- `backend/tests/test_contract_paths.py` — **только** добавить 4 пути в константу `IMPLEMENTED` и обновить `len(...)` на 9;
+- попутно, замечания ревью B-04: `backend/app/auth/tokens.py` и `backend/app/integrations/registry.py` — `get_settings()` вместо `Settings()`; `backend/app/auth/service.py` — при неизвестном логине вызывать `verify_password(password, DUMMY_HASH)` (одинаковое время ответа); `backend/tests/test_access_matrix.py` — чужая компания = компания конкретного другого персонажа по ИНН + тест, что тело 404 для чужой и несуществующей компании одинаково;
+- тесты: `backend/tests/test_state_machine.py`, `backend/tests/test_applications_api.py`, `backend/tests/test_application_view.py` (новые).
+
+**Читать:** `docs/state-machine.md` целиком, `contracts/codes.md` (разделы «Этапы ленты», «Лента и действия по состояниям», «Действия клиента», «Типы событий журнала», «Служебные перечисления»), `contracts/api-types.ts` (`ApplicationCreate`, `ApplicationPatch`, `ApplicationClient`, `ApplicationListItem`, `Stage`, `TimelineItem`, `PartyClient`), `contracts/api.md` (строки `/applications`), `backend/app/models/process.py`, `backend/app/auth/deps.py`, `backend/app/catalog/`, `backend/app/api/routes.py`.
+
+**Главное правило:** переходы, тексты ленты и правила действий — **константы в коде**. `backend/app/` во время работы не читает `docs/` и `contracts/`: в Docker этих папок нет. Тесты сверяют константы с документами.
+
+**Сделать:**
+1. **Автомат** (`state_machine.py`). Единица данных — тройка `(из, в, actor_type)`, дубликаты схлопываются (например, `OFFER_ISSUED → WITHDRAWN` встречается дважды). Тройки — ровно по «Таблице переходов» `state-machine.md`.
+
+   Раскрытие ячеек «Из» и «В»: делить по `/` и `,`. `* до SIGNED` — это `DRAFT`, `SUBMITTED`, `VALIDATION`, `INFO_REQUESTED`, `ENRICHMENT`, `ASSESSMENT`, `MANUAL_REVIEW`, `OFFER_ISSUED`, `SIGNING`.
+
+   «Кто» → `actor_type`:
+   - система, планировщик → `SYSTEM`;
+   - клиент, подписант, клиент-ИП → `CLIENT`;
+   - андеррайтер → `UNDERWRITER`;
+   - «подписант (+ поручитель)» → две тройки: `CLIENT` и `GUARANTOR`.
+
+   Функция `transition(session, application, to_state, *, actor_type, actor_id, reason_code=None, payload=None)`:
+   - тройки нет → `ApiErrorException(409, INVALID_TRANSITION, "Действие недоступно в текущем состоянии заявки")`, в БД ничего не пишется;
+   - иначе меняет `state`, пишет `application_event(event_type="STATE_CHANGED", from_state, to_state, actor_type, actor_id, reason_code, payload)`.
+
+   Коммит делает вызывающий. Менять `application.state` вне `state_machine.py` нельзя никаким способом.
+2. **Создание** (`service.py`, `POST /applications`, `client_user`):
+   - `company_id` не UUID → 404 «Компания не найдена» (не 500);
+   - `member_company` → 404 для чужой;
+   - границы — `validate_terms` (422 с текстами калькулятора);
+   - `purpose` вне `purposes` продукта по `PRODUCT_CATALOG` из `app/catalog/products.py` (не дублировать) → 422 `details.fields.purpose = "Эта цель недоступна для выбранного продукта"`;
+   - `purpose = OTHER` без `purpose_text` → 422 `details.fields.purpose_text = "Укажите цель кредита"`;
+   - `created_by` = пользователь, `state = DRAFT`, событие `STATE_CHANGED` с `from_state = NULL`, `to_state = DRAFT`, `actor_type = CLIENT`; ответ `ApplicationClient`, код 200.
+
+   Ограничения «одна активная заявка на компанию» нет.
+3. **Правка** (`PATCH /applications/{id}`, `client_user`, `If-Match` — номер версии). Порядок проверок:
+   1. заявки нет или пользователь не член её компании → 404 «Заявка не найдена»;
+   2. `If-Match` ≠ `version` → 409 `CONFLICT_VERSION` «Заявку изменили в другом окне — обновите страницу»;
+   3. не `DRAFT` → 409 `INVALID_TRANSITION`;
+   4. слияние: `patch.model_dump(exclude_unset=True)` поверх текущих полей; явный `null` в `purpose_text` стирает текст; при смене `purpose` с `OTHER` на другую цель `purpose_text` обнуляется;
+   5. полная проверка итоговой заявки как при создании → 422;
+   6. `session.flush()` внутри `try`: `StaleDataError` (гонка двух запросов с одной версией) → тот же 409 `CONFLICT_VERSION`.
+
+   Событий правка не пишет; `version` растёт на 1.
+4. **Чтение:**
+   - `GET /applications/{id}` — 404 для чужой заявки;
+   - `GET /applications?company_id=` — `member_company`, затем `ApplicationListItem[]`, сортировка `created_at DESC, number DESC`.
+5. **Сериализация** (`serializers.py`): `to_client(session, application, user) -> ApplicationClient` и `to_list_item(...)`.
+   - `stage`, `timeline`, `allowed_actions` — строго по разделу «Лента и действия по состояниям» `codes.md`, включая поправки;
+   - `parties` — из `party`: `signed = status == "SIGNED"`, `is_me = user_id == user.id`;
+   - `offer`, `client_reason`, `info_request`, `objection` — `null` с `TODO(lead): заполнить в B-07/B-09`;
+   - `OBJECT` в B-05 не выдаётся никогда (тот же TODO).
+
+   Внутренних полей (`decision`, баллы, `risk_flag`) сериализатор не читает.
+
+**Приёмка:**
+- `cd backend && uv run pytest -q -rA` с `TEST_DATABASE_URL` — зелёный, 0 skipped. Фикстуры — как в тестах B-04, `conftest.py` не менять.
+- `test_state_machine.py`:
+  - тест разбирает «Таблицу переходов» `docs/state-machine.md` по правилам п. 1 и сравнивает множество троек с константой модуля — равны. Нераспознанная ячейка («Из», «В» или «Кто») → тест **падает**, а не пропускает строку;
+  - параметризованный тест: 14 × 14 пар состояний (включая `X → X`) × 4 `actor_type` → успех тогда и только тогда, когда тройка есть в таблице; при отказе — 409 и ни одной новой строки в `application_event`. Исходное состояние тест выставляет прямо в фикстуре;
+  - успешный переход пишет одно событие со всеми полями;
+  - статическая проверка через `ast` по `backend/app/` вне `state_machine.py`: нет присваивания атрибуту `state`, `setattr(..., "state", ...)`, ключа `state=` в вызовах `.values(` / `update(`;
+  - grep: в `backend/app/` нет строк `"docs/"` и `"contracts/"` (кроме `config.py` — `contracts_dir` для сидов).
+- `test_applications_api.py`:
+  - каждый персонаж создаёт заявку с `demo.app` из `personas.json` → 200, `DRAFT`, `number ≥ 1001`, `version = 1`, одно событие;
+  - чужая компания и `company_id = "abc"` → 404;
+  - `amount = min − 1` → 422 с текстом калькулятора;
+  - `WORKING_CAPITAL` + `EQUIPMENT` → 422 `purpose`;
+  - `OTHER` без текста → 422 `purpose_text` (POST и PATCH);
+  - PATCH `{"purpose": "OTHER"}` при уже сохранённом `purpose_text` → 200;
+  - PATCH с верной версией → 200, `version = 2`; со старой → 409 `CONFLICT_VERSION`; без `If-Match` → 422; не в `DRAFT` → 409 `INVALID_TRANSITION`; смена продукта, при которой сумма вне границ → 422;
+  - список: две заявки, тест явно проставляет им разные `created_at` (UPDATE в тесте) → новая первой; чужая компания → 404;
+  - `UNDERWRITER` на всех 4 путях → 403.
+- `test_application_view.py` — для **каждого** из 14 состояний (цепочка разрешённых `transition`):
+  - `stage.index`, `what_happens`, `what_to_do`, статусы 6 этапов и `allowed_actions` — как в таблице `codes.md`. Тест разбирает таблицу; из ячейки действий берутся только коды раздела «Действия клиента»; ожидание = разобранный список минус `OBJECT`;
+  - условия и поправки — отдельными случаями:
+    - `DRAFT` для `ooo_load` (`SUBMIT`) и `ooo_load_accountant` (`REQUEST_SIGNATURE`, статус `current`, «Ждём решения подписанта компании»), затем `awaiting_signature = true` (флаг ставит тест) → `REQUEST_SIGNATURE` пропал;
+    - `OFFER_ISSUED` для тех же двух пользователей;
+    - `SIGNING`: тест вставляет `party(status=PENDING, user_id=я)` → `SIGN` есть; `party(SIGNED)` или чужой → `SIGN` нет, «Ждём подписи остальных участников»;
+    - `WITHDRAWN` с `reason_code = CLIENT_REJECTED_OFFER` → «Вы отказались от предложения»;
+  - `WITHDRAWN` из `ENRICHMENT`: `stage.index = 2`, этап 2 `cancelled`, этап 1 `done`, этапы 3–6 `pending`;
+  - `at`: тест после цепочки явно проставляет событиям **разные** `created_at` и проверяет, что `at` текущего этапа = первое событие входа в этап (не последнее), а `at` у `cancelled` = последнее событие.
+- `uv run ruff check . && uv run ruff format --check .` — зелёный.
+- `git diff --exit-code contracts/openapi.json frontend/src/api/schema.d.ts` после пересборки — пусто.
+- Вручную на стенде: вход `ip_good` → `POST /api/v1/applications` с `demo.app` → `GET /api/v1/applications/{id}` → вывод в PR.
+- CI зелёный.
+
+**Не делать:** не реализовывать submit, OTP, согласия, worker, оферту, отзыв (`withdraw` — B-09), возражение; не менять `conftest.py`, модели, миграции, `contracts/`; не отдавать внутренние поля.
+
 ### F-01 — Оболочка фронтенда · Лана · Облако: нет (ставит новые npm-пакеты, нужен скриншот) · ≤3 ч
 **Зачем.** Каркас всех экранов: вход тестовыми учётками, маршруты по ролям, единая обработка ошибок, работа без бэкенда на моках (MSW) до готовности API.
 **Файлы:** `frontend/src/**` (кроме `src/api/schema.d.ts` и `src/theme.ts`), `frontend/package.json`, `frontend/package-lock.json`, `frontend/public/mockServiceWorker.js`. Импорт из `../contracts` или `../../contracts` внутри `src/` **запрещён** (в Docker-сборке их нет). Данные персонажей для MSW копируются в `src/mocks/fixtures.ts`. Каталог продуктов в MSW (ответ на вопрос 23.10): `name`, `description`, `purposes`, `requires_guarantor_ooo` — из «Витрины продуктов» `contracts/codes.md`; границы — `EXPRESS` 300 000–5 000 000 ₽, 6–36 мес., `rate_from` 22.0; `WORKING_CAPITAL` 500 000–15 000 000 ₽, 3–24 мес., 21.0; `OVERDRAFT` 100 000–5 000 000 ₽, 12–12 мес., 24.0; `key_rate` 14.0, `key_rate_date` "2026-10-23". Пароль демо-учёток в MSW — `demo2026` (как `DEMO_PASSWORD` бэкенда).
@@ -467,12 +567,6 @@
 
 ## Карточки [черновик] (тимлид уточнит перед стартом)
 
-- **B-05.**
-  - Модуль `applications/state_machine.py`: таблица переходов из `state-machine.md` как данные. Недопустимый переход → 409 `INVALID_TRANSITION`; каждый переход пишет событие в `application_event`.
-  - Вычисление `stage`, `timeline` и `allowed_actions` по `codes.md`.
-  - POST, PATCH (`If-Match`, иначе 409 `CONFLICT_VERSION`), GET, список.
-  - Границы продукта → 422.
-  - Тест: каждая пара «состояние × событие» из таблицы.
 - **B-06.**
   - OTP: 6 цифр, 5 минут, `demo_code` в ответе только при `DEMO_MODE`.
   - Согласия с `doc_hash` SHA-256.

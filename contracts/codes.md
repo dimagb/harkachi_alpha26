@@ -16,6 +16,42 @@
 | 6 | `DISBURSEMENT` | Выдача | DISBURSED |
 `timeline[].status`: `done` / `current` / `action_required` (ждём клиента) / `pending` / `failed` (отказ) / `cancelled` (отзыв, истечение).
 
+## Лента и действия по состояниям (`stage`, `timeline`, `allowed_actions`)
+Источник для сериализации `ApplicationClient` и `ApplicationListItem`. Тексты — дословно. Флаги `can_sign` берутся из `company_member` текущего пользователя в компании заявки.
+
+| state | stage.index | what_happens | what_to_do | статус текущего этапа | allowed_actions (в этом порядке, если условие выполнено) |
+| --- | --- | --- | --- | --- | --- |
+| `DRAFT` | 1 | Заявка ещё не отправлена в банк | Проверьте параметры заявки, подпишите согласия и отправьте её | `action_required` | `EDIT_DRAFT`; `SUBMIT` — если `can_sign`; `REQUEST_SIGNATURE` — если нет `can_sign` и `awaiting_signature = false`; `WITHDRAW` |
+| `SUBMITTED` | 1 | Заявка отправлена, скоро начнём проверку | — | `current` | `WITHDRAW` — если `can_sign` |
+| `VALIDATION` | 2 | Проверяем данные заявки | — | `current` | `WITHDRAW` — если `can_sign` |
+| `ENRICHMENT` | 2 | Запрашиваем сведения о компании в реестре, бюро кредитных историй и налоговой | — | `current` | `WITHDRAW` — если `can_sign` |
+| `INFO_REQUESTED` | 2 | Нужно уточнить данные заявки | Ответьте на вопросы банка до указанного срока | `action_required` | `ANSWER_INFO_REQUEST`; `WITHDRAW` — если `can_sign` |
+| `ASSESSMENT` | 3 | Оцениваем заявку | — | `current` | `WITHDRAW` — если `can_sign` |
+| `MANUAL_REVIEW` | 3 | Заявку рассматривает специалист банка — обычно до 1 рабочего дня | — | `current` | `WITHDRAW` — если `can_sign` |
+| `OFFER_ISSUED` | 4 | Предложение готово | Примите предложение или откажитесь от него до указанного срока | `action_required` | `ACCEPT_OFFER` — если `can_sign`; `REJECT_OFFER` — если `can_sign`; `WITHDRAW` — если `can_sign` |
+| `DECLINED` | 4 | Банк не может одобрить заявку | Посмотрите причину и что можно сделать | `failed` | `OBJECT` — условия добавляет B-09; `NEW_APPLICATION` |
+| `SIGNING` | 5 | Готовим договор к подписанию | Подпишите договор кодом подтверждения | `action_required` | `SIGN` — если есть `party` со `status = PENDING` и `user_id` = текущий пользователь; `WITHDRAW` — если `can_sign` |
+| `SIGNED` | 5 | Договор подписан, готовим выдачу | — | `current` | — |
+| `DISBURSED` | 6 | Деньги зачислены на счёт | — | `done` | `NEW_APPLICATION` |
+| `WITHDRAWN` | этап, на котором заявку отозвали | Заявка отозвана | Можно подать новую заявку | `cancelled` | `NEW_APPLICATION` |
+| `EXPIRED` | этап, на котором истёк срок | Срок заявки истёк | Можно подать новую заявку | `cancelled` | `NEW_APPLICATION` |
+
+**Поправки к таблице (применяются после неё, по порядку):**
+1. `DRAFT`, `OFFER_ISSUED`: у пользователя нет `can_sign` → статус `current`, `what_to_do` = «Ждём решения подписанта компании».
+2. `SIGNING`: нет `SIGN` в `allowed_actions` → статус `current`, `what_to_do` = «Ждём подписи остальных участников».
+3. `WITHDRAWN`: `reason_code` последнего события `STATE_CHANGED` = `CLIENT_REJECTED_OFFER` → `what_happens` = «Вы отказались от предложения».
+
+`what_to_do = —` отдаётся как `null`. `stage.code` и `stage.title` — из таблицы «Этапы ленты». Для `WITHDRAWN` и `EXPIRED` этап = этап `from_state` последнего события `STATE_CHANGED`.
+
+**`timeline`** — всегда 6 элементов в порядке этапов:
+- этапы до текущего — `done`;
+- текущий — статус по таблице и поправкам;
+- после текущего — `pending`, `at = null`.
+
+`at`:
+- у `done` и у текущего этапа = `created_at` **первого** события `STATE_CHANGED`, у которого `to_state` относится к этому этапу (для этапа 1 это событие создания);
+- у `cancelled` = `created_at` последнего события (отзыв или истечение).
+
 ## Продукты, цели
 Продукты: `EXPRESS`, `WORKING_CAPITAL`, `OVERDRAFT`. Цели (`purpose`): `WORKING_CAPITAL` (оборотные средства), `CASH_GAP` (кассовый разрыв), `EQUIPMENT` (оборудование и развитие), `OTHER` (нужен `purpose_text`).
 
