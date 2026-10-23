@@ -340,6 +340,14 @@ def test_bureau_retry_and_other_sources_still_run(
         assert all(e.payload["source"] == "BKI" for e in failed)
         if failures == 3:
             assert session.get(Application, application_id).state == "MANUAL_REVIEW"
+            event = session.scalar(
+                select(ApplicationEvent).where(
+                    ApplicationEvent.application_id == application_id,
+                    ApplicationEvent.event_type == "STATE_CHANGED",
+                    ApplicationEvent.to_state == "MANUAL_REVIEW",
+                )
+            )
+            assert event.payload == {"route_reason": "SOURCE_UNAVAILABLE"}
             decision = session.scalar(select(Decision))
             assert (
                 decision.outcome == "MANUAL"

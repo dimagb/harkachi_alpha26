@@ -20,6 +20,7 @@ from app.pipeline.inputs import (
     answered_items,
     app_params,
     build_inputs,
+    current_checks,
     source_responses,
     turnover,
 )
@@ -136,11 +137,8 @@ def _check_source(
         company = session.get(Company, application.company_id)
         inn = company.inn
         check = session.scalar(
-            select(ExternalCheck)
-            .where(
-                ExternalCheck.application_id == application_id,
-                ExternalCheck.source == source,
-            )
+            current_checks(application_id)
+            .where(ExternalCheck.source == source)
             .order_by(ExternalCheck.created_at.desc())
             .limit(1)
         )

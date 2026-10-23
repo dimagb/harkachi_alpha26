@@ -1,8 +1,9 @@
 """Build immutable decision inputs from the stored source responses."""
 
 from datetime import date
+from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import Select, func, select
 from sqlalchemy.orm import Session
 
 from app.decision import DecisionInputs
@@ -16,6 +17,7 @@ from app.decision.models import (
 from app.models import (
     AccountTurnover,
     Application,
+    ApplicationEvent,
     Consent,
     ExternalCheck,
     InfoRequest,
@@ -40,13 +42,17 @@ def app_params(application: Application) -> AppParams:
 
 
 def turnover(session: Session, application: Application) -> tuple[int, ...]:
-    return tuple(
+    amounts = tuple(
         session.scalars(
             select(AccountTurnover.credit_turnover)
             .where(AccountTurnover.company_id == application.company_id)
-            .order_by(AccountTurnover.month)
+            .order_by(AccountTurnover.month.desc())
+            .limit(12)
         )
     )
+    if not amounts:
+        raise ValueError("Нет данных об оборотах компании за последние 12 месяцев")
+    return amounts[::-1]
 
 
 def answered_items(session: Session, application: Application) -> frozenset[str]:
@@ -62,13 +68,27 @@ def answered_items(session: Session, application: Application) -> frozenset[str]
     )
 
 
+def current_checks(application_id: UUID) -> Select[tuple[ExternalCheck]]:
+    started_at = (
+        select(func.max(ApplicationEvent.created_at))
+        .where(
+            ApplicationEvent.application_id == application_id,
+            ApplicationEvent.event_type == "STATE_CHANGED",
+            ApplicationEvent.to_state == "ENRICHMENT",
+        )
+        .scalar_subquery()
+    )
+    return select(ExternalCheck).where(
+        ExternalCheck.application_id == application_id,
+        ExternalCheck.created_at > started_at,
+    )
+
+
 def source_responses(
     session: Session, application: Application
 ) -> dict[str, dict[str, object] | None]:
     checks = session.scalars(
-        select(ExternalCheck)
-        .where(ExternalCheck.application_id == application.id)
-        .order_by(ExternalCheck.created_at)
+        current_checks(application.id).order_by(ExternalCheck.created_at)
     )
     responses = {"EGRUL": None, "BKI": None, "FNS": None}
     for check in checks:
