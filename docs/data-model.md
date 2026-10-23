@@ -22,7 +22,7 @@
 | `consent` | application_id, party_id, type (`PDN`/`BKI`/`AUTO_DECISION`), granted, signed_at, expires_at, doc_hash | Согласия (F14; БКИ — 1 год для МСП) |
 | `info_request` | application_id, source (`SYSTEM`/`UNDERWRITER`), items (json), due_at, response (json), responded_at | Дозапрос (F9) |
 | `external_check` | application_id, source (`BKI`/`EGRUL`/`FNS`), request, response, status, attempts, fetched_at | Обогащение (F10) |
-| `decision` | application_id, kind (`AUTO`/`MANUAL`), outcome (`APPROVE`/`COUNTER`/`DECLINE`/`MANUAL`/`REQUEST_INFO`), route_reason, grade, score, factors (json), rules_fired (json), internal_reasons (json), client_reason_code, recommendation (json), config_version, **inputs_snapshot** (json), made_by, comment | Решение со снимком входов (F11, F12, аудит) |
+| `decision` | application_id, kind (`AUTO`/`MANUAL`), outcome (`APPROVE`/`COUNTER`/`DECLINE`/`MANUAL`/`REQUEST_INFO`), route_reason, grade, score, factors (json), rules_fired (json), internal_reasons (json), client_reason_code, recommendation (json), policy (json), what_if (json), config_version, **inputs_snapshot** (json), made_by, comment | Решение со снимком входов (F11, F12, аудит) |
 | `offer` | application_id, **version**, kind (`APPROVED`/`COUNTER`), product_code, amount, term_months, rate, monthly_payment, status (`ACTIVE`/`ACCEPTED`/`REJECTED`/`EXPIRED`/`SUPERSEDED`), expires_at | Версии оферты (F13) |
 | `signature` | application_id, party_id, object_type (`CONSENT`/`OFFER`/`GUARANTEE`), object_id, doc_hash, otp_verified_at | Простая подпись кодом (F14) |
 | `disbursement` | application_id, amount, disbursed_at, schedule (json) | Смоделированная выдача (F15) |

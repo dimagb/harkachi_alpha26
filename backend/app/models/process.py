@@ -135,13 +135,17 @@ class Decision(Record, Base):
     route_reason: Mapped[str | None] = mapped_column(String(30))
     grade: Mapped[str | None] = mapped_column(String(1))
     score: Mapped[int | None]
-    factors: Mapped[dict[str, object]] = mapped_column(JSONB)
+    factors: Mapped[list[object]] = mapped_column(JSONB)
     rules_fired: Mapped[list[object]] = mapped_column(JSONB)
     internal_reasons: Mapped[list[object]] = mapped_column(JSONB)
     client_reason_code: Mapped[str | None] = mapped_column(
         ForeignKey("reason_catalog.code")
     )
     recommendation: Mapped[dict[str, object] | None] = mapped_column(JSONB)
+    policy: Mapped[dict[str, object] | None] = mapped_column(JSONB)
+    what_if: Mapped[list[object]] = mapped_column(
+        JSONB, default=list, server_default="[]"
+    )
     config_version: Mapped[int] = mapped_column(ForeignKey("decision_config.version"))
     inputs_snapshot: Mapped[dict[str, object]] = mapped_column(JSONB)
     made_by: Mapped[UUID | None] = mapped_column(ForeignKey("user.id"))
