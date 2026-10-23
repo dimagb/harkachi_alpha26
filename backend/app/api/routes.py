@@ -252,8 +252,79 @@ def submit(
     summary="Ответить на запрос сведений",
     responses=errors(401, 403, 404, 409, 422, 501),
 )
-def info_response(id: UUID, body: s.InfoResponseRequest):
-    not_implemented()
+def info_response(
+    id: UUID,
+    body: s.InfoResponseRequest,
+    user: Annotated[User, Depends(client_user)],
+    session: Annotated[Session, Depends(get_session)],
+):
+    from datetime import UTC, datetime
+
+    from sqlalchemy import select
+
+    from app.applications.serializers import to_client
+    from app.applications.state_machine import transition
+    from app.models import InfoRequest, Job
+    from app.signing.otp import locked_application, require_state
+
+    application = locked_application(session, id, user)
+    require_state(application, "INFO_REQUESTED")
+    info = session.scalar(
+        select(InfoRequest)
+        .where(
+            InfoRequest.application_id == application.id,
+            InfoRequest.responded_at.is_(None),
+        )
+        .order_by(InfoRequest.created_at.desc(), InfoRequest.id.desc())
+        .limit(1)
+        .with_for_update()
+    )
+    codes = [answer.item_code for answer in body.answers]
+    if (
+        info is None
+        or len(codes) != len(info.items)
+        or len(set(codes)) != len(codes)
+        or set(codes) != {item["item_code"] for item in info.items}
+    ):
+        raise ApiErrorException(
+            422,
+            ErrorCode.VALIDATION_ERROR,
+            "Ответьте на все вопросы банка",
+            {"fields": {"answers": "Нужен один ответ на каждый пункт запроса"}},
+        )
+    for answer in body.answers:
+        if answer.item_code == "REVENUE_CONFIRM":
+            if answer.value is None or answer.value <= 0:
+                raise ApiErrorException(
+                    422,
+                    ErrorCode.VALIDATION_ERROR,
+                    "Укажите выручку больше нуля",
+                    {"fields": {"value": "Выручка должна быть больше нуля"}},
+                )
+            application.declared_revenue_year = answer.value
+    now = datetime.now(UTC)
+    info.response = body.model_dump(mode="json", exclude_unset=True)["answers"]
+    info.responded_at = now
+    transition(
+        session,
+        application,
+        "VALIDATION" if info.source == "SYSTEM" else "MANUAL_REVIEW",
+        actor_type="CLIENT",
+        actor_id=user.id,
+        payload=None if info.source == "SYSTEM" else {"route_reason": "INFO_RESPONSE"},
+    )
+    if info.source == "SYSTEM":
+        session.add(
+            Job(
+                application_id=application.id,
+                step="VALIDATION",
+                status="PENDING",
+                attempts=0,
+                run_after=now,
+            )
+        )
+    session.commit()
+    return to_client(session, application, user)
 
 
 @router.post(
