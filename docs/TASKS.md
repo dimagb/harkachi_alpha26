@@ -1049,7 +1049,7 @@ uv run --no-project --python 3.12 --with pytest --with httpx --with jsonschema p
 
 **Не делать:** не трогать `eligible_date` и конфигурацию движка, `routes.py`, конвейер, контракты; не менять тексты `reason_catalog`.
 
-### F-04b — Доводка карточки заявки и оболочки до макета · Лана · Облако: нет (нужны скриншоты) · ≤2 ч
+### F-04b — Доводка карточки заявки и оболочки до макета · Лана · Облако: нет (нужны скриншоты) · ≤3 ч
 **Зачем.** Карточка заявки — главный экран для жюри, а её части (лента, бейдж, панель, плитки) переиспользуют F-05…F-07. Сейчас они заметно расходятся с макетом: коричневый вместо жёлтого, значки не по центру, съехавшие подписи. Чиним один раз, до F-05.
 
 **Эталон:** `docs/design/screens/decision.html` (лента, бейдж, панель — уже с графитовым текущим этапом) и `docs/design/screens/application-card.html` (состояние 1b — всё остальное). Смотреть через `python -m http.server 8090 --bind 127.0.0.1 --directory docs/design/screens`. Размеры и цвета — **только** из `theme.ts` (`theme.other.stage`: `node 24px`, `line 2px`, `halo 4px`) и `styles/tokens.css` (`--cc-*`); шестнадцатеричные цвета в компоненты не переносить.
@@ -1057,6 +1057,7 @@ uv run --no-project --python 3.12 --with pytest --with httpx --with jsonschema p
 **Файлы:** `frontend/src/App.tsx` (только `Shell`), `frontend/src/screens/ApplicationCard.tsx`, `frontend/src/screens/application/*.tsx`, `frontend/src/ui/status.ts`, `frontend/src/ui/labels.ts`, тесты этих файлов (`ApplicationCard.test.tsx`, `status.test.ts`, `App.test.tsx` — только ожидания, затронутые правками).
 
 **Сделать (каждый пункт — сверить с макетом при 1440 и 375 px):**
+0. **Метод — перенос, а не «похоже».** У каждого элемента макета в HTML есть inline-стили (`font-size`, `font-weight`, `letter-spacing`, `padding`, `gap`, `border-radius`, размеры). Для каждого элемента экрана открой в DevTools элемент макета и свой элемент и приведи вычисленные значения к макетным: кегли — из `theme.fontSizes` и `theme.other` (крупная сумма — `displaySize`: 40/48, 600, `letter-spacing -0.02em`), отступы — из `--cc-space-*`, радиусы — `--cc-radius-*`. Своих чисел «на глаз» нет. **Шрифт:** в DevTools → Computed → Rendered Fonts у текста и у цифр должен быть `Onest` (не `Segoe UI`/`system-ui`); `document.fonts.check('600 16px Onest')` = `true` в собранной версии (`npm run build && npm run preview`) и на стенде `:8080`. Если нет — найти причину и исправить (импорт `@fontsource/onest`, имя семейства).
 1. **Оттенки «нужно действие»** — как в макете, не `wait.6`:
    - узел ленты `action_required`: фон `wait.4` (`--cc-wait-marker`), «!» цветом `gray.9`, 600;
    - бейдж: светлый — фон `wait.0` (`--cc-wait-bg`), рамка 1 px `wait.2` (`--cc-wait-border`), текст `wait.7` (`--cc-wait-text`), слева точка 6 px `wait.4`; без заливки сплошным цветом;
@@ -1075,6 +1076,7 @@ uv run --no-project --python 3.12 --with pytest --with httpx --with jsonschema p
 - `npm run lint && npm run typecheck && npm test && npm run build` — зелёный; CI зелёный.
 - Тесты: ставка `22 %` и `21,5 %`; бейдж `action_required` не залит сплошным цветом (класс или стиль варианта `light`); фразы истории для 3 состояний; навигация в левой колонке на десктопе ведёт на `/app` и `/app/applications/new`.
 - Нет шестнадцатеричных цветов вне `theme.ts`, `styles/tokens.css`, `theme.test.ts`; нет `eslint-disable`, `ts-ignore`, `any`.
+- В PR — **таблица сверки** не меньше 15 строк: «элемент → свойство → в макете → у нас» (шапка, бейдж, узел, линия, подписи этапов, панель, кнопка, плитка, строка деталей, строка истории; кегль, вес, межбуквенный, отступы, радиус, цвет); все значения совпадают. Строка «Rendered Fonts: Onest» для текста и цифр.
 - **Скриншоты в PR парами «макет → наш экран»** для 1b (`INFO_REQUESTED`) и `OFFER_ISSUED`, 1440 и 375 px, плюс увеличенный фрагмент ленты (узлы и ореол). Самопроверка `/review` — в PR.
 
 **Не делать:** не менять токены и `theme.ts`, не добавлять экраны F-05/F-06, не трогать бэкенд и `contracts/`.
