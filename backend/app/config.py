@@ -15,6 +15,10 @@ class Settings(BaseSettings):
     contracts_dir: Path = Path(__file__).resolve().parents[2] / "contracts"
     mocks_url: str = "http://localhost:8001/mock/v1"
     log_level: str = "INFO"
+    pipeline_step_delay_sec: float = 2
+    source_retry_pause_sec: float = 1
+    info_due_days: int = 5
+    offer_valid_days: int = 30
 
 
 @lru_cache
