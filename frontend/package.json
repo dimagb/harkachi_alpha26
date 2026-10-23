@@ -9,6 +9,7 @@
   },
   "scripts": {
     "dev": "vite",
+    "visual": "node visual/compare.mjs",
     "build": "tsc --noEmit -p tsconfig.json && vite build",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.parity.json",
@@ -28,6 +29,7 @@
   },
   "devDependencies": {
     "@eslint/js": "9.39.5",
+    "@playwright/test": "^1.64.1",
     "@testing-library/react": "16.3.3",
     "@types/node": "24.19.2",
     "@types/react": "19.3.0",
