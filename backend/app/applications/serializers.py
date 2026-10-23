@@ -1,6 +1,7 @@
 """Explicit client projection with only public decision details."""
 
 from datetime import timedelta
+from zoneinfo import ZoneInfo
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -194,6 +195,22 @@ def _presentation(session: Session, application: Application, user: User):
     return stage, timeline, actions, parties
 
 
+OFFER_EXPLANATIONS = {
+    "business_age": "Бизнес работает больше 3 лет",
+    "industry_risk": "Отрасль с низким риском",
+    "mass_registration": "Руководитель и адрес компании не массовые",
+    "turnover_stability": "Стабильные поступления на счёт",
+    "turnover_trend": "Поступления на счёт не снижаются",
+    "zero_months": "Поступления на счёт каждый месяц",
+    "payment_to_turnover": "Низкая долговая нагрузка",
+    "debt_to_turnover": "Небольшой долг относительно оборота",
+    "delinquency_12m": "Нет просрочек по кредитам",
+    "credit_history_length": "Длинная кредитная история",
+    "bureau_inquiries_30d": "Мало обращений за кредитами в последний месяц",
+    "payment_discipline": "Нет долгов по налогам и судебных взысканий",
+}
+
+
 def _offer_client(
     session: Session, application: Application, decision: Decision | None
 ) -> OfferClient | None:
@@ -205,10 +222,13 @@ def _offer_client(
     if offer is None:
         return None
     explanation = [
-        f"{factor['title']} — {factor['value']}"
+        OFFER_EXPLANATIONS[factor["code"]]
         for factor in (decision.factors if decision else [])
         if factor["points"] == factor["max_points"]
+        and factor["code"] in OFFER_EXPLANATIONS
     ][:3]
+    if not explanation:
+        explanation = ["Условия рассчитаны по данным о вашем бизнесе"]
     requested = None
     counter_reason = None
     if offer.kind == "COUNTER":
@@ -256,7 +276,9 @@ def _client_reason(
     action = reason.client_action
     retry_after = None
     if reason.code == "SF_OVERDUE":
-        retry_after = decision.created_at.date() + timedelta(days=30)
+        retry_after = decision.created_at.astimezone(
+            ZoneInfo("Europe/Moscow")
+        ).date() + timedelta(days=30)
     elif reason.code == "SF_AGE":
         company = session.get(Company, application.company_id)
         retry_after = eligible_date(company.reg_date, DEFAULT_CONFIG)
@@ -276,6 +298,8 @@ def _client_reason(
 def _info_request_client(
     session: Session, application: Application
 ) -> InfoRequestClient | None:
+    if application.state != "INFO_REQUESTED":
+        return None
     request = session.scalar(
         select(InfoRequest)
         .where(
