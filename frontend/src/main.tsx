@@ -1,5 +1,9 @@
 import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
+import '@fontsource/onest/400.css';
+import '@fontsource/onest/500.css';
+import '@fontsource/onest/600.css';
+import './styles/tokens.css';
 import { MantineProvider } from '@mantine/core';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StrictMode } from 'react';
