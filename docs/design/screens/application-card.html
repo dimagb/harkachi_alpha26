@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#E4E6EA;color:#1F2329;font-family:'Onest',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#1F2329;text-decoration:underline;text-underline-offset:3px;text-decoration-color:#8A919B}
+a:hover{text-decoration-color:#1F2329}
+*:focus-visible{outline:2px solid #1F2329;outline-offset:2px}
+</style>
+</helmet>
+<section id="turn-1" style="padding:64px;display:flex;flex-direction:column;gap:40px">
+  <div style="display:flex;flex-direction:column;gap:8px;max-width:1440px">
+    <h1 style="margin:0;font-size:32px;line-height:40px;font-weight:600;letter-spacing:-0.01em">Карточка заявки · клиент · 1440 px · v2</h1>
+    <p style="margin:0;font-size:16px;line-height:24px;color:#535C68">Три состояния одного экрана: <a href="#1a">1a</a> идёт оценка, <a href="#1b">1b</a> нужно ваше действие, <a href="#1c">1c</a> подписание.</p>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;gap:64px;align-items:flex-start">
+    <sc-for list="{{ variants }}" as="v" hint-placeholder-count="3">
+      <div id="{{ v.id }}" style="display:flex;flex-direction:column;gap:16px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="display:inline-flex;align-items:center;height:28px;padding:0 10px;border-radius:6px;background:#1F2329;color:#FFFFFF;font-size:14px;line-height:20px;font-weight:600">{{ v.id }}</span>
+          <span style="font-size:16px;line-height:24px;font-weight:500">{{ v.caption }}</span>
+        </div>
+
+        <div data-screen-label="{{ v.label }}" style="width:1440px;min-height:940px;display:grid;grid-template-columns:240px minmax(0,1fr);background:#FFFFFF;border-radius:12px;overflow:hidden">
+          <nav style="display:flex;flex-direction:column;justify-content:space-between;padding:32px 16px 24px;border-right:1px solid #E4E6EA">
+            <div style="display:flex;flex-direction:column;gap:32px">
+              <div style="padding:0 12px;font-size:16px;line-height:24px;font-weight:600">Кредитный кабинет</div>
+              <div style="display:flex;flex-direction:column;gap:4px">
+                <a href="#" style="display:flex;align-items:center;min-height:40px;padding:8px 12px;box-sizing:border-box;border-radius:6px;background:#F2F3F5;color:#1F2329;font-size:16px;line-height:24px;font-weight:500;text-decoration:none">Мои заявки</a>
+                <a href="#" style="display:flex;align-items:center;min-height:40px;padding:8px 12px;box-sizing:border-box;border-radius:6px;color:#535C68;font-size:16px;line-height:24px;text-decoration:none" style-hover="background:#F2F3F5;color:#1F2329">Получить финансирование</a>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:4px;padding:16px 12px 0;border-top:1px solid #E4E6EA">
+              <span style="font-size:14px;line-height:20px;font-weight:500">Смирнова Анна</span>
+              <a href="#" style="align-self:flex-start;font-size:14px;line-height:20px;color:#535C68">Выйти</a>
+            </div>
+          </nav>
+
+          <main style="padding:48px 48px 64px;display:flex;flex-direction:column;gap:48px;min-width:0">
+            <header style="display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;align-items:center;gap:12px">
+                <span style="font-size:14px;line-height:20px;color:#535C68;font-variant-numeric:tabular-nums">Заявка № 1042</span>
+                <span style="display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px;box-sizing:border-box;border-radius:6px;background:{{ v.badgeBg }};border:1px solid {{ v.badgeBorder }};color:{{ v.badgeText }};font-size:12px;line-height:16px;font-weight:500"><span style="width:6px;height:6px;flex-shrink:0;border-radius:999px;background:{{ v.tone }}"></span>{{ v.badge }}</span>
+              </div>
+              <h2 style="margin:0;display:flex;align-items:baseline;flex-wrap:wrap;gap:0 12px;font-weight:600;font-variant-numeric:tabular-nums">
+                <span style="font-size:24px;line-height:32px;font-weight:500;color:#535C68">Экспресс-кредит ·</span>
+                <span style="font-size:40px;line-height:48px;letter-spacing:-0.02em;color:#1F2329">1 500 000 ₽</span>
+                <span style="font-size:24px;line-height:32px;font-weight:500;color:#535C68">на 24 мес.</span>
+              </h2>
+            </header>
+
+            <div style="border:1px solid #E4E6EA;border-radius:12px;padding:32px;display:flex;flex-direction:column;gap:32px">
+              <div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr))">
+                <sc-for list="{{ v.stages }}" as="s" hint-placeholder-count="6">
+                  <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+                    <div style="display:flex;align-items:center;height:40px">
+                      <sc-if value="{{ s.done }}">
+                        <span style="width:24px;height:24px;flex-shrink:0;border-radius:999px;background:#1E8E5A;display:inline-flex;align-items:center;justify-content:center"><span style="width:9px;height:5px;border-left:2px solid #FFFFFF;border-bottom:2px solid #FFFFFF;transform:translateY(-1px) rotate(-45deg)"></span></span>
+                      </sc-if>
+                      <sc-if value="{{ s.cur }}">
+                        <span style="width:32px;height:32px;flex-shrink:0;border-radius:999px;background:#DC2C26;box-shadow:0 0 0 6px #FFE7E3;display:inline-flex;align-items:center;justify-content:center"><span style="width:10px;height:10px;border-radius:999px;background:#FFFFFF"></span></span>
+                      </sc-if>
+                      <sc-if value="{{ s.act }}">
+                        <span style="width:24px;height:24px;flex-shrink:0;border-radius:999px;background:#F5AF20;box-shadow:0 0 0 4px #FEECD0;display:inline-flex;align-items:center;justify-content:center;color:#1F2329;font-size:14px;line-height:14px;font-weight:600">!</span>
+                      </sc-if>
+                      <sc-if value="{{ s.wait }}">
+                        <span style="width:24px;height:24px;flex-shrink:0;box-sizing:border-box;border-radius:999px;background:#FFFFFF;border:1.5px solid #A9AFB7;display:inline-flex;align-items:center;justify-content:center;color:#535C68;font-size:12px;line-height:12px;font-weight:500;font-variant-numeric:tabular-nums">{{ s.n }}</span>
+                      </sc-if>
+                      <sc-if value="{{ s.hasLine }}">
+                        <span style="flex:1;height:2px;border-radius:1px;margin:0 12px;background:{{ s.line }}"></span>
+                      </sc-if>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:2px;padding-right:16px">
+                      <span style="font-size:{{ s.size }};line-height:{{ s.lh }};font-weight:{{ s.weight }};color:{{ s.color }}">{{ s.name }}</span>
+                      <span style="font-size:14px;line-height:20px;color:{{ s.metaColor }};font-variant-numeric:tabular-nums">{{ s.meta }}</span>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+
+              <div style="position:relative;background:{{ v.panelBg }};box-shadow:inset 4px 0 0 {{ v.tone }};border-radius:12px;padding:24px 24px 24px 28px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:32px;align-items:end">
+                <span style="position:absolute;top:-6px;left:{{ v.caret }};width:12px;height:12px;background:{{ v.panelBg }};border-radius:2px;transform:rotate(45deg)"></span>
+                <div style="display:flex;flex-direction:column;gap:4px;align-self:start">
+                  <span style="font-size:14px;line-height:20px;font-weight:500;color:#535C68">Что происходит</span>
+                  <span style="font-size:16px;line-height:24px;text-wrap:pretty">{{ v.what }}</span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:4px;align-self:start">
+                  <span style="font-size:14px;line-height:20px;font-weight:500;color:{{ v.needLabel }}">Что от вас нужно</span>
+                  <span style="font-size:16px;line-height:24px;font-weight:{{ v.needWeight }};text-wrap:pretty">{{ v.need }}</span>
+                </div>
+                <div>
+                  <sc-if value="{{ v.cta }}">
+                    <button type="button" style="height:48px;padding:0 24px;border-radius:6px;border:0;background:#DC2C26;color:#FFFFFF;font:500 16px/24px 'Onest',sans-serif;white-space:nowrap;cursor:pointer;transition:background 120ms cubic-bezier(0.2,0,0,1)" style-hover="background:#C42621" style-active="background:#AD211C">{{ v.cta }}</button>
+                  </sc-if>
+                </div>
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:32px;align-items:start">
+              <div style="border:1px solid #E4E6EA;border-radius:12px;padding:32px;display:flex;flex-direction:column;gap:24px">
+                <h3 style="margin:0;font-size:20px;line-height:28px;font-weight:600">Параметры заявки</h3>
+                <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;font-variant-numeric:tabular-nums">
+                  <div style="background:#F2F3F5;border-radius:12px;padding:16px 20px;display:flex;flex-direction:column;gap:4px"><span style="font-size:14px;line-height:20px;color:#535C68">Сумма</span><span style="font-size:28px;line-height:36px;font-weight:600;letter-spacing:-0.01em">1 500 000 ₽</span></div>
+                  <div style="background:#F2F3F5;border-radius:12px;padding:16px 20px;display:flex;flex-direction:column;gap:4px"><span style="font-size:14px;line-height:20px;color:#535C68">Срок</span><span style="font-size:28px;line-height:36px;font-weight:600;letter-spacing:-0.01em">24 месяца</span></div>
+                  <div style="background:#F2F3F5;border-radius:12px;padding:16px 20px;display:flex;flex-direction:column;gap:4px"><span style="font-size:14px;line-height:20px;color:#535C68">Ставка</span><span style="font-size:28px;line-height:36px;font-weight:600;letter-spacing:-0.01em">{{ v.rate }}</span></div>
+                  <div style="background:#F2F3F5;border-radius:12px;padding:16px 20px;display:flex;flex-direction:column;gap:4px"><span style="font-size:14px;line-height:20px;color:#535C68">Платёж в месяц (оценка)</span><span style="font-size:28px;line-height:36px;font-weight:600;letter-spacing:-0.01em">около 78 000 ₽</span></div>
+                </div>
+                <dl style="margin:0;display:grid;grid-template-columns:200px minmax(0,1fr);font-size:16px;line-height:24px;font-variant-numeric:tabular-nums">
+                  <dt style="padding:12px 0;color:#535C68;border-top:1px solid #E4E6EA">Цель</dt>
+                  <dd style="margin:0;padding:12px 0;border-top:1px solid #E4E6EA">Пополнение оборотных средств</dd>
+                  <dt style="padding:12px 0;color:#535C68;border-top:1px solid #E4E6EA">Компания</dt>
+                  <dd style="margin:0;padding:12px 0;border-top:1px solid #E4E6EA;display:flex;flex-direction:column;gap:2px">
+                    <span>ИП Смирнова Анна Викторовна</span>
+                    <span style="color:#535C68">ИНН 770112345695</span>
+                    <span style="font-size:14px;line-height:20px;color:#6A7280">Данные из ЕГРИП на 23.10.2026</span>
+                  </dd>
+                </dl>
+                <div style="padding-top:8px;border-top:1px solid #E4E6EA">
+                  <button type="button" style="height:40px;margin-left:-12px;padding:0 12px;border-radius:6px;border:0;background:transparent;color:#1F2329;font:500 16px/24px 'Onest',sans-serif;text-decoration:underline;text-decoration-color:#8A919B;text-underline-offset:3px;cursor:pointer" style-hover="background:#F2F3F5;text-decoration-color:#1F2329">Отозвать заявку</button>
+                </div>
+              </div>
+
+              <div style="border:1px solid #E4E6EA;border-radius:12px;padding:32px;display:flex;flex-direction:column;gap:24px">
+                <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px">
+                  <h3 style="margin:0;font-size:20px;line-height:28px;font-weight:600">История</h3>
+                  <span style="font-size:14px;line-height:20px;color:#535C68;font-variant-numeric:tabular-nums">23.10.2026</span>
+                </div>
+                <ol style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column">
+                  <sc-for list="{{ v.history }}" as="h" hint-placeholder-count="4">
+                    <li style="display:grid;grid-template-columns:56px minmax(0,1fr);gap:12px;padding:12px 0;border-top:1px solid #E4E6EA;font-size:16px;line-height:24px">
+                      <span style="color:#535C68;font-variant-numeric:tabular-nums">{{ h.t }}</span>
+                      <span style="font-weight:{{ h.w }};text-wrap:pretty">{{ h.e }}</span>
+                    </li>
+                  </sc-for>
+                </ol>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="max-width:1440px;background:#FFFFFF;border-radius:12px;padding:32px;display:grid;grid-template-columns:280px minmax(0,1fr);gap:32px">
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <h3 style="margin:0;font-size:20px;line-height:28px;font-weight:600">Переход этапа</h3>
+      <span style="font-size:14px;line-height:20px;color:#535C68">Единственная анимация экрана</span>
+    </div>
+    <ol style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;font-size:16px;line-height:24px;text-wrap:pretty">
+      <li>Узел завершённого этапа за 120 мс меняет красную точку на зелёную галочку, ореол гаснет.</li>
+      <li>Линия к следующему узлу заполняется зелёным слева направо за 320 мс, cubic-bezier(0.2, 0, 0, 1).</li>
+      <li>Когда линия доходит до узла, он становится красным (или жёлтым с «!», если нужно действие), ореол проявляется за 120 мс, подпись этапа становится 600.</li>
+      <li>Указатель панели переезжает к новому узлу за те же 320 мс; текст «Что происходит / Что от вас нужно» сменяется простой сменой прозрачности за 120 мс, без сдвига строк. Кнопка появляется только после смены текста.</li>
+      <li>Подписи и сетка не двигаются. Без пружин и подпрыгиваний. При prefers-reduced-motion — мгновенная смена состояния.</li>
+    </ol>
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const names = ['Заявка', 'Проверка данных', 'Оценка', 'Решение', 'Подписание', 'Выдача'];
+    const G = '#1E8E5A', L = '#E4E6EA';
+    const stages = (spec) => spec.map(([type, meta], i) => ({
+      name: names[i], meta, n: i + 1,
+      done: type === 'done', cur: type === 'cur', act: type === 'act', wait: type === 'wait',
+      hasLine: i < 5,
+      line: type === 'done' ? G : L,
+      weight: type === 'cur' || type === 'act' ? 600 : 400,
+      size: type === 'cur' ? '20px' : '16px', lh: type === 'cur' ? '28px' : '24px',
+      color: type === 'cur' ? '#DC2C26' : type === 'wait' ? '#535C68' : '#1F2329',
+      metaColor: type === 'act' ? '#8B6001' : type === 'cur' ? '#DC2C26' : type === 'done' ? '#17704A' : '#535C68',
+    }));
+    const caret = (i, big) => `calc(${i} * 100% / 6 + ${big ? 10 : 6}px)`;
+    const ev = (arr) => arr.map(([t, e], i) => ({ t, e, w: i === arr.length - 1 ? 500 : 400 }));
+    return {
+      variants: [
+        {
+          id: '1a', caption: 'Идёт оценка', label: '1a Оценка',
+          stages: stages([['done', '14:02'], ['done', '14:02'], ['cur', 'Идёт сейчас'], ['wait', 'Ожидает'], ['wait', 'Ожидает'], ['wait', 'Ожидает']]),
+          caret: caret(2, true), panelBg: '#F4F7FA', needLabel: '#3E5368', needWeight: 400, badge: 'Идёт оценка', rate: 'около 21,5 %', tone: '#4A6178', badgeBg: '#F4F7FA', badgeBorder: '#CFDCEA', badgeText: '#3E5368',
+          what: 'Оцениваем заявку по данным о вашем бизнесе.',
+          need: 'Ничего, обычно это занимает пару минут.', cta: null,
+          history: ev([['14:02', 'Заявка отправлена'], ['14:02', 'Данные проверены'], ['14:03', 'Сведения из бюро кредитных историй и ФНС получены'], ['14:03', 'Идёт оценка']]),
+        },
+        {
+          id: '1b', caption: 'Нужно ваше действие на этапе «Проверка данных»', label: '1b Нужно действие',
+          stages: stages([['done', '14:02'], ['act', 'Нужно ваше действие'], ['wait', 'Ожидает'], ['wait', 'Ожидает'], ['wait', 'Ожидает'], ['wait', 'Ожидает']]),
+          caret: caret(1), panelBg: '#FEF5E8', needLabel: '#8B6001', needWeight: 500, badge: 'Нужно ваше действие', rate: 'около 21,5 %', tone: '#B78006', badgeBg: '#FEF5E8', badgeBorder: '#FFD79B', badgeText: '#8B6001',
+          what: 'Банк просит уточнить данные.',
+          need: 'Подтвердите выручку до 30.10.2026', cta: 'Ответить на вопросы банка',
+          history: ev([['14:02', 'Заявка отправлена'], ['14:02', 'Банк попросил подтвердить выручку']]),
+        },
+        {
+          id: '1c', caption: 'Подписание', label: '1c Подписание',
+          stages: stages([['done', '14:02'], ['done', '14:02'], ['done', '14:04'], ['done', 'Одобрено'], ['cur', 'Идёт сейчас'], ['wait', 'Ожидает']]),
+          caret: caret(4, true), panelBg: '#EFFAF3', needLabel: '#17704A', needWeight: 500, badge: 'Одобрено', rate: '21,5 %', tone: '#1E8E5A', badgeBg: '#EFFAF3', badgeBorder: '#B9E8CB', badgeText: '#17704A',
+          what: 'Банк одобрил 1 500 000 ₽ на 24 месяца. Договор и поручительство готовы.',
+          need: 'Подпишите договор и поручительство', cta: 'Подписать договор',
+          history: ev([['14:02', 'Заявка отправлена'], ['14:02', 'Данные проверены'], ['14:03', 'Сведения из бюро кредитных историй и ФНС получены'], ['14:04', 'Оценка завершена'], ['14:05', 'Банк одобрил 1 500 000 ₽'], ['14:05', 'Договор и поручительство готовы к подписанию']]),
+        },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>
