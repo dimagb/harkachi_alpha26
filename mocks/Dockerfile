@@ -6,12 +6,13 @@ COPY mocks/pyproject.toml mocks/uv.lock ./
 RUN --mount=type=cache,target=/root/.cache/uv uv sync --frozen --no-dev
 
 FROM python:3.12.15-slim AS runtime
-ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 DATA_ROOT=/
 WORKDIR /app
 RUN useradd --uid 10001 --create-home app
 COPY --from=builder --chown=app:app /app/.venv /app/.venv
 COPY --chown=app:app mocks/app ./app
-COPY --chown=app:app contracts /contracts
+COPY --chown=app:app contracts/personas.json /contracts/personas.json
+COPY --chown=app:app data /data
 USER app
 EXPOSE 8001
 HEALTHCHECK --interval=10s --timeout=5s --start-period=10s --retries=6 CMD ["/app/.venv/bin/python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/mock/v1/health', timeout=3)"]
