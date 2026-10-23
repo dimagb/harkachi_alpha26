@@ -1,0 +1,60 @@
+import type * as C from '../../contracts/api-types';
+import type { components } from '../src/api/schema';
+
+type S = components['schemas'];
+type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
+type Accepts<Server, Contract> = [Contract] extends [Server] ? true : false;
+type RequiredKeys<T> = {
+  [K in keyof T]-?: Record<never, never> extends Pick<T, K> ? never : K
+}[keyof T];
+
+export const _LoginResponse: Same<S['LoginResponse'], C.LoginResponse> = true;
+export const _MeResponse: Same<S['MeResponse'], C.MeResponse> = true;
+export const _Product: Same<S['Product'], C.Product> = true;
+export const _CalculatorResponse: Same<S['CalculatorResponse'], C.CalculatorResponse> = true;
+export const _CompanyProfile: Same<S['CompanyProfile'], C.CompanyProfile> = true;
+export const _ApplicationClient: Same<S['ApplicationClient'], C.ApplicationClient> = true;
+export const _ApplicationListItem: Same<S['ApplicationListItem'], C.ApplicationListItem> = true;
+export const _OtpResponse: Same<S['OtpResponse'], C.OtpResponse> = true;
+export const _QueueItem: Same<S['QueueItem'], C.QueueItem> = true;
+export const _ApplicationBank: Same<S['ApplicationBank'], C.ApplicationBank> = true;
+export const _Page: Same<S['Page_BankListItem_'], C.Page<C.BankListItem>> = true;
+export const _TimeShiftResponse: Same<S['TimeShiftResponse'], C.TimeShiftResponse> = true;
+export const _ApiError: Same<S['ApiError'], C.ApiError> = true;
+
+export const _LoginRequest: Accepts<S['LoginRequest'], C.LoginRequest> = true;
+export const _LoginRequestKeys: Same<keyof S['LoginRequest'], keyof C.LoginRequest> = true;
+export const _LoginRequestReq: Same<RequiredKeys<S['LoginRequest']>, RequiredKeys<C.LoginRequest>> = true;
+export const _CalculatorRequest: Accepts<S['CalculatorRequest'], C.CalculatorRequest> = true;
+export const _CalculatorRequestKeys: Same<keyof S['CalculatorRequest'], keyof C.CalculatorRequest> = true;
+export const _CalculatorRequestReq: Same<RequiredKeys<S['CalculatorRequest']>, RequiredKeys<C.CalculatorRequest>> = true;
+export const _ApplicationCreate: Accepts<S['ApplicationCreate'], C.ApplicationCreate> = true;
+export const _ApplicationCreateKeys: Same<keyof S['ApplicationCreate'], keyof C.ApplicationCreate> = true;
+export const _ApplicationCreateReq: Same<RequiredKeys<S['ApplicationCreate']>, RequiredKeys<C.ApplicationCreate>> = true;
+export const _ApplicationPatch: Accepts<S['ApplicationPatch'], C.ApplicationPatch> = true;
+export const _ApplicationPatchKeys: Same<keyof S['ApplicationPatch'], keyof C.ApplicationPatch> = true;
+export const _ApplicationPatchReq: Same<RequiredKeys<S['ApplicationPatch']>, RequiredKeys<C.ApplicationPatch>> = true;
+export const _OtpRequest: Accepts<S['OtpRequest'], C.OtpRequest> = true;
+export const _OtpRequestKeys: Same<keyof S['OtpRequest'], keyof C.OtpRequest> = true;
+export const _OtpRequestReq: Same<RequiredKeys<S['OtpRequest']>, RequiredKeys<C.OtpRequest>> = true;
+export const _SubmitRequest: Accepts<S['SubmitRequest'], C.SubmitRequest> = true;
+export const _SubmitRequestKeys: Same<keyof S['SubmitRequest'], keyof C.SubmitRequest> = true;
+export const _SubmitRequestReq: Same<RequiredKeys<S['SubmitRequest']>, RequiredKeys<C.SubmitRequest>> = true;
+export const _InfoResponseRequest: Accepts<S['InfoResponseRequest'], C.InfoResponseRequest> = true;
+export const _InfoResponseRequestKeys: Same<keyof S['InfoResponseRequest'], keyof C.InfoResponseRequest> = true;
+export const _InfoResponseRequestReq: Same<RequiredKeys<S['InfoResponseRequest']>, RequiredKeys<C.InfoResponseRequest>> = true;
+export const _AcceptOfferRequest: Accepts<S['AcceptOfferRequest'], C.AcceptOfferRequest> = true;
+export const _AcceptOfferRequestKeys: Same<keyof S['AcceptOfferRequest'], keyof C.AcceptOfferRequest> = true;
+export const _AcceptOfferRequestReq: Same<RequiredKeys<S['AcceptOfferRequest']>, RequiredKeys<C.AcceptOfferRequest>> = true;
+export const _SignRequest: Accepts<S['SignRequest'], C.SignRequest> = true;
+export const _SignRequestKeys: Same<keyof S['SignRequest'], keyof C.SignRequest> = true;
+export const _SignRequestReq: Same<RequiredKeys<S['SignRequest']>, RequiredKeys<C.SignRequest>> = true;
+export const _ObjectionRequest: Accepts<S['ObjectionRequest'], C.ObjectionRequest> = true;
+export const _ObjectionRequestKeys: Same<keyof S['ObjectionRequest'], keyof C.ObjectionRequest> = true;
+export const _ObjectionRequestReq: Same<RequiredKeys<S['ObjectionRequest']>, RequiredKeys<C.ObjectionRequest>> = true;
+export const _UnderwriterDecisionRequest: Accepts<S['UnderwriterDecisionRequest'], C.UnderwriterDecisionRequest> = true;
+export const _UnderwriterDecisionRequestKeys: Same<keyof S['UnderwriterDecisionRequest'], keyof C.UnderwriterDecisionRequest> = true;
+export const _UnderwriterDecisionRequestReq: Same<RequiredKeys<S['UnderwriterDecisionRequest']>, RequiredKeys<C.UnderwriterDecisionRequest>> = true;
+export const _TimeShiftRequest: Accepts<S['TimeShiftRequest'], C.TimeShiftRequest> = true;
+export const _TimeShiftRequestKeys: Same<keyof S['TimeShiftRequest'], keyof C.TimeShiftRequest> = true;
+export const _TimeShiftRequestReq: Same<RequiredKeys<S['TimeShiftRequest']>, RequiredKeys<C.TimeShiftRequest>> = true;

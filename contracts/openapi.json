@@ -1,6 +1,20 @@
 {
   "components": {
     "schemas": {
+      "AcceptOfferRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "offer_version": {
+            "title": "Offer Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "offer_version"
+        ],
+        "title": "AcceptOfferRequest",
+        "type": "object"
+      },
       "ApiError": {
         "additionalProperties": false,
         "properties": {
@@ -12,6 +26,1233 @@
           "error"
         ],
         "title": "ApiError",
+        "type": "object"
+      },
+      "ApplicationBank": {
+        "additionalProperties": false,
+        "properties": {
+          "allowed_actions": {
+            "items": {
+              "enum": [
+                "EDIT_DRAFT",
+                "SUBMIT",
+                "REQUEST_SIGNATURE",
+                "ANSWER_INFO_REQUEST",
+                "ACCEPT_OFFER",
+                "REJECT_OFFER",
+                "SIGN",
+                "WITHDRAW",
+                "OBJECT",
+                "NEW_APPLICATION"
+              ],
+              "type": "string"
+            },
+            "title": "Allowed Actions",
+            "type": "array"
+          },
+          "amount": {
+            "title": "Amount",
+            "type": "integer"
+          },
+          "awaiting_signature": {
+            "title": "Awaiting Signature",
+            "type": "boolean"
+          },
+          "client_reason": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ClientReason"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "company": {
+            "$ref": "#/components/schemas/CompanyProfile"
+          },
+          "company_id": {
+            "title": "Company Id",
+            "type": "string"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string"
+          },
+          "decisions": {
+            "items": {
+              "$ref": "#/components/schemas/DecisionBank"
+            },
+            "title": "Decisions",
+            "type": "array"
+          },
+          "declared_revenue_year": {
+            "title": "Declared Revenue Year",
+            "type": "integer"
+          },
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/EventBank"
+            },
+            "title": "Events",
+            "type": "array"
+          },
+          "external_checks": {
+            "items": {
+              "$ref": "#/components/schemas/ExternalCheckBank"
+            },
+            "title": "External Checks",
+            "type": "array"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "info_request": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/InfoRequestClient"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "number": {
+            "title": "Number",
+            "type": "integer"
+          },
+          "objection": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ObjectionClient"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "offer": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OfferClient"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "parties": {
+            "items": {
+              "$ref": "#/components/schemas/PartyClient"
+            },
+            "title": "Parties",
+            "type": "array"
+          },
+          "product_code": {
+            "enum": [
+              "EXPRESS",
+              "WORKING_CAPITAL",
+              "OVERDRAFT"
+            ],
+            "title": "Product Code",
+            "type": "string"
+          },
+          "purpose": {
+            "enum": [
+              "WORKING_CAPITAL",
+              "CASH_GAP",
+              "EQUIPMENT",
+              "OTHER"
+            ],
+            "title": "Purpose",
+            "type": "string"
+          },
+          "purpose_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Purpose Text"
+          },
+          "risk_flags": {
+            "$ref": "#/components/schemas/RiskFlags"
+          },
+          "stage": {
+            "$ref": "#/components/schemas/Stage"
+          },
+          "state": {
+            "enum": [
+              "DRAFT",
+              "SUBMITTED",
+              "VALIDATION",
+              "INFO_REQUESTED",
+              "ENRICHMENT",
+              "ASSESSMENT",
+              "MANUAL_REVIEW",
+              "OFFER_ISSUED",
+              "DECLINED",
+              "SIGNING",
+              "SIGNED",
+              "DISBURSED",
+              "WITHDRAWN",
+              "EXPIRED"
+            ],
+            "title": "State",
+            "type": "string"
+          },
+          "term_months": {
+            "title": "Term Months",
+            "type": "integer"
+          },
+          "timeline": {
+            "items": {
+              "$ref": "#/components/schemas/TimelineItem"
+            },
+            "title": "Timeline",
+            "type": "array"
+          },
+          "turnover_12m": {
+            "items": {
+              "$ref": "#/components/schemas/TurnoverMonth"
+            },
+            "title": "Turnover 12M",
+            "type": "array"
+          },
+          "updated_at": {
+            "title": "Updated At",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "number",
+          "version",
+          "company_id",
+          "state",
+          "stage",
+          "timeline",
+          "product_code",
+          "amount",
+          "term_months",
+          "purpose",
+          "purpose_text",
+          "declared_revenue_year",
+          "offer",
+          "client_reason",
+          "info_request",
+          "parties",
+          "allowed_actions",
+          "awaiting_signature",
+          "objection",
+          "created_at",
+          "updated_at",
+          "company",
+          "risk_flags",
+          "turnover_12m",
+          "decisions",
+          "external_checks",
+          "events"
+        ],
+        "title": "ApplicationBank",
+        "type": "object"
+      },
+      "ApplicationClient": {
+        "additionalProperties": false,
+        "properties": {
+          "allowed_actions": {
+            "items": {
+              "enum": [
+                "EDIT_DRAFT",
+                "SUBMIT",
+                "REQUEST_SIGNATURE",
+                "ANSWER_INFO_REQUEST",
+                "ACCEPT_OFFER",
+                "REJECT_OFFER",
+                "SIGN",
+                "WITHDRAW",
+                "OBJECT",
+                "NEW_APPLICATION"
+              ],
+              "type": "string"
+            },
+            "title": "Allowed Actions",
+            "type": "array"
+          },
+          "amount": {
+            "title": "Amount",
+            "type": "integer"
+          },
+          "awaiting_signature": {
+            "title": "Awaiting Signature",
+            "type": "boolean"
+          },
+          "client_reason": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ClientReason"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "company_id": {
+            "title": "Company Id",
+            "type": "string"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string"
+          },
+          "declared_revenue_year": {
+            "title": "Declared Revenue Year",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "info_request": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/InfoRequestClient"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "number": {
+            "title": "Number",
+            "type": "integer"
+          },
+          "objection": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ObjectionClient"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "offer": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OfferClient"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "parties": {
+            "items": {
+              "$ref": "#/components/schemas/PartyClient"
+            },
+            "title": "Parties",
+            "type": "array"
+          },
+          "product_code": {
+            "enum": [
+              "EXPRESS",
+              "WORKING_CAPITAL",
+              "OVERDRAFT"
+            ],
+            "title": "Product Code",
+            "type": "string"
+          },
+          "purpose": {
+            "enum": [
+              "WORKING_CAPITAL",
+              "CASH_GAP",
+              "EQUIPMENT",
+              "OTHER"
+            ],
+            "title": "Purpose",
+            "type": "string"
+          },
+          "purpose_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Purpose Text"
+          },
+          "stage": {
+            "$ref": "#/components/schemas/Stage"
+          },
+          "state": {
+            "enum": [
+              "DRAFT",
+              "SUBMITTED",
+              "VALIDATION",
+              "INFO_REQUESTED",
+              "ENRICHMENT",
+              "ASSESSMENT",
+              "MANUAL_REVIEW",
+              "OFFER_ISSUED",
+              "DECLINED",
+              "SIGNING",
+              "SIGNED",
+              "DISBURSED",
+              "WITHDRAWN",
+              "EXPIRED"
+            ],
+            "title": "State",
+            "type": "string"
+          },
+          "term_months": {
+            "title": "Term Months",
+            "type": "integer"
+          },
+          "timeline": {
+            "items": {
+              "$ref": "#/components/schemas/TimelineItem"
+            },
+            "title": "Timeline",
+            "type": "array"
+          },
+          "updated_at": {
+            "title": "Updated At",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "number",
+          "version",
+          "company_id",
+          "state",
+          "stage",
+          "timeline",
+          "product_code",
+          "amount",
+          "term_months",
+          "purpose",
+          "purpose_text",
+          "declared_revenue_year",
+          "offer",
+          "client_reason",
+          "info_request",
+          "parties",
+          "allowed_actions",
+          "awaiting_signature",
+          "objection",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "ApplicationClient",
+        "type": "object"
+      },
+      "ApplicationCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "amount": {
+            "exclusiveMinimum": 0.0,
+            "title": "Amount",
+            "type": "integer"
+          },
+          "company_id": {
+            "title": "Company Id",
+            "type": "string"
+          },
+          "declared_revenue_year": {
+            "exclusiveMinimum": 0.0,
+            "title": "Declared Revenue Year",
+            "type": "integer"
+          },
+          "product_code": {
+            "enum": [
+              "EXPRESS",
+              "WORKING_CAPITAL",
+              "OVERDRAFT"
+            ],
+            "title": "Product Code",
+            "type": "string"
+          },
+          "purpose": {
+            "enum": [
+              "WORKING_CAPITAL",
+              "CASH_GAP",
+              "EQUIPMENT",
+              "OTHER"
+            ],
+            "title": "Purpose",
+            "type": "string"
+          },
+          "purpose_text": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "minLength": 10,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Purpose Text"
+          },
+          "term_months": {
+            "exclusiveMinimum": 0.0,
+            "title": "Term Months",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "company_id",
+          "product_code",
+          "amount",
+          "term_months",
+          "purpose",
+          "declared_revenue_year"
+        ],
+        "title": "ApplicationCreate",
+        "type": "object"
+      },
+      "ApplicationListItem": {
+        "additionalProperties": false,
+        "properties": {
+          "amount": {
+            "title": "Amount",
+            "type": "integer"
+          },
+          "awaiting_signature": {
+            "title": "Awaiting Signature",
+            "type": "boolean"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "number": {
+            "title": "Number",
+            "type": "integer"
+          },
+          "product_code": {
+            "enum": [
+              "EXPRESS",
+              "WORKING_CAPITAL",
+              "OVERDRAFT"
+            ],
+            "title": "Product Code",
+            "type": "string"
+          },
+          "stage": {
+            "$ref": "#/components/schemas/Stage"
+          },
+          "state": {
+            "enum": [
+              "DRAFT",
+              "SUBMITTED",
+              "VALIDATION",
+              "INFO_REQUESTED",
+              "ENRICHMENT",
+              "ASSESSMENT",
+              "MANUAL_REVIEW",
+              "OFFER_ISSUED",
+              "DECLINED",
+              "SIGNING",
+              "SIGNED",
+              "DISBURSED",
+              "WITHDRAWN",
+              "EXPIRED"
+            ],
+            "title": "State",
+            "type": "string"
+          },
+          "updated_at": {
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "number",
+          "state",
+          "stage",
+          "product_code",
+          "amount",
+          "awaiting_signature",
+          "updated_at"
+        ],
+        "title": "ApplicationListItem",
+        "type": "object"
+      },
+      "ApplicationPatch": {
+        "additionalProperties": false,
+        "properties": {
+          "amount": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount"
+          },
+          "declared_revenue_year": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Declared Revenue Year"
+          },
+          "product_code": {
+            "anyOf": [
+              {
+                "enum": [
+                  "EXPRESS",
+                  "WORKING_CAPITAL",
+                  "OVERDRAFT"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Code"
+          },
+          "purpose": {
+            "anyOf": [
+              {
+                "enum": [
+                  "WORKING_CAPITAL",
+                  "CASH_GAP",
+                  "EQUIPMENT",
+                  "OTHER"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Purpose"
+          },
+          "purpose_text": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "minLength": 10,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Purpose Text"
+          },
+          "term_months": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Term Months"
+          }
+        },
+        "title": "ApplicationPatch",
+        "type": "object"
+      },
+      "BankListItem": {
+        "additionalProperties": false,
+        "properties": {
+          "amount": {
+            "title": "Amount",
+            "type": "integer"
+          },
+          "company_kind": {
+            "enum": [
+              "IP",
+              "OOO"
+            ],
+            "title": "Company Kind",
+            "type": "string"
+          },
+          "company_name": {
+            "title": "Company Name",
+            "type": "string"
+          },
+          "grade": {
+            "anyOf": [
+              {
+                "enum": [
+                  "A",
+                  "B",
+                  "C",
+                  "D"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Grade"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "number": {
+            "title": "Number",
+            "type": "integer"
+          },
+          "product_code": {
+            "enum": [
+              "EXPRESS",
+              "WORKING_CAPITAL",
+              "OVERDRAFT"
+            ],
+            "title": "Product Code",
+            "type": "string"
+          },
+          "route_reason": {
+            "enum": [
+              "GRADE_C",
+              "AMOUNT_ABOVE_AUTO",
+              "NO_AUTO_CONSENT",
+              "SOURCE_UNAVAILABLE",
+              "OBJECTION",
+              "INFO_RESPONSE"
+            ],
+            "title": "Route Reason",
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "DRAFT",
+              "SUBMITTED",
+              "VALIDATION",
+              "INFO_REQUESTED",
+              "ENRICHMENT",
+              "ASSESSMENT",
+              "MANUAL_REVIEW",
+              "OFFER_ISSUED",
+              "DECLINED",
+              "SIGNING",
+              "SIGNED",
+              "DISBURSED",
+              "WITHDRAWN",
+              "EXPIRED"
+            ],
+            "title": "State",
+            "type": "string"
+          },
+          "updated_at": {
+            "title": "Updated At",
+            "type": "string"
+          },
+          "waiting_since": {
+            "title": "Waiting Since",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "number",
+          "company_name",
+          "company_kind",
+          "product_code",
+          "amount",
+          "grade",
+          "route_reason",
+          "waiting_since",
+          "state",
+          "updated_at"
+        ],
+        "title": "BankListItem",
+        "type": "object"
+      },
+      "CalculatorRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "amount": {
+            "exclusiveMinimum": 0.0,
+            "title": "Amount",
+            "type": "integer"
+          },
+          "product_code": {
+            "enum": [
+              "EXPRESS",
+              "WORKING_CAPITAL",
+              "OVERDRAFT"
+            ],
+            "title": "Product Code",
+            "type": "string"
+          },
+          "term_months": {
+            "exclusiveMinimum": 0.0,
+            "title": "Term Months",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "product_code",
+          "amount",
+          "term_months"
+        ],
+        "title": "CalculatorRequest",
+        "type": "object"
+      },
+      "CalculatorResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "monthly_payment": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Monthly Payment"
+          },
+          "rate_estimate": {
+            "title": "Rate Estimate",
+            "type": "number"
+          }
+        },
+        "required": [
+          "rate_estimate",
+          "monthly_payment"
+        ],
+        "title": "CalculatorResponse",
+        "type": "object"
+      },
+      "ClientReason": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Action"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "enum": [
+                  "Данные о компании",
+                  "Финансовое положение",
+                  "Срок ведения бизнеса",
+                  "Кредитная история",
+                  "Налоги и обязательства",
+                  "Условия продукта",
+                  "Дополнительные проверки",
+                  "Финансовые показатели",
+                  "Долговая нагрузка"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "retry_after": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retry After"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "category",
+          "text",
+          "action",
+          "retry_after"
+        ],
+        "title": "ClientReason",
+        "type": "object"
+      },
+      "CompanyBrief": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "inn": {
+            "title": "Inn",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "IP",
+              "OOO"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "inn",
+          "kind",
+          "name"
+        ],
+        "title": "CompanyBrief",
+        "type": "object"
+      },
+      "CompanyProfile": {
+        "additionalProperties": false,
+        "properties": {
+          "address": {
+            "title": "Address",
+            "type": "string"
+          },
+          "avg_monthly_turnover": {
+            "title": "Avg Monthly Turnover",
+            "type": "integer"
+          },
+          "director_full_name": {
+            "title": "Director Full Name",
+            "type": "string"
+          },
+          "founders": {
+            "items": {
+              "$ref": "#/components/schemas/Founder"
+            },
+            "title": "Founders",
+            "type": "array"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "inn": {
+            "title": "Inn",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "IP",
+              "OOO"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "ogrn": {
+            "title": "Ogrn",
+            "type": "string"
+          },
+          "okved_main": {
+            "title": "Okved Main",
+            "type": "string"
+          },
+          "reg_date": {
+            "title": "Reg Date",
+            "type": "string"
+          },
+          "source_note": {
+            "title": "Source Note",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "ACTIVE",
+              "LIQUIDATING",
+              "LIQUIDATED"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "inn",
+          "ogrn",
+          "kind",
+          "name",
+          "status",
+          "reg_date",
+          "okved_main",
+          "address",
+          "director_full_name",
+          "founders",
+          "avg_monthly_turnover",
+          "source_note"
+        ],
+        "title": "CompanyProfile",
+        "type": "object"
+      },
+      "Consents": {
+        "additionalProperties": false,
+        "properties": {
+          "auto_decision": {
+            "title": "Auto Decision",
+            "type": "boolean"
+          },
+          "bki": {
+            "const": true,
+            "title": "Bki",
+            "type": "boolean"
+          },
+          "pdn": {
+            "const": true,
+            "title": "Pdn",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "pdn",
+          "bki",
+          "auto_decision"
+        ],
+        "title": "Consents",
+        "type": "object"
+      },
+      "DecisionBank": {
+        "additionalProperties": false,
+        "properties": {
+          "client_reason_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Reason Code"
+          },
+          "comment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comment"
+          },
+          "config_version": {
+            "title": "Config Version",
+            "type": "string"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string"
+          },
+          "factors": {
+            "items": {
+              "$ref": "#/components/schemas/FactorLine"
+            },
+            "title": "Factors",
+            "type": "array"
+          },
+          "grade": {
+            "anyOf": [
+              {
+                "enum": [
+                  "A",
+                  "B",
+                  "C",
+                  "D"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Grade"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "internal_reasons": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Internal Reasons",
+            "type": "array"
+          },
+          "key_rate": {
+            "title": "Key Rate",
+            "type": "number"
+          },
+          "kind": {
+            "enum": [
+              "AUTO",
+              "MANUAL"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "made_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Made By"
+          },
+          "outcome": {
+            "enum": [
+              "APPROVE",
+              "COUNTER",
+              "DECLINE",
+              "MANUAL",
+              "REQUEST_INFO",
+              "RETRY_ENRICHMENT"
+            ],
+            "title": "Outcome",
+            "type": "string"
+          },
+          "policy": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PolicyCalc"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "recommendation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Recommendation"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "route_reason": {
+            "anyOf": [
+              {
+                "enum": [
+                  "GRADE_C",
+                  "AMOUNT_ABOVE_AUTO",
+                  "NO_AUTO_CONSENT",
+                  "SOURCE_UNAVAILABLE",
+                  "OBJECTION",
+                  "INFO_RESPONSE"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Route Reason"
+          },
+          "rules_fired": {
+            "items": {
+              "$ref": "#/components/schemas/RuleFired"
+            },
+            "title": "Rules Fired",
+            "type": "array"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          },
+          "what_if": {
+            "items": {
+              "type": "string"
+            },
+            "title": "What If",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "outcome",
+          "client_reason_code",
+          "route_reason",
+          "grade",
+          "score",
+          "factors",
+          "rules_fired",
+          "internal_reasons",
+          "policy",
+          "recommendation",
+          "what_if",
+          "config_version",
+          "key_rate",
+          "made_by",
+          "comment",
+          "created_at"
+        ],
+        "title": "DecisionBank",
         "type": "object"
       },
       "ErrorBody": {
@@ -51,10 +1292,232 @@
           "OTP_INVALID",
           "OBJECTION_NOT_ALLOWED",
           "SERVICE_UNAVAILABLE",
-          "INTERNAL_ERROR"
+          "INTERNAL_ERROR",
+          "NOT_IMPLEMENTED"
         ],
         "title": "ErrorCode",
         "type": "string"
+      },
+      "EventBank": {
+        "additionalProperties": false,
+        "properties": {
+          "actor": {
+            "title": "Actor",
+            "type": "string"
+          },
+          "at": {
+            "title": "At",
+            "type": "string"
+          },
+          "event_type": {
+            "title": "Event Type",
+            "type": "string"
+          },
+          "from_state": {
+            "anyOf": [
+              {
+                "enum": [
+                  "DRAFT",
+                  "SUBMITTED",
+                  "VALIDATION",
+                  "INFO_REQUESTED",
+                  "ENRICHMENT",
+                  "ASSESSMENT",
+                  "MANUAL_REVIEW",
+                  "OFFER_ISSUED",
+                  "DECLINED",
+                  "SIGNING",
+                  "SIGNED",
+                  "DISBURSED",
+                  "WITHDRAWN",
+                  "EXPIRED"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From State"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "reason_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason Code"
+          },
+          "to_state": {
+            "anyOf": [
+              {
+                "enum": [
+                  "DRAFT",
+                  "SUBMITTED",
+                  "VALIDATION",
+                  "INFO_REQUESTED",
+                  "ENRICHMENT",
+                  "ASSESSMENT",
+                  "MANUAL_REVIEW",
+                  "OFFER_ISSUED",
+                  "DECLINED",
+                  "SIGNING",
+                  "SIGNED",
+                  "DISBURSED",
+                  "WITHDRAWN",
+                  "EXPIRED"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To State"
+          }
+        },
+        "required": [
+          "at",
+          "event_type",
+          "from_state",
+          "to_state",
+          "actor",
+          "reason_code",
+          "note"
+        ],
+        "title": "EventBank",
+        "type": "object"
+      },
+      "ExternalCheckBank": {
+        "additionalProperties": false,
+        "properties": {
+          "attempts": {
+            "title": "Attempts",
+            "type": "integer"
+          },
+          "fetched_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fetched At"
+          },
+          "response": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Response"
+          },
+          "source": {
+            "enum": [
+              "BKI",
+              "EGRUL",
+              "FNS"
+            ],
+            "title": "Source",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "PENDING",
+              "OK",
+              "FAILED"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "source",
+          "status",
+          "attempts",
+          "fetched_at",
+          "response"
+        ],
+        "title": "ExternalCheckBank",
+        "type": "object"
+      },
+      "FactorLine": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "max_points": {
+            "title": "Max Points",
+            "type": "integer"
+          },
+          "points": {
+            "title": "Points",
+            "type": "integer"
+          },
+          "rule": {
+            "title": "Rule",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "value": {
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title",
+          "value",
+          "points",
+          "max_points",
+          "rule"
+        ],
+        "title": "FactorLine",
+        "type": "object"
+      },
+      "Founder": {
+        "additionalProperties": false,
+        "properties": {
+          "full_name": {
+            "title": "Full Name",
+            "type": "string"
+          },
+          "share_pct": {
+            "title": "Share Pct",
+            "type": "number"
+          }
+        },
+        "required": [
+          "full_name",
+          "share_pct"
+        ],
+        "title": "Founder",
+        "type": "object"
       },
       "HealthResponse": {
         "additionalProperties": false,
@@ -68,6 +1531,1236 @@
         },
         "title": "HealthResponse",
         "type": "object"
+      },
+      "InfoAnswer": {
+        "additionalProperties": false,
+        "properties": {
+          "comment": {
+            "maxLength": 1000,
+            "minLength": 3,
+            "title": "Comment",
+            "type": "string"
+          },
+          "item_code": {
+            "enum": [
+              "REVENUE_CONFIRM",
+              "PURPOSE_DETAILS",
+              "UNDERWRITER_QUESTION"
+            ],
+            "title": "Item Code",
+            "type": "string"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "item_code",
+          "comment"
+        ],
+        "title": "InfoAnswer",
+        "type": "object"
+      },
+      "InfoRequestClient": {
+        "additionalProperties": false,
+        "properties": {
+          "due_at": {
+            "title": "Due At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/InfoRequestItem"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "items",
+          "due_at"
+        ],
+        "title": "InfoRequestClient",
+        "type": "object"
+      },
+      "InfoRequestItem": {
+        "additionalProperties": false,
+        "properties": {
+          "item_code": {
+            "enum": [
+              "REVENUE_CONFIRM",
+              "PURPOSE_DETAILS",
+              "UNDERWRITER_QUESTION"
+            ],
+            "title": "Item Code",
+            "type": "string"
+          },
+          "question": {
+            "title": "Question",
+            "type": "string"
+          },
+          "requires_value": {
+            "title": "Requires Value",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "item_code",
+          "question",
+          "requires_value"
+        ],
+        "title": "InfoRequestItem",
+        "type": "object"
+      },
+      "InfoResponseRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "answers": {
+            "items": {
+              "$ref": "#/components/schemas/InfoAnswer"
+            },
+            "title": "Answers",
+            "type": "array"
+          }
+        },
+        "required": [
+          "answers"
+        ],
+        "title": "InfoResponseRequest",
+        "type": "object"
+      },
+      "LoginRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "login": {
+            "title": "Login",
+            "type": "string"
+          },
+          "password": {
+            "title": "Password",
+            "type": "string"
+          }
+        },
+        "required": [
+          "login",
+          "password"
+        ],
+        "title": "LoginRequest",
+        "type": "object"
+      },
+      "LoginResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "access_token": {
+            "title": "Access Token",
+            "type": "string"
+          },
+          "expires_in": {
+            "title": "Expires In",
+            "type": "integer"
+          },
+          "token_type": {
+            "const": "bearer",
+            "title": "Token Type",
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserBrief"
+          }
+        },
+        "required": [
+          "access_token",
+          "token_type",
+          "expires_in",
+          "user"
+        ],
+        "title": "LoginResponse",
+        "type": "object"
+      },
+      "MeResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "companies": {
+            "items": {
+              "$ref": "#/components/schemas/Membership"
+            },
+            "title": "Companies",
+            "type": "array"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserBrief"
+          }
+        },
+        "required": [
+          "user",
+          "companies"
+        ],
+        "title": "MeResponse",
+        "type": "object"
+      },
+      "Membership": {
+        "additionalProperties": false,
+        "properties": {
+          "can_sign": {
+            "title": "Can Sign",
+            "type": "boolean"
+          },
+          "company": {
+            "$ref": "#/components/schemas/CompanyBrief"
+          },
+          "is_founder": {
+            "title": "Is Founder",
+            "type": "boolean"
+          },
+          "position": {
+            "title": "Position",
+            "type": "string"
+          }
+        },
+        "required": [
+          "company",
+          "position",
+          "can_sign",
+          "is_founder"
+        ],
+        "title": "Membership",
+        "type": "object"
+      },
+      "ObjectionClient": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "title": "Created At",
+            "type": "string"
+          },
+          "outcome_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Outcome Text"
+          },
+          "status": {
+            "enum": [
+              "PENDING",
+              "RESOLVED"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "created_at",
+          "outcome_text"
+        ],
+        "title": "ObjectionClient",
+        "type": "object"
+      },
+      "ObjectionRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "text": {
+            "maxLength": 2000,
+            "minLength": 10,
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "ObjectionRequest",
+        "type": "object"
+      },
+      "OfferClient": {
+        "additionalProperties": false,
+        "properties": {
+          "amount": {
+            "title": "Amount",
+            "type": "integer"
+          },
+          "counter_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Counter Reason"
+          },
+          "expires_at": {
+            "title": "Expires At",
+            "type": "string"
+          },
+          "explanation": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 3,
+            "minItems": 1,
+            "title": "Explanation",
+            "type": "array"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "APPROVED",
+              "COUNTER"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "monthly_payment": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Monthly Payment"
+          },
+          "product_code": {
+            "enum": [
+              "EXPRESS",
+              "WORKING_CAPITAL",
+              "OVERDRAFT"
+            ],
+            "title": "Product Code",
+            "type": "string"
+          },
+          "rate": {
+            "title": "Rate",
+            "type": "number"
+          },
+          "requested": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RequestedTerms"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "enum": [
+              "ACTIVE",
+              "ACCEPTED",
+              "REJECTED",
+              "EXPIRED",
+              "SUPERSEDED"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "term_months": {
+            "title": "Term Months",
+            "type": "integer"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "kind",
+          "status",
+          "product_code",
+          "amount",
+          "term_months",
+          "rate",
+          "monthly_payment",
+          "expires_at",
+          "explanation",
+          "requested",
+          "counter_reason"
+        ],
+        "title": "OfferClient",
+        "type": "object"
+      },
+      "OtpRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "party_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Party Id"
+          },
+          "purpose": {
+            "enum": [
+              "CONSENTS",
+              "OFFER",
+              "GUARANTEE"
+            ],
+            "title": "Purpose",
+            "type": "string"
+          }
+        },
+        "required": [
+          "purpose"
+        ],
+        "title": "OtpRequest",
+        "type": "object"
+      },
+      "OtpResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "demo_code": {
+            "title": "Demo Code",
+            "type": "string"
+          },
+          "expires_at": {
+            "title": "Expires At",
+            "type": "string"
+          },
+          "otp_id": {
+            "title": "Otp Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "otp_id",
+          "demo_code",
+          "expires_at"
+        ],
+        "title": "OtpResponse",
+        "type": "object"
+      },
+      "Page_BankListItem_": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/BankListItem"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "page": {
+            "title": "Page",
+            "type": "integer"
+          },
+          "size": {
+            "maximum": 100.0,
+            "title": "Size",
+            "type": "integer"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "size"
+        ],
+        "title": "Page[BankListItem]",
+        "type": "object"
+      },
+      "PartyClient": {
+        "additionalProperties": false,
+        "properties": {
+          "full_name": {
+            "title": "Full Name",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "is_me": {
+            "title": "Is Me",
+            "type": "boolean"
+          },
+          "role": {
+            "enum": [
+              "BORROWER_SIGNATORY",
+              "GUARANTOR"
+            ],
+            "title": "Role",
+            "type": "string"
+          },
+          "signed": {
+            "title": "Signed",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "role",
+          "full_name",
+          "signed",
+          "is_me"
+        ],
+        "title": "PartyClient",
+        "type": "object"
+      },
+      "PolicyCalc": {
+        "additionalProperties": false,
+        "properties": {
+          "avg_turnover": {
+            "title": "Avg Turnover",
+            "type": "integer"
+          },
+          "cap_by_turnover": {
+            "title": "Cap By Turnover",
+            "type": "integer"
+          },
+          "existing_payments": {
+            "title": "Existing Payments",
+            "type": "integer"
+          },
+          "free_payment": {
+            "title": "Free Payment",
+            "type": "integer"
+          },
+          "max_amount": {
+            "title": "Max Amount",
+            "type": "integer"
+          },
+          "ptr_requested": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ptr Requested"
+          },
+          "rate": {
+            "title": "Rate",
+            "type": "number"
+          },
+          "requested_payment": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requested Payment"
+          },
+          "steps": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Steps",
+            "type": "array"
+          }
+        },
+        "required": [
+          "rate",
+          "avg_turnover",
+          "existing_payments",
+          "free_payment",
+          "cap_by_turnover",
+          "max_amount",
+          "requested_payment",
+          "ptr_requested",
+          "steps"
+        ],
+        "title": "PolicyCalc",
+        "type": "object"
+      },
+      "Product": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "enum": [
+              "EXPRESS",
+              "WORKING_CAPITAL",
+              "OVERDRAFT"
+            ],
+            "title": "Code",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "key_rate": {
+            "title": "Key Rate",
+            "type": "number"
+          },
+          "key_rate_date": {
+            "title": "Key Rate Date",
+            "type": "string"
+          },
+          "max_amount": {
+            "title": "Max Amount",
+            "type": "integer"
+          },
+          "max_term_months": {
+            "title": "Max Term Months",
+            "type": "integer"
+          },
+          "min_amount": {
+            "title": "Min Amount",
+            "type": "integer"
+          },
+          "min_term_months": {
+            "title": "Min Term Months",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "purposes": {
+            "items": {
+              "enum": [
+                "WORKING_CAPITAL",
+                "CASH_GAP",
+                "EQUIPMENT",
+                "OTHER"
+              ],
+              "type": "string"
+            },
+            "title": "Purposes",
+            "type": "array"
+          },
+          "rate_from": {
+            "title": "Rate From",
+            "type": "number"
+          },
+          "requires_guarantor_ooo": {
+            "title": "Requires Guarantor Ooo",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "description",
+          "purposes",
+          "min_amount",
+          "max_amount",
+          "min_term_months",
+          "max_term_months",
+          "rate_from",
+          "requires_guarantor_ooo",
+          "key_rate",
+          "key_rate_date"
+        ],
+        "title": "Product",
+        "type": "object"
+      },
+      "QueueItem": {
+        "additionalProperties": false,
+        "properties": {
+          "amount": {
+            "title": "Amount",
+            "type": "integer"
+          },
+          "company_kind": {
+            "enum": [
+              "IP",
+              "OOO"
+            ],
+            "title": "Company Kind",
+            "type": "string"
+          },
+          "company_name": {
+            "title": "Company Name",
+            "type": "string"
+          },
+          "grade": {
+            "anyOf": [
+              {
+                "enum": [
+                  "A",
+                  "B",
+                  "C",
+                  "D"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Grade"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "number": {
+            "title": "Number",
+            "type": "integer"
+          },
+          "product_code": {
+            "enum": [
+              "EXPRESS",
+              "WORKING_CAPITAL",
+              "OVERDRAFT"
+            ],
+            "title": "Product Code",
+            "type": "string"
+          },
+          "route_reason": {
+            "enum": [
+              "GRADE_C",
+              "AMOUNT_ABOVE_AUTO",
+              "NO_AUTO_CONSENT",
+              "SOURCE_UNAVAILABLE",
+              "OBJECTION",
+              "INFO_RESPONSE"
+            ],
+            "title": "Route Reason",
+            "type": "string"
+          },
+          "waiting_since": {
+            "title": "Waiting Since",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "number",
+          "company_name",
+          "company_kind",
+          "product_code",
+          "amount",
+          "grade",
+          "route_reason",
+          "waiting_since"
+        ],
+        "title": "QueueItem",
+        "type": "object"
+      },
+      "Recommendation": {
+        "additionalProperties": false,
+        "properties": {
+          "amount": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount"
+          },
+          "outcome": {
+            "enum": [
+              "APPROVE",
+              "COUNTER",
+              "DECLINE"
+            ],
+            "title": "Outcome",
+            "type": "string"
+          },
+          "rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rate"
+          },
+          "term_months": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Term Months"
+          }
+        },
+        "required": [
+          "outcome",
+          "amount",
+          "term_months",
+          "rate"
+        ],
+        "title": "Recommendation",
+        "type": "object"
+      },
+      "RequestedTerms": {
+        "additionalProperties": false,
+        "properties": {
+          "amount": {
+            "title": "Amount",
+            "type": "integer"
+          },
+          "term_months": {
+            "title": "Term Months",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "amount",
+          "term_months"
+        ],
+        "title": "RequestedTerms",
+        "type": "object"
+      },
+      "RiskFlags": {
+        "additionalProperties": false,
+        "properties": {
+          "aml_flag": {
+            "title": "Aml Flag",
+            "type": "boolean"
+          },
+          "fraud_flag": {
+            "title": "Fraud Flag",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "aml_flag",
+          "fraud_flag"
+        ],
+        "title": "RiskFlags",
+        "type": "object"
+      },
+      "RuleFired": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "effect": {
+            "enum": [
+              "STOP",
+              "ROUTE",
+              "INFO",
+              "POLICY"
+            ],
+            "title": "Effect",
+            "type": "string"
+          },
+          "threshold": {
+            "title": "Threshold",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "value": {
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title",
+          "value",
+          "threshold",
+          "effect"
+        ],
+        "title": "RuleFired",
+        "type": "object"
+      },
+      "SignRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "otp_id": {
+            "title": "Otp Id",
+            "type": "string"
+          },
+          "party_id": {
+            "title": "Party Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "otp_id",
+          "code",
+          "party_id"
+        ],
+        "title": "SignRequest",
+        "type": "object"
+      },
+      "Stage": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "enum": [
+              "APPLICATION",
+              "CHECK",
+              "ASSESSMENT",
+              "DECISION",
+              "SIGNING",
+              "DISBURSEMENT"
+            ],
+            "title": "Code",
+            "type": "string"
+          },
+          "index": {
+            "enum": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6
+            ],
+            "title": "Index",
+            "type": "integer"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "what_happens": {
+            "title": "What Happens",
+            "type": "string"
+          },
+          "what_to_do": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "What To Do"
+          }
+        },
+        "required": [
+          "index",
+          "code",
+          "title",
+          "what_happens",
+          "what_to_do"
+        ],
+        "title": "Stage",
+        "type": "object"
+      },
+      "SubmitRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "consents": {
+            "$ref": "#/components/schemas/Consents"
+          },
+          "otp_id": {
+            "title": "Otp Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "otp_id",
+          "code",
+          "consents"
+        ],
+        "title": "SubmitRequest",
+        "type": "object"
+      },
+      "TimeShiftRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "application_id": {
+            "title": "Application Id",
+            "type": "string"
+          },
+          "days": {
+            "maximum": 400.0,
+            "minimum": 1.0,
+            "title": "Days",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "application_id",
+          "days"
+        ],
+        "title": "TimeShiftRequest",
+        "type": "object"
+      },
+      "TimeShiftResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "application_id": {
+            "title": "Application Id",
+            "type": "string"
+          },
+          "expired_now": {
+            "title": "Expired Now",
+            "type": "boolean"
+          },
+          "state": {
+            "enum": [
+              "DRAFT",
+              "SUBMITTED",
+              "VALIDATION",
+              "INFO_REQUESTED",
+              "ENRICHMENT",
+              "ASSESSMENT",
+              "MANUAL_REVIEW",
+              "OFFER_ISSUED",
+              "DECLINED",
+              "SIGNING",
+              "SIGNED",
+              "DISBURSED",
+              "WITHDRAWN",
+              "EXPIRED"
+            ],
+            "title": "State",
+            "type": "string"
+          }
+        },
+        "required": [
+          "application_id",
+          "expired_now",
+          "state"
+        ],
+        "title": "TimeShiftResponse",
+        "type": "object"
+      },
+      "TimelineItem": {
+        "additionalProperties": false,
+        "properties": {
+          "at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "At"
+          },
+          "stage_code": {
+            "enum": [
+              "APPLICATION",
+              "CHECK",
+              "ASSESSMENT",
+              "DECISION",
+              "SIGNING",
+              "DISBURSEMENT"
+            ],
+            "title": "Stage Code",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "done",
+              "current",
+              "action_required",
+              "pending",
+              "failed",
+              "cancelled"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "stage_code",
+          "title",
+          "status",
+          "at"
+        ],
+        "title": "TimelineItem",
+        "type": "object"
+      },
+      "TurnoverMonth": {
+        "additionalProperties": false,
+        "properties": {
+          "amount": {
+            "title": "Amount",
+            "type": "integer"
+          },
+          "month": {
+            "title": "Month",
+            "type": "string"
+          }
+        },
+        "required": [
+          "month",
+          "amount"
+        ],
+        "title": "TurnoverMonth",
+        "type": "object"
+      },
+      "UnderwriterDecisionRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "amount": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount"
+          },
+          "client_reason_category": {
+            "anyOf": [
+              {
+                "enum": [
+                  "Данные о компании",
+                  "Финансовое положение",
+                  "Срок ведения бизнеса",
+                  "Кредитная история",
+                  "Налоги и обязательства",
+                  "Условия продукта",
+                  "Дополнительные проверки",
+                  "Финансовые показатели",
+                  "Долговая нагрузка"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Reason Category"
+          },
+          "comment": {
+            "maxLength": 2000,
+            "minLength": 5,
+            "title": "Comment",
+            "type": "string"
+          },
+          "info_questions": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 5,
+                "minItems": 1,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Info Questions"
+          },
+          "outcome": {
+            "enum": [
+              "APPROVE",
+              "COUNTER",
+              "DECLINE",
+              "REQUEST_INFO",
+              "RETRY_ENRICHMENT"
+            ],
+            "title": "Outcome",
+            "type": "string"
+          },
+          "term_months": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Term Months"
+          }
+        },
+        "required": [
+          "outcome",
+          "comment"
+        ],
+        "title": "UnderwriterDecisionRequest",
+        "type": "object"
+      },
+      "UserBrief": {
+        "additionalProperties": false,
+        "properties": {
+          "full_name": {
+            "title": "Full Name",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "CLIENT",
+              "UNDERWRITER",
+              "GUARANTOR"
+            ],
+            "title": "Role",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "full_name",
+          "role"
+        ],
+        "title": "UserBrief",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "scheme": "bearer",
+        "type": "http"
       }
     }
   },
@@ -77,6 +2770,1731 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/v1/applications": {
+      "get": {
+        "operationId": "applications_api_v1_applications_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "company_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Company Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ApplicationListItem"
+                  },
+                  "title": "Response Applications Api V1 Applications Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Получить заявки компании",
+        "tags": [
+          "Заявки клиента"
+        ]
+      },
+      "post": {
+        "operationId": "create_application_api_v1_applications_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApplicationCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationClient"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Создать заявку",
+        "tags": [
+          "Заявки клиента"
+        ]
+      }
+    },
+    "/api/v1/applications/{id}": {
+      "get": {
+        "operationId": "application_api_v1_applications__id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationClient"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Получить заявку",
+        "tags": [
+          "Заявки клиента"
+        ]
+      },
+      "patch": {
+        "operationId": "patch_application_api_v1_applications__id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "If-Match",
+            "required": true,
+            "schema": {
+              "title": "If-Match",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApplicationPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationClient"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Изменить черновик заявки",
+        "tags": [
+          "Заявки клиента"
+        ]
+      }
+    },
+    "/api/v1/applications/{id}/info-response": {
+      "post": {
+        "operationId": "info_response_api_v1_applications__id__info_response_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InfoResponseRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationClient"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Ответить на запрос сведений",
+        "tags": [
+          "Действия клиента"
+        ]
+      }
+    },
+    "/api/v1/applications/{id}/objection": {
+      "post": {
+        "operationId": "objection_api_v1_applications__id__objection_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ObjectionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationClient"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Подать возражение",
+        "tags": [
+          "Действия клиента"
+        ]
+      }
+    },
+    "/api/v1/applications/{id}/offer/accept": {
+      "post": {
+        "operationId": "accept_offer_api_v1_applications__id__offer_accept_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcceptOfferRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationClient"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Принять предложение",
+        "tags": [
+          "Действия клиента"
+        ]
+      }
+    },
+    "/api/v1/applications/{id}/offer/reject": {
+      "post": {
+        "operationId": "reject_offer_api_v1_applications__id__offer_reject_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationClient"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Отклонить предложение",
+        "tags": [
+          "Действия клиента"
+        ]
+      }
+    },
+    "/api/v1/applications/{id}/otp": {
+      "post": {
+        "operationId": "otp_api_v1_applications__id__otp_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OtpRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OtpResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Запросить код подтверждения",
+        "tags": [
+          "Действия клиента"
+        ]
+      }
+    },
+    "/api/v1/applications/{id}/request-signature": {
+      "post": {
+        "operationId": "request_signature_api_v1_applications__id__request_signature_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationClient"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Запросить подпись",
+        "tags": [
+          "Действия клиента"
+        ]
+      }
+    },
+    "/api/v1/applications/{id}/sign": {
+      "post": {
+        "operationId": "sign_api_v1_applications__id__sign_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationClient"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Подписать документы",
+        "tags": [
+          "Действия клиента"
+        ]
+      }
+    },
+    "/api/v1/applications/{id}/submit": {
+      "post": {
+        "operationId": "submit_api_v1_applications__id__submit_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationClient"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Подать заявку",
+        "tags": [
+          "Действия клиента"
+        ]
+      }
+    },
+    "/api/v1/applications/{id}/withdraw": {
+      "post": {
+        "operationId": "withdraw_api_v1_applications__id__withdraw_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationClient"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Отозвать заявку",
+        "tags": [
+          "Действия клиента"
+        ]
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "operationId": "login_api_v1_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          }
+        },
+        "summary": "Войти в кабинет",
+        "tags": [
+          "Аутентификация"
+        ]
+      }
+    },
+    "/api/v1/bank/applications": {
+      "get": {
+        "operationId": "bank_applications_api_v1_bank_applications_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "state",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "DRAFT",
+                    "SUBMITTED",
+                    "VALIDATION",
+                    "INFO_REQUESTED",
+                    "ENRICHMENT",
+                    "ASSESSMENT",
+                    "MANUAL_REVIEW",
+                    "OFFER_ISSUED",
+                    "DECLINED",
+                    "SIGNING",
+                    "SIGNED",
+                    "DISBURSED",
+                    "WITHDRAWN",
+                    "EXPIRED"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "State"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Size",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_BankListItem_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Получить список заявок банка",
+        "tags": [
+          "Андеррайтер и банк"
+        ]
+      }
+    },
+    "/api/v1/calculator": {
+      "post": {
+        "operationId": "calculator_api_v1_calculator_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CalculatorRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalculatorResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Рассчитать условия кредита",
+        "tags": [
+          "Каталог и калькулятор"
+        ]
+      }
+    },
+    "/api/v1/companies/{id}/profile": {
+      "get": {
+        "operationId": "company_profile_api_v1_companies__id__profile_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyProfile"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Получить профиль компании",
+        "tags": [
+          "Профиль компании"
+        ]
+      }
+    },
+    "/api/v1/demo/time-shift": {
+      "post": {
+        "operationId": "time_shift_api_v1_demo_time_shift_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TimeShiftRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TimeShiftResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Сдвинуть сроки заявки для демонстрации",
+        "tags": [
+          "Служебное"
+        ]
+      }
+    },
     "/api/v1/health": {
       "get": {
         "operationId": "health_api_v1_health_get",
@@ -93,6 +4511,112 @@
           }
         },
         "summary": "Health"
+      }
+    },
+    "/api/v1/me": {
+      "get": {
+        "operationId": "me_api_v1_me_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Получить данные пользователя",
+        "tags": [
+          "Аутентификация"
+        ]
+      }
+    },
+    "/api/v1/products": {
+      "get": {
+        "operationId": "products_api_v1_products_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Product"
+                  },
+                  "title": "Response Products Api V1 Products Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Получить кредитные продукты",
+        "tags": [
+          "Каталог и калькулятор"
+        ]
       }
     },
     "/api/v1/ready": {
@@ -121,6 +4645,262 @@
           }
         },
         "summary": "Ready"
+      }
+    },
+    "/api/v1/underwriting/applications/{id}": {
+      "get": {
+        "operationId": "underwriting_application_api_v1_underwriting_applications__id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationBank"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Получить данные заявки для банка",
+        "tags": [
+          "Андеррайтер и банк"
+        ]
+      }
+    },
+    "/api/v1/underwriting/queue": {
+      "get": {
+        "operationId": "underwriting_queue_api_v1_underwriting_queue_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/QueueItem"
+                  },
+                  "title": "Response Underwriting Queue Api V1 Underwriting Queue Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Получить очередь заявок",
+        "tags": [
+          "Андеррайтер и банк"
+        ]
+      }
+    },
+    "/api/v1/underwriting/{id}/decision": {
+      "post": {
+        "operationId": "underwriting_decision_api_v1_underwriting__id__decision_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnderwriterDecisionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationBank"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Принять решение по заявке",
+        "tags": [
+          "Андеррайтер и банк"
+        ]
       }
     }
   }
