@@ -7,5 +7,10 @@
 | --- | --- | --- | --- |
 | Скиллы superpowers (3 шт.) | https://github.com/obra/superpowers, коммит 2ce8aa1 | MIT, © 2025 Jesse Vincent | `.agents/skills/` |
 
+## Заметные зависимости бэкенда
+| Компонент | Лицензия | Зачем |
+| --- | --- | --- |
+| argon2-cffi 25.1.0 (+ argon2-cffi-bindings — MIT, cffi — MIT-0, pycparser — BSD-3-Clause) | MIT | хэш паролей (B-03) |
+
 ## Смоделированные интеграции
 Внешние источники (БКИ, ЕГРЮЛ/ЕГРИП, ФНС) — моки с синтетическими данными (`mocks/`, `contracts/external-mocks.md`); реальные сервисы не используются.
