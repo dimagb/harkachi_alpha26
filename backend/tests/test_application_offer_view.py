@@ -1,5 +1,8 @@
 """Client projections exercised through the real committed pipeline."""
 
+import os
+import subprocess
+import sys
 from contextlib import contextmanager
 from datetime import UTC, date, datetime, timedelta
 
@@ -8,7 +11,7 @@ from fastapi.testclient import TestClient
 from pipeline.conftest import persona_data as persona_data
 from pipeline.conftest import pipeline_factory as pipeline_factory
 from pipeline.test_pipeline import drain, providers_for, submit_persona
-from sqlalchemy import select
+from sqlalchemy import delete, select, text
 
 from app.auth.deps import current_user
 from app.db import get_session
@@ -22,6 +25,44 @@ from app.models import (
     ReasonCatalog,
     User,
 )
+
+CLIENT_EXPLANATIONS = [
+    ("business_age", "Бизнес работает больше 3 лет"),
+    ("industry_risk", "Отрасль с низким риском"),
+    ("mass_registration", "Руководитель и адрес компании не массовые"),
+    ("turnover_stability", "Стабильные поступления на счёт"),
+    ("turnover_trend", "Поступления на счёт не снижаются"),
+    ("zero_months", "Поступления на счёт каждый месяц"),
+    ("payment_to_turnover", "Низкая долговая нагрузка"),
+    ("debt_to_turnover", "Небольшой долг относительно оборота"),
+    ("delinquency_12m", "Нет просрочек по кредитам"),
+    ("credit_history_length", "Длинная кредитная история"),
+    ("bureau_inquiries_30d", "Мало обращений за кредитами в последний месяц"),
+    ("payment_discipline", "Нет долгов по налогам и судебных взысканий"),
+]
+
+
+@pytest.fixture
+def seeded_pipeline(pipeline_factory):
+    # Load the actual demo seeds in this test's isolated schema.
+    with pipeline_factory.begin() as session:
+        schema = session.scalar(text("SELECT current_schema()"))
+        url = session.get_bind().url.update_query_dict(
+            {"options": f"-csearch_path={schema}"}
+        )
+        # The idempotent seed preserves existing rows; remove fixture placeholders.
+        session.execute(delete(ReasonCatalog))
+    subprocess.run(
+        [sys.executable, "-m", "app.seed"],
+        env={
+            **os.environ,
+            "DATABASE_URL": url.render_as_string(hide_password=False),
+            "DEMO_PASSWORD": "b07c-test-password",
+        },
+        check=True,
+        capture_output=True,
+    )
+    return pipeline_factory
 
 
 @contextmanager
@@ -63,20 +104,15 @@ def test_pipeline_offer(pipeline_factory, persona_data, code):
     with pipeline_factory() as session:
         application = session.get(Application, application_id)
         offer = session.get(Offer, application.current_offer_id)
-        decision = session.scalar(
-            select(Decision).where(Decision.application_id == application_id)
-        )
         assert view["id"] == str(offer.id)
         assert view["version"] == offer.version
         assert view["status"] == offer.status
         assert datetime.fromisoformat(view["expires_at"]) == offer.expires_at
-        expected_lines = [
-            f"{f['title']} — {f['value']}"
-            for f in decision.factors
-            if f["points"] == f["max_points"]
-        ][:3]
-    assert view["explanation"] == expected_lines
     assert 1 <= len(view["explanation"]) <= 3
+    assert all(
+        line in dict(CLIENT_EXPLANATIONS).values() for line in view["explanation"]
+    )
+    assert "`" not in " ".join(view["explanation"])
     assert "балл" not in " ".join(view["explanation"]).lower()
     if code == "ip_good":
         assert view["kind"] == "APPROVED"
@@ -99,32 +135,29 @@ def test_pipeline_offer(pipeline_factory, persona_data, code):
 @pytest.mark.parametrize(
     "code,reason", [("ip_bad", "SF_OVERDUE"), ("ooo_aml", "ADDITIONAL_CHECKS")]
 )
-def test_pipeline_decline(pipeline_factory, persona_data, code, reason):
+def test_pipeline_decline(seeded_pipeline, persona_data, code, reason):
+    pipeline_factory = seeded_pipeline
     application_id, _ = completed(pipeline_factory, persona_data, code)
     with pipeline_factory.begin() as session:
         catalog = session.scalar(
             select(ReasonCatalog).where(ReasonCatalog.code == reason)
         )
-        catalog.client_category = (
-            "Кредитная история" if code == "ip_bad" else "Дополнительные проверки"
-        )
-        catalog.client_text = "Текст из каталога"
-        catalog.client_action = "Действие из каталога" if code == "ip_bad" else None
+        expected_category = catalog.client_category
+        expected_text = catalog.client_text
+        expected_action = catalog.client_action
         decision = session.scalar(
             select(Decision).where(Decision.application_id == application_id)
         )
-        decision.created_at = datetime(2026, 9, 1, 23, 30, tzinfo=UTC)
+        decision.created_at = datetime(2026, 10, 23, 22, 30, tzinfo=UTC)
     with client_for(pipeline_factory, code) as client:
         response = client.get(f"/api/v1/applications/{application_id}")
     assert response.status_code == 200, response.text
     assert response.json()["client_reason"] == {
         "code": reason,
-        "category": "Кредитная история"
-        if code == "ip_bad"
-        else "Дополнительные проверки",
-        "text": "Текст из каталога",
-        "action": "Действие из каталога" if code == "ip_bad" else None,
-        "retry_after": "2026-10-01" if code == "ip_bad" else None,
+        "category": expected_category,
+        "text": expected_text,
+        "action": expected_action,
+        "retry_after": "2026-11-23" if code == "ip_bad" else None,
     }
     for internal in (
         "SF_ADDITIONAL",
@@ -134,6 +167,86 @@ def test_pipeline_decline(pipeline_factory, persona_data, code, reason):
         "risk_flag",
         '"factors"',
         '"score"',
+    ):
+        assert internal not in response.text
+
+
+@pytest.mark.parametrize("offset", [0, 3, 6, 9])
+def test_explanation_uses_public_phrases_in_protocol_order(
+    pipeline_factory, persona_data, offset
+):
+    application_id, _ = completed(pipeline_factory, persona_data, "ip_good")
+    # Unknown and non-maximal factors must not consume the three public lines.
+    selected = CLIENT_EXPLANATIONS[offset:] + CLIENT_EXPLANATIONS[:offset]
+    with pipeline_factory.begin() as session:
+        decision = session.scalar(
+            select(Decision).where(Decision.application_id == application_id)
+        )
+        template = decision.factors[0]
+        decision.factors = [
+            dict(template, code="unknown", points=10, max_points=10),
+            dict(template, code=selected[-1][0], points=0, max_points=10),
+        ] + [
+            dict(template, code=code, points=10, max_points=10) for code, _ in selected
+        ]
+    with client_for(pipeline_factory, "ip_good") as client:
+        view = client.get(f"/api/v1/applications/{application_id}").json()["offer"]
+    assert view["explanation"] == [text for _, text in selected[:3]]
+
+
+@pytest.mark.parametrize("factors", ["no_maximum", "empty", "unknown"])
+def test_explanation_falls_back_without_public_strengths(
+    pipeline_factory, persona_data, factors
+):
+    application_id, _ = completed(pipeline_factory, persona_data, "ip_good")
+    with pipeline_factory.begin() as session:
+        decision = session.scalar(
+            select(Decision).where(Decision.application_id == application_id)
+        )
+        if factors == "empty":
+            decision.factors = []
+        elif factors == "unknown":
+            decision.factors = [
+                dict(decision.factors[0], code="unknown", points=10, max_points=10)
+            ]
+        else:
+            decision.factors = [dict(factor, points=0) for factor in decision.factors]
+    with client_for(pipeline_factory, "ip_good") as client:
+        view = client.get(f"/api/v1/applications/{application_id}").json()["offer"]
+    assert view["explanation"] == ["Условия рассчитаны по данным о вашем бизнесе"]
+
+
+@pytest.mark.parametrize(
+    "code", ["ip_good", "ip_bad", "ooo_load", "ooo_gap", "ooo_border", "ooo_aml"]
+)
+def test_client_json_has_no_internal_details(seeded_pipeline, persona_data, code):
+    pipeline_factory = seeded_pipeline
+    application_id, _ = completed(pipeline_factory, persona_data, code)
+    with client_for(pipeline_factory, code) as client:
+        response = client.get(f"/api/v1/applications/{application_id}")
+    assert response.status_code == 200, response.text
+    if code == "ooo_aml":
+        assert response.json()["client_reason"] == {
+            "code": "ADDITIONAL_CHECKS",
+            "category": "Дополнительные проверки",
+            "text": "Заявка не прошла дополнительные проверки банка",
+            "action": None,
+            "retry_after": None,
+        }
+    for internal in (
+        "SF_ADDITIONAL",
+        "internal_reasons",
+        "rules_fired",
+        "inputs_snapshot",
+        "risk_flag",
+        '"factors"',
+        '"score"',
+        "grade",
+        "points",
+        "max_points",
+        "route_reason",
+        "turnover_cv",
+        "`",
     ):
         assert internal not in response.text
 

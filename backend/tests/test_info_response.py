@@ -50,6 +50,11 @@ def test_gap_response_restarts_pipeline(pipeline_factory, persona_data):
         assert event.actor_type == "CLIENT"
         assert event.actor_id == application.created_by
     drain(pipeline_factory, providers_for(persona_data), persona_data)
+    with client_for(pipeline_factory, "ooo_gap") as client:
+        assert (
+            client.get(f"/api/v1/applications/{application_id}").json()["info_request"]
+            is None
+        )
     with pipeline_factory() as session:
         assert_expected(
             session,
@@ -147,6 +152,7 @@ def test_underwriter_response_routes_to_review(pipeline_factory, persona_data):
         )
     assert response.status_code == 200, response.text
     assert response.json()["state"] == "MANUAL_REVIEW"
+    assert response.json()["info_request"] is None
     with pipeline_factory() as session:
         event = session.scalar(
             select(ApplicationEvent).where(
@@ -161,6 +167,37 @@ def test_underwriter_response_routes_to_review(pipeline_factory, persona_data):
                 Job.application_id == application_id, Job.status == "PENDING"
             )
         ).all()
+
+
+@pytest.mark.parametrize(
+    "state",
+    [
+        "DRAFT",
+        "SUBMITTED",
+        "VALIDATION",
+        "ENRICHMENT",
+        "ASSESSMENT",
+        "MANUAL_REVIEW",
+        "OFFER_ISSUED",
+        "DECLINED",
+        "SIGNING",
+        "SIGNED",
+        "DISBURSED",
+        "WITHDRAWN",
+        "EXPIRED",
+    ],
+)
+def test_open_request_is_hidden_outside_info_requested(
+    pipeline_factory, persona_data, state
+):
+    application_id, _ = completed(pipeline_factory, persona_data, "ooo_gap")
+    with pipeline_factory.begin() as session:
+        # Preserve an unanswered request to exercise the state guard itself.
+        session.get(Application, application_id).state = state
+    with client_for(pipeline_factory, "ooo_gap") as client:
+        response = client.get(f"/api/v1/applications/{application_id}")
+    assert response.status_code == 200, response.text
+    assert response.json()["info_request"] is None
 
 
 def test_wrong_state_and_access(pipeline_factory, persona_data):
