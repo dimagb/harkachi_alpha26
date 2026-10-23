@@ -7,6 +7,7 @@ RUN --mount=type=cache,target=/root/.cache/uv uv sync --frozen --no-dev
 
 FROM python:3.12.15-slim AS runtime
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+ENV CONTRACTS_DIR=/contracts
 WORKDIR /app
 RUN useradd --uid 10001 --create-home app
 COPY --from=builder --chown=app:app /app/.venv /app/.venv

@@ -1,4 +1,5 @@
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -11,6 +12,7 @@ class Settings(BaseSettings):
     jwt_ttl_hours: int = 8
     demo_mode: bool = True
     demo_password: str = "demo2026"
+    contracts_dir: Path = Path(__file__).resolve().parents[2] / "contracts"
     mocks_url: str = "http://localhost:8001/mock/v1"
     log_level: str = "INFO"
 
