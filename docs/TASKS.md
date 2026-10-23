@@ -14,7 +14,7 @@
 
 | ID | Задача | Кто (Codex) | Когда | Облако | Зависит от | Статус |
 | --- | --- | --- | --- | --- | --- | --- |
-| T-00 | Каркас репозитория | Аня (ведёт человек) | 23.10 | нет | — | идёт, PR #1 |
+| T-00 | Каркас репозитория | Аня (ведёт человек) | 23.10 | нет | — | PR #1: ревью пройдено, CI зелёный |
 | L-01 | AGENTS.md, TASKS.md, notify.py, стартовые промпты | тимлид | 23.10 | — | — | идёт |
 | L-03 | После M0: CODEOWNERS, Postgres в CI, `.gitignore` для `.notify.env`, команда сидов в compose | тимлид | 23.10 вечер | — | T-00 | — |
 | A-02 | Генератор фоновых данных | Катя | 23.10 сейчас | **да** | — | [готова] |
@@ -144,13 +144,13 @@
 - `backend/app/schemas/*.py` (новые);
 - `backend/app/api/*.py` (новые роутеры);
 - `backend/app/main.py` — только подключение роутеров и `separate_input_output_schemas=False`;
-- `backend/app/errors.py` — только добавление класса исключения, если его нет;
+- `backend/app/errors.py` — добавить `NOT_IMPLEMENTED` в `ErrorCode` и класс исключения, если его нет; перевести на русский `message` («Проверьте заполнение полей», «Внутренняя ошибка сервера» и т. п.) и тексты `details.fields` для частых типов ошибок Pydantic (`missing`, `string_too_short`, `string_too_long`, `greater_than`, `less_than_equal`, `literal_error`, `extra_forbidden`, `uuid_parsing`, `int_parsing`): их видит пользователь;
 - `backend/tests/fixtures_bodies.py` (новый);
 - `backend/tests/test_contract_paths.py`, `backend/tests/test_schemas_validation.py`;
 - `contracts/openapi.json` (генерируется);
 - `frontend/src/api/schema.d.ts` (генерируется);
 - `frontend/contract-parity/parity.ts` (новый, **вне `src/`**);
-- `frontend/tsconfig.parity.json` (новый, включает только `contract-parity/` и `../contracts/api-types.ts`) и скрипт `typecheck` в `frontend/package.json`: `tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.parity.json`. В `build` проверка не входит: в Docker-сборке фронтенда папки `contracts/` нет.
+- `frontend/tsconfig.parity.json` (новый, включает только `contract-parity/` и `../contracts/api-types.ts`) и скрипты в `frontend/package.json`: `typecheck` = `tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.parity.json`; `build` = `tsc --noEmit -p tsconfig.json && vite build` (**сейчас `build` вызывает `typecheck` — это нужно разорвать**, иначе Docker-сборка упадёт: в её контексте нет `contracts/`).
 
 **Читать:** `contracts/api-types.ts` целиком, `contracts/api.md` целиком, `AGENTS.md` §5.
 
@@ -291,7 +291,7 @@
 **Читать:** `contracts/external-mocks.md` целиком; `contracts/personas.json` — поля одного персонажа; `data/README.md`, если A-02 уже слит.
 
 **Сделать:**
-1. При старте загрузить `contracts/personas.json` и, если есть, `data/background.json`. Путь к корню берётся из переменной `DATA_ROOT` (по умолчанию: два уровня вверх от `mocks/app`; в Docker — `/app`). Компании индексируются по ИНН.
+1. При старте загрузить `<DATA_ROOT>/contracts/personas.json` и, если есть, `<DATA_ROOT>/data/background.json`. `DATA_ROOT` — переменная окружения; по умолчанию — корень репозитория (два уровня вверх от `mocks/app`). В Docker каркас уже кладёт `contracts` в `/contracts`, поэтому в образе `DATA_ROOT=/` (`ENV` в `mocks/Dockerfile`) и `COPY data /data`. Компании индексируются по ИНН.
 2. Эндпоинты ровно из `external-mocks.md`:
    - `GET /mock/v1/registry/{inn}`;
    - `POST /mock/v1/bki/report` (`kind=FULL` без `consent_id` → 403; `INFO` отдаёт только `summary`);
@@ -313,13 +313,13 @@
 
 ### B-03 — Модели БД, миграция, сиды · Аня (ведёт человек) · Облако: нет · ≤4 ч
 **Зачем.** Хранилище всего процесса (T11: модель данных совпадает с миграциями) и тестовые учётки (T5).
-**Файлы:** `backend/app/models/*.py`, `backend/alembic/versions/*.py`, `backend/alembic/env.py` (только `target_metadata`), `backend/app/seed.py`, `backend/app/security.py` (хэш паролей), `backend/tests/test_models_seed.py`, `backend/tests/conftest.py`, `backend/app/db.py` (только импорт моделей), `backend/pyproject.toml` и `backend/uv.lock` (только зависимость для хэша паролей).
+**Файлы:** `backend/app/models/*.py`, `backend/alembic/versions/*.py`, `backend/alembic/env.py` (только `target_metadata`), `backend/app/config.py` (только `contracts_dir`), `backend/Dockerfile` (только `ENV CONTRACTS_DIR`), `backend/app/seed.py`, `backend/app/security.py` (хэш паролей), `backend/tests/test_models_seed.py`, `backend/tests/conftest.py`, `backend/app/db.py` (только импорт моделей), `backend/pyproject.toml` и `backend/uv.lock` (только зависимость для хэша паролей).
 **Читать:** `docs/data-model.md` целиком, `contracts/codes.md` (перечисления), `contracts/personas.json` (структура), `docs/decision-model.md` §5 (продукты).
 
 **Сделать:**
 1. SQLAlchemy 2 (`Mapped[...]`) — **все** таблицы `data-model.md` с перечисленными полями, плюс `id` (UUID), `created_at`, `updated_at`. Деньги — `BigInteger`, ставки — `Numeric(5,2)`, перечисления — строки с `CheckConstraint` на значения из `codes.md`. Внешние ключи и индексы: `application(company_id, state)`, `application_event(application_id, created_at)`, `job(status, run_after)`. `application.number` — последовательность с 1001. `application.version` — целое, начинается с 1 (оптимистическая блокировка через `version_id_col`).
 2. Одна миграция Alembic, созданная `autogenerate` и вычитанная вручную. `downgrade` удаляет всё.
-3. `python -m app.seed` — идемпотентная загрузка (второй запуск ничего не дублирует, ключ — `inn` и `login`):
+3. Путь к `personas.json` — настройка `contracts_dir` в `app/config.py` (по умолчанию корень репозитория + `contracts`; в Docker каркас кладёт их в `/contracts`, значение по умолчанию задаётся через `CONTRACTS_DIR=/contracts` в `backend/Dockerfile`). `python -m app.seed` — идемпотентная загрузка (второй запуск ничего не дублирует, ключ — `inn` и `login`):
    - из `personas.json`: компании, пользователи (пароль из `DEMO_PASSWORD`, хэш bcrypt или argon2), `company_member`, `account_turnover` (12 месяцев `2025-10`…`2026-09`), `risk_flag`;
    - сотрудник `underwriter`;
    - `product` × 3 — параметры из `DEFAULT_CONFIG` в B-02, а если B-02 ещё не слит — из `PRODUCTS` эталона с `TODO(lead)`;
