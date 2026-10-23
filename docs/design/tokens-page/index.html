@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FFFFFF;color:#1F2329;font-family:'Onest',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#1F2329;text-decoration:underline;text-underline-offset:3px;text-decoration-color:#8A919B}
+a:hover{text-decoration-color:#1F2329}
+*:focus-visible{outline:2px solid #1F2329;outline-offset:2px}
+</style>
+</helmet>
+<div style="max-width:1280px;margin:0 auto;padding:48px 48px 96px;box-sizing:border-box;display:flex;flex-direction:column;gap:64px;font-size:16px;line-height:24px">
+
+<header style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:48px;align-items:start;padding-bottom:32px;border-bottom:1px solid #E4E6EA">
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <div style="font-size:14px;line-height:20px;color:#535C68">Кредитный кабинет предпринимателя · токены v1</div>
+    <h1 style="margin:0;font-size:40px;line-height:48px;font-weight:600;letter-spacing:-0.02em">Дизайн-токены</h1>
+    <p style="margin:0;color:#535C68;max-width:520px;text-wrap:pretty">Красный — только для главного действия и активного этапа. Остальное держится на нейтральной шкале и четырёх статусах. Файлы: <a href="tokens/tokens.css">tokens.css</a>, <a href="tokens/theme.ts">theme.ts</a>.</p>
+    <nav style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">
+      <a href="#palette" style="font-size:14px;line-height:20px;padding:6px 12px;border-radius:6px;background:#F2F3F5;text-decoration:none">Палитра</a>
+      <a href="#type" style="font-size:14px;line-height:20px;padding:6px 12px;border-radius:6px;background:#F2F3F5;text-decoration:none">Типографика</a>
+      <a href="#space" style="font-size:14px;line-height:20px;padding:6px 12px;border-radius:6px;background:#F2F3F5;text-decoration:none">Отступы, радиусы, тени</a>
+      <a href="#states" style="font-size:14px;line-height:20px;padding:6px 12px;border-radius:6px;background:#F2F3F5;text-decoration:none">Состояния</a>
+      <a href="#stage" style="font-size:14px;line-height:20px;padding:6px 12px;border-radius:6px;background:#F2F3F5;text-decoration:none">Лента этапов</a>
+      <a href="#code" style="font-size:14px;line-height:20px;padding:6px 12px;border-radius:6px;background:#F2F3F5;text-decoration:none">CSS и Mantine</a>
+    </nav>
+  </div>
+  <div style="background:#F2F3F5;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:12px">
+    <h3 style="margin:0;font-size:20px;line-height:28px;font-weight:600">Что поменял в стартовых значениях</h3>
+    <ol style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;font-size:14px;line-height:20px">
+      <li><b style="font-weight:600">Signal #E8302A → #DC2C26.</b> Белый текст на исходном — 4,3:1, это ниже AA для 16 px. Новый — 4,74:1, на глаз тот же красный.</li>
+      <li><b style="font-weight:600">Wait #C77700 → медовый #B78006.</b> Оранжевый стоял слишком близко к красному signal и stop; сдвиг к жёлтому разводит «нужно действие» и «отказ». Яркий маркер — #F5AF20 с тёмным знаком (8,3:1), текст — #8B6001.</li>
+      <li><b style="font-weight:600">Ok и wait не годятся для текста</b> (4,1:1 и 3,4:1). Оставил их для линий и рамок (≥3:1), для текста — #17704A и #8B6001.</li>
+      <li><b style="font-weight:600">Текст бейджей flow и stop затемнён</b> до #3E5368 и #9A1D14, чтобы все четыре бейджа читались одинаково плотно.</li>
+      <li><b style="font-weight:600">Добавил ink-2, ink-3 и рамку поля #8A919B.</b> Рамка поля должна давать 3:1 к фону (WCAG 1.4.11), светлая #E4E6EA — только для разделителей.</li>
+      <li><b style="font-weight:600">Фокус — тёмное кольцо, не красное.</b> Красный занят действием, а тёмное кольцо с белым зазором видно и на красной кнопке.</li>
+    </ol>
+  </div>
+</header>
+
+<section id="palette" style="display:flex;flex-direction:column;gap:32px">
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <h2 style="margin:0;font-size:24px;line-height:32px;font-weight:600;letter-spacing:-0.01em">Палитра</h2>
+    <p style="margin:0;color:#535C68;font-size:14px;line-height:20px">Контраст указан к paper (#FFFFFF); где важно — и к surface. AA: 4,5:1 для текста, 3:1 для крупного текста и элементов интерфейса.</p>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="height:96px;border-radius:12px;background:#1F2329"></div>
+      <div style="font-weight:600">Ink</div>
+      <div style="font-size:14px;line-height:20px;color:#535C68;font-variant-numeric:tabular-nums">#1F2329 · основной текст<br>15,8:1 · на surface 14,2:1</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="height:96px;border-radius:12px;background:#535C68"></div>
+      <div style="font-weight:600">Ink 2</div>
+      <div style="font-size:14px;line-height:20px;color:#535C68;font-variant-numeric:tabular-nums">#535C68 · вторичный текст<br>6,8:1 · на surface 6,1:1</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="height:96px;border-radius:12px;background:#6A7280"></div>
+      <div style="font-weight:600">Ink 3</div>
+      <div style="font-size:14px;line-height:20px;color:#535C68;font-variant-numeric:tabular-nums">#6A7280 · подсказки, только на paper<br>4,9:1 · на surface 4,4:1 — нельзя</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="height:96px;border-radius:12px;background:#FFFFFF;box-shadow:inset 0 0 0 1px #CDD1D7"></div>
+      <div style="font-weight:600">Paper</div>
+      <div style="font-size:14px;line-height:20px;color:#535C68;font-variant-numeric:tabular-nums">#FFFFFF · фон страницы и карточек</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="height:96px;border-radius:12px;background:#F2F3F5"></div>
+      <div style="font-weight:600">Surface</div>
+      <div style="font-size:14px;line-height:20px;color:#535C68;font-variant-numeric:tabular-nums">#F2F3F5 · подложки, вторичная кнопка</div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="height:48px;border-radius:6px;background:#E4E6EA"></div>
+      <div style="font-size:14px;line-height:20px;font-variant-numeric:tabular-nums"><b style="font-weight:600">Surface 2 / line</b> #E4E6EA<br><span style="color:#535C68">hover на surface, разделители</span></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="height:48px;border-radius:6px;background:#CDD1D7"></div>
+      <div style="font-size:14px;line-height:20px;font-variant-numeric:tabular-nums"><b style="font-weight:600">Line strong</b> #CDD1D7<br><span style="color:#535C68">рамка таблиц, active на surface</span></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="height:48px;border-radius:6px;background:#FFFFFF;box-shadow:inset 0 0 0 1px #8A919B"></div>
+      <div style="font-size:14px;line-height:20px;font-variant-numeric:tabular-nums"><b style="font-weight:600">Line input</b> #8A919B<br><span style="color:#535C68">рамка поля · 3,2:1</span></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="height:48px;border-radius:6px;background:#F2F3F5;display:flex;align-items:center;padding:0 12px;color:#8A919B;font-size:14px">Недоступно</div>
+      <div style="font-size:14px;line-height:20px;font-variant-numeric:tabular-nums"><b style="font-weight:600">Ink disabled</b> #8A919B<br><span style="color:#535C68">исключение WCAG для disabled</span></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="height:48px;border-radius:6px;background:#FFFFFF;box-shadow:0 0 0 2px #FFFFFF,0 0 0 4px #1F2329,inset 0 0 0 1px #CDD1D7;margin:0 4px"></div>
+      <div style="font-size:14px;line-height:20px;font-variant-numeric:tabular-nums"><b style="font-weight:600">Focus</b> #1F2329<br><span style="color:#535C68">2 px кольцо, зазор 2 px</span></div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:24px;align-items:stretch">
+    <div style="border:1px solid #E4E6EA;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <h3 style="margin:0;font-size:20px;line-height:28px;font-weight:600">Signal</h3>
+        <div style="font-size:14px;line-height:20px;color:#535C68">Главная кнопка, активный этап. Одна заливка на экран.</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+        <div style="display:flex;flex-direction:column;gap:6px"><div style="height:64px;border-radius:6px;background:#DC2C26;color:#FFFFFF;display:flex;align-items:flex-end;padding:8px;font-size:12px;line-height:16px;font-weight:500">4,74:1</div><div style="font-size:12px;line-height:16px;font-variant-numeric:tabular-nums"><b style="font-weight:500">Base</b><br>#DC2C26</div></div>
+        <div style="display:flex;flex-direction:column;gap:6px"><div style="height:64px;border-radius:6px;background:#C42621;color:#FFFFFF;display:flex;align-items:flex-end;padding:8px;font-size:12px;line-height:16px;font-weight:500">5,76:1</div><div style="font-size:12px;line-height:16px;font-variant-numeric:tabular-nums"><b style="font-weight:500">Hover</b><br>#C42621</div></div>
+        <div style="display:flex;flex-direction:column;gap:6px"><div style="height:64px;border-radius:6px;background:#AD211C;color:#FFFFFF;display:flex;align-items:flex-end;padding:8px;font-size:12px;line-height:16px;font-weight:500">6,97:1</div><div style="font-size:12px;line-height:16px;font-variant-numeric:tabular-nums"><b style="font-weight:500">Active</b><br>#AD211C</div></div>
+      </div>
+      <div style="font-size:12px;line-height:16px;color:#535C68">Исходный #E8302A: белый текст 4,30:1 — не проходит AA.</div>
+    </div>
+
+    <div style="border:1px solid #E4E6EA;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <h3 style="margin:0;font-size:20px;line-height:28px;font-weight:600">Статусы</h3>
+        <div style="font-size:14px;line-height:20px;color:#535C68">Base — маркер, иконка, сегмент ленты (≥3:1 к paper). Bg, border, text — бейдж и плашка.</div>
+      </div>
+      <div style="display:grid;grid-template-columns:110px repeat(4,minmax(0,1fr)) minmax(130px,1.4fr);gap:0;overflow-wrap:anywhere;font-size:12px;line-height:16px;font-variant-numeric:tabular-nums">
+        <div style="padding:8px 0;color:#535C68;border-bottom:1px solid #E4E6EA"></div>
+        <div style="padding:8px 0;color:#535C68;border-bottom:1px solid #E4E6EA">Base</div>
+        <div style="padding:8px 0;color:#535C68;border-bottom:1px solid #E4E6EA">Bg</div>
+        <div style="padding:8px 0;color:#535C68;border-bottom:1px solid #E4E6EA">Border</div>
+        <div style="padding:8px 0;color:#535C68;border-bottom:1px solid #E4E6EA">Text</div>
+        <div style="padding:8px 0;color:#535C68;border-bottom:1px solid #E4E6EA">Бейдж · контраст</div>
+        <sc-for list="{{ statuses }}" as="s" hint-placeholder-count="4">
+          <div style="padding:12px 0;border-bottom:1px solid #E4E6EA;display:flex;flex-direction:column;gap:2px"><b style="font-size:14px;line-height:20px;font-weight:600">{{ s.name }}</b><span style="color:#535C68">{{ s.meaning }}</span></div>
+          <div style="padding:12px 8px 12px 0;border-bottom:1px solid #E4E6EA;display:flex;flex-direction:column;gap:4px"><div style="height:28px;border-radius:6px;background:{{ s.base }}"></div><span>{{ s.base }}<br>{{ s.baseCr }}</span></div>
+          <div style="padding:12px 8px 12px 0;border-bottom:1px solid #E4E6EA;display:flex;flex-direction:column;gap:4px"><div style="height:28px;border-radius:6px;background:{{ s.bg }};box-shadow:inset 0 0 0 1px #E4E6EA"></div><span>{{ s.bg }}</span></div>
+          <div style="padding:12px 8px 12px 0;border-bottom:1px solid #E4E6EA;display:flex;flex-direction:column;gap:4px"><div style="height:28px;border-radius:6px;background:{{ s.border }}"></div><span>{{ s.border }}</span></div>
+          <div style="padding:12px 8px 12px 0;border-bottom:1px solid #E4E6EA;display:flex;flex-direction:column;gap:4px"><div style="height:28px;border-radius:6px;background:{{ s.text }}"></div><span>{{ s.text }}<br>{{ s.textCr }}</span></div>
+          <div style="padding:12px 0;border-bottom:1px solid #E4E6EA;display:flex;flex-direction:column;gap:4px;align-items:flex-start"><span style="display:inline-flex;align-items:center;gap:6px;min-height:24px;padding:2px 8px;box-sizing:border-box;border-radius:6px;background:{{ s.bg }};border:1px solid {{ s.border }};color:{{ s.text }};font-size:12px;line-height:16px;font-weight:500"><span style="width:6px;height:6px;border-radius:999px;background:{{ s.base }}"></span>{{ s.badge }}</span><span style="color:#535C68">{{ s.badgeCr }} на bg</span></div>
+        </sc-for>
+      </div>
+      <div style="font-size:12px;line-height:16px;color:#535C68">Stop и signal различаются светлотой (#B42318 темнее) и ролью: stop никогда не заливает кнопку — только рамка, маркер, текст.</div>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <h3 style="margin:0;font-size:20px;line-height:28px;font-weight:600">Шкалы для Mantine · 10 оттенков</h3>
+    <div style="display:grid;grid-template-columns:72px repeat(10,minmax(0,1fr));gap:4px;font-size:12px;line-height:16px;font-variant-numeric:tabular-nums">
+      <div></div>
+      <sc-for list="{{ idx }}" as="i" hint-placeholder-count="10"><div style="color:#535C68;padding-bottom:4px">{{ i }}</div></sc-for>
+      <sc-for list="{{ ramps }}" as="r" hint-placeholder-count="6">
+        <div style="display:flex;align-items:center;font-weight:500;font-size:14px">{{ r.name }}</div>
+        <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="10">
+          <div style="height:44px;border-radius:4px;background:{{ c.hex }};color:{{ c.fg }};display:flex;align-items:flex-end;padding:4px 6px;font-size:11px;line-height:14px;box-shadow:{{ c.ring }}">{{ c.hex }}</div>
+        </sc-for>
+      </sc-for>
+    </div>
+    <div style="font-size:12px;line-height:16px;color:#535C68">Индекс 6 — базовый (primaryShade), 7 — hover и текст бейджа, 0 — фон бейджа, 2 — рамка бейджа. В gray: 1 — surface, 2 — line, 5 — рамка поля, 7 — ink 2, 9 — ink.</div>
+  </div>
+</section>
+
+<section id="type" style="display:flex;flex-direction:column;gap:24px">
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <h2 style="margin:0;font-size:24px;line-height:32px;font-weight:600;letter-spacing:-0.01em">Типографика</h2>
+    <p style="margin:0;color:#535C68;font-size:14px;line-height:20px">Onest, три веса: 400, 500, 600. Заглавная только первая буква, без капслока. Деньги и даты — табличные цифры, неразрывный пробел перед ₽.</p>
+  </div>
+  <div style="display:flex;flex-direction:column">
+    <div style="display:grid;grid-template-columns:140px 160px minmax(0,1fr);gap:24px;padding:20px 0;border-top:1px solid #E4E6EA;align-items:baseline">
+      <div style="font-size:14px;line-height:20px;font-weight:500">Display</div>
+      <div style="font-size:12px;line-height:16px;color:#535C68;font-variant-numeric:tabular-nums">40 / 48 · 600 · −0,02em<br>сумма в решении</div>
+      <div style="font-size:40px;line-height:48px;font-weight:600;letter-spacing:-0.02em;font-variant-numeric:tabular-nums">Банк одобрил 1 500 000 ₽</div>
+    </div>
+    <div style="display:grid;grid-template-columns:140px 160px minmax(0,1fr);gap:24px;padding:20px 0;border-top:1px solid #E4E6EA;align-items:baseline">
+      <div style="font-size:14px;line-height:20px;font-weight:500">H1</div>
+      <div style="font-size:12px;line-height:16px;color:#535C68">32 / 40 · 600 · −0,01em<br>заголовок экрана</div>
+      <div style="font-size:32px;line-height:40px;font-weight:600;letter-spacing:-0.01em">Экспресс-кредит на пополнение оборотных средств</div>
+    </div>
+    <div style="display:grid;grid-template-columns:140px 160px minmax(0,1fr);gap:24px;padding:20px 0;border-top:1px solid #E4E6EA;align-items:baseline">
+      <div style="font-size:14px;line-height:20px;font-weight:500">H2</div>
+      <div style="font-size:12px;line-height:16px;color:#535C68">24 / 32 · 600 · −0,01em<br>заголовок блока</div>
+      <div style="font-size:24px;line-height:32px;font-weight:600;letter-spacing:-0.01em">Параметры заявки</div>
+    </div>
+    <div style="display:grid;grid-template-columns:140px 160px minmax(0,1fr);gap:24px;padding:20px 0;border-top:1px solid #E4E6EA;align-items:baseline">
+      <div style="font-size:14px;line-height:20px;font-weight:500">H3</div>
+      <div style="font-size:12px;line-height:16px;color:#535C68">20 / 28 · 600<br>карточка, этап</div>
+      <div style="font-size:20px;line-height:28px;font-weight:600">Что от вас нужно</div>
+    </div>
+    <div style="display:grid;grid-template-columns:140px 160px minmax(0,1fr);gap:24px;padding:20px 0;border-top:1px solid #E4E6EA;align-items:baseline">
+      <div style="font-size:14px;line-height:20px;font-weight:500">Body</div>
+      <div style="font-size:12px;line-height:16px;color:#535C68">16 / 24 · 400, акцент 500<br>основной текст, кнопки</div>
+      <div style="font-size:16px;line-height:24px;max-width:640px;text-wrap:pretty">Оцениваем заявку по данным о вашем бизнесе. Обычно это занимает пару минут — <span style="font-weight:500">ничего делать не нужно</span>.</div>
+    </div>
+    <div style="display:grid;grid-template-columns:140px 160px minmax(0,1fr);gap:24px;padding:20px 0;border-top:1px solid #E4E6EA;align-items:baseline">
+      <div style="font-size:14px;line-height:20px;font-weight:500">Small</div>
+      <div style="font-size:12px;line-height:16px;color:#535C68">14 / 20 · 400, акцент 500<br>таблицы, вторичное</div>
+      <div style="font-size:14px;line-height:20px;color:#535C68">Данные из ЕГРИП на 23.10.2026</div>
+    </div>
+    <div style="display:grid;grid-template-columns:140px 160px minmax(0,1fr);gap:24px;padding:20px 0;border-top:1px solid #E4E6EA;border-bottom:1px solid #E4E6EA;align-items:baseline">
+      <div style="font-size:14px;line-height:20px;font-weight:500">Caption</div>
+      <div style="font-size:12px;line-height:16px;color:#535C68">12 / 16 · 500<br>бейджи, подписи полей</div>
+      <div style="font-size:12px;line-height:16px;font-weight:500">Нужно ваше действие · до 30.10.2026</div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px">
+    <div style="background:#F2F3F5;border-radius:12px;padding:16px 24px;display:flex;flex-direction:column;gap:4px">
+      <div style="font-size:12px;line-height:16px;font-weight:500;color:#535C68">Табличные цифры</div>
+      <div style="font-variant-numeric:tabular-nums;display:flex;flex-direction:column;align-items:flex-end;font-size:16px;line-height:24px;font-weight:500">
+        <span>1 500 000 ₽</span><span>77 817 ₽</span><span>149 264 ₽</span><span>11 111 ₽</span>
+      </div>
+    </div>
+    <div style="background:#F2F3F5;border-radius:12px;padding:16px 24px;display:flex;flex-direction:column;gap:8px;font-size:14px;line-height:20px">
+      <div style="font-size:12px;line-height:16px;font-weight:500;color:#535C68">Формат</div>
+      <div>Группы по 3 через неразрывный пробел, ₽ через неразрывный пробел, без копеек в крупных суммах.</div>
+      <div style="display:flex;flex-direction:column;gap:4px;margin-top:4px;padding-top:12px;border-top:1px solid #E4E6EA"><span style="font-size:12px;line-height:16px;color:#535C68">В коде — функция темы</span><code style="align-self:flex-start;background:#FFFFFF;border:1px solid #E4E6EA;border-radius:4px;padding:4px 8px;font-family:ui-monospace,Menlo,monospace;font-size:12px;line-height:16px;white-space:nowrap">theme.other.money(1500000)</code><span style="font-size:12px;line-height:16px;color:#535C68;font-variant-numeric:tabular-nums">вернёт «1 500 000 ₽»</span></div>
+    </div>
+    <div style="background:#F2F3F5;border-radius:12px;padding:16px 24px;display:flex;flex-direction:column;gap:8px;font-size:14px;line-height:20px">
+      <div style="font-size:12px;line-height:16px;font-weight:500;color:#535C68">Регистр</div>
+      <div>«Получить финансирование», «Ответить на вопросы банка». Не «ПОЛУЧИТЬ», не «Получить Финансирование».</div>
+    </div>
+  </div>
+</section>
+
+<section id="space" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:48px">
+  <div style="display:flex;flex-direction:column;gap:24px">
+    <h2 style="margin:0;font-size:24px;line-height:32px;font-weight:600;letter-spacing:-0.01em">Отступы</h2>
+    <div style="display:flex;flex-direction:column;gap:12px;font-size:14px;line-height:20px;font-variant-numeric:tabular-nums">
+      <sc-for list="{{ spaces }}" as="sp" hint-placeholder-count="7">
+        <div style="display:grid;grid-template-columns:64px 56px minmax(0,1fr);gap:16px;align-items:center">
+          <div style="font-weight:500">{{ sp.key }}</div>
+          <div style="height:16px;width:{{ sp.px }};background:#4A6178;border-radius:2px"></div>
+          <div style="color:#535C68">{{ sp.use }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:24px">
+    <h2 style="margin:0;font-size:24px;line-height:32px;font-weight:600;letter-spacing:-0.01em">Радиусы</h2>
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;font-size:14px;line-height:20px">
+      <div style="display:flex;flex-direction:column;gap:8px"><div style="height:72px;border-radius:4px;border:1px solid #8A919B;background:#F2F3F5"></div><div><b style="font-weight:600">xs · 4</b><br><span style="color:#535C68">чекбокс, полоска</span></div></div>
+      <div style="display:flex;flex-direction:column;gap:8px"><div style="height:72px;border-radius:6px;border:1px solid #8A919B;background:#F2F3F5"></div><div><b style="font-weight:600">sm · 6</b><br><span style="color:#535C68">кнопка, поле, бейдж</span></div></div>
+      <div style="display:flex;flex-direction:column;gap:8px"><div style="height:72px;border-radius:12px;border:1px solid #8A919B;background:#F2F3F5"></div><div><b style="font-weight:600">md · 12</b><br><span style="color:#535C68">карточка</span></div></div>
+      <div style="display:flex;flex-direction:column;gap:8px"><div style="height:72px;border-radius:16px;border:1px solid #8A919B;background:#F2F3F5"></div><div><b style="font-weight:600">lg · 16</b><br><span style="color:#535C68">модальное окно</span></div></div>
+      <div style="display:flex;flex-direction:column;gap:8px"><div style="height:72px;display:flex;align-items:center;background:#F2F3F5;border-radius:12px;padding:0 16px"><span style="width:24px;height:24px;flex-shrink:0;border-radius:999px;background:#1E8E5A;display:inline-flex;align-items:center;justify-content:center"><span style="width:9px;height:5px;border-left:2px solid #FFFFFF;border-bottom:2px solid #FFFFFF;transform:translateY(-1px) rotate(-45deg)"></span></span><span style="flex:1;height:2px;border-radius:1px;margin:0 6px;background:#1E8E5A"></span><span style="width:24px;height:24px;flex-shrink:0;border-radius:999px;background:#DC2C26;box-shadow:0 0 0 4px #FFE7E3;display:inline-flex;align-items:center;justify-content:center"><span style="width:8px;height:8px;border-radius:999px;background:#FFFFFF"></span></span><span style="flex:1;height:2px;border-radius:1px;margin:0 6px;background:#CDD1D7"></span></div><div><b style="font-weight:600">stage · узел 24, линия 2</b><br><span style="color:#535C68">круг узла, линия скруглена 1</span></div></div>
+      <div style="display:flex;flex-direction:column;gap:8px"><div style="height:72px;display:flex;align-items:center;justify-content:center;background:#F2F3F5;border-radius:12px"><div style="width:24px;height:24px;border-radius:999px;background:#1E8E5A"></div></div><div><b style="font-weight:600">round · 999</b><br><span style="color:#535C68">маркер этапа, аватар</span></div></div>
+    </div>
+  </div>
+  <div style="grid-column:1 / -1;display:flex;flex-direction:column;gap:24px">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <h2 style="margin:0;font-size:24px;line-height:32px;font-weight:600;letter-spacing:-0.01em">Тени</h2>
+      <p style="margin:0;color:#535C68;font-size:14px;line-height:20px">Только для того, что лежит поверх страницы. Карточки отделяются рамкой line или фоном surface, без тени.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;background:#F2F3F5;border-radius:12px;padding:32px">
+      <div style="background:#FFFFFF;border:1px solid #E4E6EA;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:4px;font-size:14px;line-height:20px"><b style="font-size:16px;line-height:24px;font-weight:600">Без тени</b><span style="color:#535C68">Карточка, панель, таблица. Рамка #E4E6EA или фон surface.</span></div>
+      <div style="background:#FFFFFF;border-radius:6px;padding:24px;box-shadow:0 0 0 1px rgba(31,35,41,0.08),0 4px 12px rgba(31,35,41,0.10);display:flex;flex-direction:column;gap:4px;font-size:14px;line-height:20px"><b style="font-size:16px;line-height:24px;font-weight:600">Raised</b><span style="color:#535C68">Меню, выпадающий список, подсказка.</span><code style="font-family:ui-monospace,Menlo,monospace;font-size:11px;line-height:16px;color:#535C68">0 0 0 1px ink/8%, 0 4px 12px ink/10%</code></div>
+      <div style="background:#FFFFFF;border-radius:16px;padding:24px;box-shadow:0 0 0 1px rgba(31,35,41,0.06),0 16px 40px rgba(31,35,41,0.18);display:flex;flex-direction:column;gap:4px;font-size:14px;line-height:20px"><b style="font-size:16px;line-height:24px;font-weight:600">Overlay</b><span style="color:#535C68">Модальное окно, подтверждение кодом. Подложка ink/48%.</span><code style="font-family:ui-monospace,Menlo,monospace;font-size:11px;line-height:16px;color:#535C68">0 0 0 1px ink/6%, 0 16px 40px ink/18%</code></div>
+    </div>
+  </div>
+</section>
+
+<section id="states" style="display:flex;flex-direction:column;gap:24px">
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <h2 style="margin:0;font-size:24px;line-height:32px;font-weight:600;letter-spacing:-0.01em">Состояния</h2>
+    <p style="margin:0;color:#535C68;font-size:14px;line-height:20px">Hover темнее на один шаг шкалы. Focus — кольцо 2 px ink с белым зазором 2 px, только с клавиатуры (:focus-visible). Disabled — фон surface 2, текст ink disabled, курсор not-allowed, без прозрачности.</p>
+  </div>
+  <div style="display:grid;grid-template-columns:120px repeat(4,minmax(max-content,1fr));gap:16px 16px;overflow-x:auto;align-items:center">
+    <div></div>
+    <div style="font-size:12px;line-height:16px;font-weight:500;color:#535C68">Default</div>
+    <div style="font-size:12px;line-height:16px;font-weight:500;color:#535C68">Hover</div>
+    <div style="font-size:12px;line-height:16px;font-weight:500;color:#535C68">Focus</div>
+    <div style="font-size:12px;line-height:16px;font-weight:500;color:#535C68">Disabled</div>
+
+    <div style="font-size:14px;line-height:20px;font-weight:500">Главная кнопка</div>
+    <div><span style="display:inline-flex;align-items:center;white-space:nowrap;height:48px;padding:0 20px;border-radius:6px;background:#DC2C26;color:#FFFFFF;font-weight:500">Подписать договор</span></div>
+    <div><span style="display:inline-flex;align-items:center;white-space:nowrap;height:48px;padding:0 20px;border-radius:6px;background:#C42621;color:#FFFFFF;font-weight:500">Подписать договор</span></div>
+    <div><span style="display:inline-flex;align-items:center;white-space:nowrap;height:48px;padding:0 20px;border-radius:6px;background:#DC2C26;color:#FFFFFF;font-weight:500;box-shadow:0 0 0 2px #FFFFFF,0 0 0 4px #1F2329">Подписать договор</span></div>
+    <div><span style="display:inline-flex;align-items:center;white-space:nowrap;height:48px;padding:0 20px;border-radius:6px;background:#E4E6EA;color:#8A919B;font-weight:500">Подписать договор</span></div>
+
+    <div style="font-size:14px;line-height:20px;font-weight:500">Вторичная</div>
+    <div><span style="display:inline-flex;align-items:center;white-space:nowrap;height:48px;padding:0 20px;border-radius:6px;background:#F2F3F5;color:#1F2329;font-weight:500">Отказаться</span></div>
+    <div><span style="display:inline-flex;align-items:center;white-space:nowrap;height:48px;padding:0 20px;border-radius:6px;background:#E4E6EA;color:#1F2329;font-weight:500">Отказаться</span></div>
+    <div><span style="display:inline-flex;align-items:center;white-space:nowrap;height:48px;padding:0 20px;border-radius:6px;background:#F2F3F5;color:#1F2329;font-weight:500;box-shadow:0 0 0 2px #FFFFFF,0 0 0 4px #1F2329">Отказаться</span></div>
+    <div><span style="display:inline-flex;align-items:center;white-space:nowrap;height:48px;padding:0 20px;border-radius:6px;background:#F2F3F5;color:#8A919B;font-weight:500">Отказаться</span></div>
+
+    <div style="font-size:14px;line-height:20px;font-weight:500">Тихая / ссылка</div>
+    <div><span style="display:inline-flex;align-items:center;white-space:nowrap;height:40px;padding:0 12px;border-radius:6px;color:#1F2329;font-weight:500;text-decoration:underline;text-decoration-color:#8A919B;text-underline-offset:3px">Отозвать заявку</span></div>
+    <div><span style="display:inline-flex;align-items:center;white-space:nowrap;height:40px;padding:0 12px;border-radius:6px;background:#F2F3F5;color:#1F2329;font-weight:500;text-decoration:underline;text-decoration-color:#1F2329;text-underline-offset:3px">Отозвать заявку</span></div>
+    <div><span style="display:inline-flex;align-items:center;white-space:nowrap;height:40px;padding:0 12px;border-radius:6px;color:#1F2329;font-weight:500;text-decoration:underline;text-decoration-color:#8A919B;text-underline-offset:3px;box-shadow:0 0 0 2px #FFFFFF,0 0 0 4px #1F2329">Отозвать заявку</span></div>
+    <div><span style="display:inline-flex;align-items:center;white-space:nowrap;height:40px;padding:0 12px;border-radius:6px;color:#8A919B;font-weight:500">Отозвать заявку</span></div>
+
+    <div style="font-size:14px;line-height:20px;font-weight:500">Поле ввода</div>
+    <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:12px;line-height:16px;font-weight:500;color:#535C68">Сумма</span><span style="display:flex;align-items:center;justify-content:space-between;height:48px;padding:0 16px;border-radius:6px;border:1px solid #8A919B;background:#FFFFFF;font-variant-numeric:tabular-nums">1 500 000<span style="color:#535C68">₽</span></span></div>
+    <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:12px;line-height:16px;font-weight:500;color:#535C68">Сумма</span><span style="display:flex;align-items:center;justify-content:space-between;height:48px;padding:0 16px;border-radius:6px;border:1px solid #535C68;background:#FFFFFF;font-variant-numeric:tabular-nums">1 500 000<span style="color:#535C68">₽</span></span></div>
+    <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:12px;line-height:16px;font-weight:500;color:#535C68">Сумма</span><span style="display:flex;align-items:center;justify-content:space-between;height:48px;padding:0 16px;border-radius:6px;border:1px solid #1F2329;background:#FFFFFF;box-shadow:0 0 0 1px #1F2329;font-variant-numeric:tabular-nums">1 500 000<span style="color:#535C68">₽</span></span></div>
+    <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:12px;line-height:16px;font-weight:500;color:#8A919B">Сумма</span><span style="display:flex;align-items:center;justify-content:space-between;height:48px;padding:0 16px;border-radius:6px;border:1px solid #E4E6EA;background:#F2F3F5;color:#8A919B;font-variant-numeric:tabular-nums">1 500 000<span>₽</span></span></div>
+
+    <div style="font-size:14px;line-height:20px;font-weight:500">Ошибка поля</div>
+    <div style="grid-column:2 / span 2;display:flex;flex-direction:column;gap:4px"><span style="font-size:12px;line-height:16px;font-weight:500;color:#535C68">ИНН</span><span style="display:flex;align-items:center;height:48px;padding:0 16px;border-radius:6px;border:1px solid #B42318;box-shadow:0 0 0 1px #B42318;background:#FFFFFF;font-variant-numeric:tabular-nums">77011234569</span><span style="font-size:12px;line-height:16px;color:#9A1D14">В ИНН индивидуального предпринимателя 12 цифр</span></div>
+    <div style="grid-column:4 / span 2;font-size:12px;line-height:16px;color:#535C68">Ошибка — рамка stop 2 px и текст stop text под полем. Не красим фон поля и не используем signal.</div>
+
+    <div style="font-size:14px;line-height:20px;font-weight:500">Чекбокс</div>
+    <div style="display:flex;gap:12px;align-items:center"><span style="width:20px;height:20px;border-radius:4px;border:1px solid #8A919B;box-sizing:border-box;background:#FFFFFF"></span><span style="width:20px;height:20px;border-radius:4px;background:#1F2329;display:inline-flex;align-items:center;justify-content:center"><span style="width:10px;height:5px;border-left:2px solid #FFFFFF;border-bottom:2px solid #FFFFFF;transform:rotate(-45deg) translate(1px,-1px)"></span></span></div>
+    <div style="display:flex;gap:12px;align-items:center"><span style="width:20px;height:20px;border-radius:4px;border:1px solid #1F2329;box-sizing:border-box;background:#F2F3F5"></span><span style="width:20px;height:20px;border-radius:4px;background:#3A3F47;display:inline-flex;align-items:center;justify-content:center"><span style="width:10px;height:5px;border-left:2px solid #FFFFFF;border-bottom:2px solid #FFFFFF;transform:rotate(-45deg) translate(1px,-1px)"></span></span></div>
+    <div style="display:flex;gap:12px;align-items:center"><span style="width:20px;height:20px;border-radius:4px;border:1px solid #8A919B;box-sizing:border-box;background:#FFFFFF;box-shadow:0 0 0 2px #FFFFFF,0 0 0 4px #1F2329"></span></div>
+    <div style="display:flex;gap:12px;align-items:center"><span style="width:20px;height:20px;border-radius:4px;border:1px solid #E4E6EA;box-sizing:border-box;background:#F2F3F5"></span><span style="width:20px;height:20px;border-radius:4px;background:#E4E6EA;display:inline-flex;align-items:center;justify-content:center"><span style="width:10px;height:5px;border-left:2px solid #8A919B;border-bottom:2px solid #8A919B;transform:rotate(-45deg) translate(1px,-1px)"></span></span></div>
+  </div>
+  <div style="font-size:12px;line-height:16px;color:#535C68">Отмеченный чекбокс — ink, не signal: согласия и выбор не должны спорить с главной кнопкой.</div>
+
+  <div style="background:#F2F3F5;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:16px">
+    <div style="font-size:14px;line-height:20px"><b style="font-weight:600">Живой пример.</b> <span style="color:#535C68">Наведите мышь или пройдите клавишей Tab.</span></div>
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+      <button type="button" style="height:48px;padding:0 24px;border-radius:6px;border:0;background:#DC2C26;color:#FFFFFF;font:500 16px/24px 'Onest',sans-serif;cursor:pointer;transition:background 120ms cubic-bezier(0.2,0,0,1)" style-hover="background:#C42621" style-active="background:#AD211C">Ответить на вопросы банка</button>
+      <button type="button" style="height:48px;padding:0 24px;border-radius:6px;border:0;background:#FFFFFF;color:#1F2329;font:500 16px/24px 'Onest',sans-serif;cursor:pointer;transition:background 120ms cubic-bezier(0.2,0,0,1)" style-hover="background:#E4E6EA" style-active="background:#CDD1D7">Отказаться</button>
+      <button type="button" disabled="" style="height:48px;padding:0 24px;border-radius:6px;border:0;background:#E4E6EA;color:#8A919B;font:500 16px/24px 'Onest',sans-serif;cursor:not-allowed">Принять решение</button>
+      <input type="text" value="1 500 000 ₽" style="height:48px;width:220px;box-sizing:border-box;padding:0 16px;border-radius:6px;border:1px solid #8A919B;background:#FFFFFF;color:#1F2329;font:400 16px/24px 'Onest',sans-serif;font-variant-numeric:tabular-nums;outline:none" style-hover="border-color:#535C68" style-focus="border-color:#1F2329;box-shadow:0 0 0 1px #1F2329">
+    </div>
+  </div>
+</section>
+
+<section id="stage" style="display:flex;flex-direction:column;gap:24px">
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <h2 style="margin:0;font-size:24px;line-height:32px;font-weight:600;letter-spacing:-0.01em">Лента этапов</h2>
+    <p style="margin:0;color:#535C68;font-size:14px;line-height:20px;max-width:760px;text-wrap:pretty">Узлы 24 px на линии 2 px — как маршрут, а не вкладки. Форма знака дублирует цвет: галочка, точка, «!», номер, крест, пунктир — статус читается и без цвета. Красный — только у текущего узла; пройденная часть линии окрашена в ok.</p>
+  </div>
+  <div style="border:1px solid #E4E6EA;border-radius:12px;padding:24px 24px 20px;display:flex;flex-direction:column;gap:20px"><div style="font-size:12px;line-height:16px;font-weight:500;color:#535C68">Идёт оценка</div><div style="display:flex;align-items:flex-start"><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:12px"><div style="display:flex;align-items:center"><span style="width:24px;height:24px;flex-shrink:0;border-radius:999px;background:#1E8E5A;display:inline-flex;align-items:center;justify-content:center"><span style="width:9px;height:5px;border-left:2px solid #FFFFFF;border-bottom:2px solid #FFFFFF;transform:translateY(-1px) rotate(-45deg)"></span></span><span style="flex:1;min-width:8px;height:2px;border-radius:1px;margin:0 8px;background:#1E8E5A"></span></div><div style="display:flex;flex-direction:column;gap:2px;padding-right:12px;max-width:180px"><span style="font-size:14px;line-height:20px;color:#1F2329;font-weight:400">Заявка</span><span style="font-size:12px;line-height:16px;color:#535C68">14:02</span></div></div><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:12px"><div style="display:flex;align-items:center"><span style="width:24px;height:24px;flex-shrink:0;border-radius:999px;background:#1E8E5A;display:inline-flex;align-items:center;justify-content:center"><span style="width:9px;height:5px;border-left:2px solid #FFFFFF;border-bottom:2px solid #FFFFFF;transform:translateY(-1px) rotate(-45deg)"></span></span><span style="flex:1;min-width:8px;height:2px;border-radius:1px;margin:0 8px;background:#1E8E5A"></span></div><div style="display:flex;flex-direction:column;gap:2px;padding-right:12px;max-width:180px"><span style="font-size:14px;line-height:20px;color:#1F2329;font-weight:400">Проверка данных</span><span style="font-size:12px;line-height:16px;color:#535C68">14:02</span></div></div><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:12px"><div style="display:flex;align-items:center"><span style="width:24px;height:24px;flex-shrink:0;border-radius:999px;background:#DC2C26;box-shadow:0 0 0 4px #FFE7E3;display:inline-flex;align-items:center;justify-content:center"><span style="width:8px;height:8px;border-radius:999px;background:#FFFFFF"></span></span><span style="flex:1;min-width:8px;height:2px;border-radius:1px;margin:0 8px;background:#E4E6EA"></span></div><div style="display:flex;flex-direction:column;gap:2px;padding-right:12px;max-width:180px"><span style="font-size:14px;line-height:20px;color:#1F2329;font-weight:600">Оценка</span><span style="font-size:12px;line-height:16px;color:#1F2329">Идёт сейчас · около 2 мин</span></div></div><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:12px"><div style="display:flex;align-items:center"><span style="width:24px;height:24px;flex-shrink:0;box-sizing:border-box;border-radius:999px;background:#FFFFFF;border:1.5px solid #A9AFB7;display:inline-flex;align-items:center;justify-content:center;color:#535C68;font-size:12px;line-height:12px;font-weight:500;font-variant-numeric:tabular-nums">4</span><span style="flex:1;min-width:8px;height:2px;border-radius:1px;margin:0 8px;background:#E4E6EA"></span></div><div style="display:flex;flex-direction:column;gap:2px;padding-right:12px;max-width:180px"><span style="font-size:14px;line-height:20px;color:#535C68;font-weight:400">Решение</span><span style="font-size:12px;line-height:16px;color:#535C68">Ожидает</span></div></div><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:12px"><div style="display:flex;align-items:center"><span style="width:24px;height:24px;flex-shrink:0;box-sizing:border-box;border-radius:999px;background:#FFFFFF;border:1.5px solid #A9AFB7;display:inline-flex;align-items:center;justify-content:center;color:#535C68;font-size:12px;line-height:12px;font-weight:500;font-variant-numeric:tabular-nums">5</span><span style="flex:1;min-width:8px;height:2px;border-radius:1px;margin:0 8px;background:#E4E6EA"></span></div><div style="display:flex;flex-direction:column;gap:2px;padding-right:12px;max-width:180px"><span style="font-size:14px;line-height:20px;color:#535C68;font-weight:400">Подписание</span><span style="font-size:12px;line-height:16px;color:#535C68">Ожидает</span></div></div><div style="flex:0 0 auto;min-width:0;display:flex;flex-direction:column;gap:12px"><div style="display:flex;align-items:center"><span style="width:24px;height:24px;flex-shrink:0;box-sizing:border-box;border-radius:999px;background:#FFFFFF;border:1.5px solid #A9AFB7;display:inline-flex;align-items:center;justify-content:center;color:#535C68;font-size:12px;line-height:12px;font-weight:500;font-variant-numeric:tabular-nums">6</span></div><div style="display:flex;flex-direction:column;gap:2px;padding-right:12px;max-width:180px"><span style="font-size:14px;line-height:20px;color:#535C68;font-weight:400">Выдача</span><span style="font-size:12px;line-height:16px;color:#535C68">Ожидает</span></div></div></div></div>
+  <div style="border:1px solid #E4E6EA;border-radius:12px;padding:24px 24px 20px;display:flex;flex-direction:column;gap:20px"><div style="font-size:12px;line-height:16px;font-weight:500;color:#535C68">Нужно действие клиента</div><div style="display:flex;align-items:flex-start"><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:12px"><div style="display:flex;align-items:center"><span style="width:24px;height:24px;flex-shrink:0;border-radius:999px;background:#1E8E5A;display:inline-flex;align-items:center;justify-content:center"><span style="width:9px;height:5px;border-left:2px solid #FFFFFF;border-bottom:2px solid #FFFFFF;transform:translateY(-1px) rotate(-45deg)"></span></span><span style="flex:1;min-width:8px;height:2px;border-radius:1px;margin:0 8px;background:#1E8E5A"></span></div><div style="display:flex;flex-direction:column;gap:2px;padding-right:12px;max-width:180px"><span style="font-size:14px;line-height:20px;color:#1F2329;font-weight:400">Заявка</span><span style="font-size:12px;line-height:16px;color:#535C68">14:02</span></div></div><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:12px"><div style="display:flex;align-items:center"><span style="width:24px;height:24px;flex-shrink:0;border-radius:999px;background:#F5AF20;box-shadow:0 0 0 4px #FEECD0;display:inline-flex;align-items:center;justify-content:center;color:#1F2329;font-size:14px;line-height:14px;font-weight:600">!</span><span style="flex:1;min-width:8px;height:2px;border-radius:1px;margin:0 8px;background:#E4E6EA"></span></div><div style="display:flex;flex-direction:column;gap:2px;padding-right:12px;max-width:180px"><span style="font-size:14px;line-height:20px;color:#1F2329;font-weight:600">Проверка данных</span><span style="font-size:12px;line-height:16px;color:#8B6001">Нужно ваше действие · до 30.10</span></div></div><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:12px"><div style="display:flex;align-items:center"><span style="width:24px;height:24px;flex-shrink:0;box-sizing:border-box;border-radius:999px;background:#FFFFFF;border:1.5px solid #A9AFB7;display:inline-flex;align-items:center;justify-content:center;color:#535C68;font-size:12px;line-height:12px;font-weight:500;font-variant-numeric:tabular-nums">3</span><span style="flex:1;min-width:8px;height:2px;border-radius:1px;margin:0 8px;background:#E4E6EA"></span></div><div style="display:flex;flex-direction:column;gap:2px;padding-right:12px;max-width:180px"><span style="font-size:14px;line-height:20px;color:#535C68;font-weight:400">Оценка</span><span style="font-size:12px;line-height:16px;color:#535C68">Ожидает</span></div></div><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:12px"><div style="display:flex;align-items:center"><span style="width:24px;height:24px;flex-shrink:0;box-sizing:border-box;border-radius:999px;background:#FFFFFF;border:1.5px solid #A9AFB7;display:inline-flex;align-items:center;justify-content:center;color:#535C68;font-size:12px;line-height:12px;font-weight:500;font-variant-numeric:tabular-nums">4</span><span style="flex:1;min-width:8px;height:2px;border-radius:1px;margin:0 8px;background:#E4E6EA"></span></div><div style="display:flex;flex-direction:column;gap:2px;padding-right:12px;max-width:180px"><span style="font-size:14px;line-height:20px;color:#535C68;font-weight:400">Решение</span><span style="font-size:12px;line-height:16px;color:#535C68">Ожидает</span></div></div><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:12px"><div style="display:flex;align-items:center"><span style="width:24px;height:24px;flex-shrink:0;box-sizing:border-box;border-radius:999px;background:#FFFFFF;border:1.5px solid #A9AFB7;display:inline-flex;align-items:center;justify-content:center;color:#535C68;font-size:12px;line-height:12px;font-weight:500;font-variant-numeric:tabular-nums">5</span><span style="flex:1;min-width:8px;height:2px;border-radius:1px;margin:0 8px;background:#E4E6EA"></span></div><div style="display:flex;flex-direction:column;gap:2px;padding-right:12px;max-width:180px"><span style="font-size:14px;line-height:20px;color:#535C68;font-weight:400">Подписание</span><span style="font-size:12px;line-height:16px;color:#535C68">Ожидает</span></div></div><div style="flex:0 0 auto;min-width:0;display:flex;flex-direction:column;gap:12px"><div style="display:flex;align-items:center"><span style="width:24px;height:24px;flex-shrink:0;box-sizing:border-box;border-radius:999px;background:#FFFFFF;border:1.5px solid #A9AFB7;display:inline-flex;align-items:center;justify-content:center;color:#535C68;font-size:12px;line-height:12px;font-weight:500;font-variant-numeric:tabular-nums">6</span></div><div style="display:flex;flex-direction:column;gap:2px;padding-right:12px;max-width:180px"><span style="font-size:14px;line-height:20px;color:#535C68;font-weight:400">Выдача</span><span style="font-size:12px;line-height:16px;color:#535C68">Ожидает</span></div></div></div></div>
+  <div style="border:1px solid #E4E6EA;border-radius:12px;padding:24px 24px 20px;display:flex;flex-direction:column;gap:20px"><div style="font-size:12px;line-height:16px;font-weight:500;color:#535C68">Отказ на этапе «Решение»</div><div style="display:flex;align-items:flex-start"><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:12px"><div style="display:flex;align-items:center"><span style="width:24px;height:24px;flex-shrink:0;border-radius:999px;background:#1E8E5A;display:inline-flex;align-items:center;justify-content:center"><span style="width:9px;height:5px;border-left:2px solid #FFFFFF;border-bottom:2px solid #FFFFFF;transform:translateY(-1px) rotate(-45deg)"></span></span><span style="flex:1;min-width:8px;height:2px;border-radius:1px;margin:0 8px;background:#1E8E5A"></span></div><div style="display:flex;flex-direction:column;gap:2px;padding-right:12px;max-width:180px"><span style="font-size:14px;line-height:20px;color:#1F2329;font-weight:400">Заявка</span><span style="font-size:12px;line-height:16px;color:#535C68">14:02</span></div></div><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:12px"><div style="display:flex;align-items:center"><span style="width:24px;height:24px;flex-shrink:0;border-radius:999px;background:#1E8E5A;display:inline-flex;align-items:center;justify-content:center"><span style="width:9px;height:5px;border-left:2px solid #FFFFFF;border-bottom:2px solid #FFFFFF;transform:translateY(-1px) rotate(-45deg)"></span></span><span style="flex:1;min-width:8px;height:2px;border-radius:1px;margin:0 8px;background:#1E8E5A"></span></div><div style="display:flex;flex-direction:column;gap:2px;padding-right:12px;max-width:180px"><span style="font-size:14px;line-height:20px;color:#1F2329;font-weight:400">Проверка данных</span><span style="font-size:12px;line-height:16px;color:#535C68">14:02</span></div></div><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:12px"><div style="display:flex;align-items:center"><span style="width:24px;height:24px;flex-shrink:0;border-radius:999px;background:#1E8E5A;display:inline-flex;align-items:center;justify-content:center"><span style="width:9px;height:5px;border-left:2px solid #FFFFFF;border-bottom:2px solid #FFFFFF;transform:translateY(-1px) rotate(-45deg)"></span></span><span style="flex:1;min-width:8px;height:2px;border-radius:1px;margin:0 8px;background:#1E8E5A"></span></div><div style="display:flex;flex-direction:column;gap:2px;padding-right:12px;max-width:180px"><span style="font-size:14px;line-height:20px;color:#1F2329;font-weight:400">Оценка</span><span style="font-size:12px;line-height:16px;color:#535C68">14:03</span></div></div><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:12px"><div style="display:flex;align-items:center"><span style="width:24px;height:24px;flex-shrink:0;border-radius:999px;background:#B42318;display:inline-flex;align-items:center;justify-content:center;position:relative"><span style="position:absolute;width:10px;height:2px;background:#FFFFFF;transform:rotate(45deg)"></span><span style="position:absolute;width:10px;height:2px;background:#FFFFFF;transform:rotate(-45deg)"></span></span><span style="flex:1;min-width:8px;height:2px;border-radius:1px;margin:0 8px;background:#E4E6EA"></span></div><div style="display:flex;flex-direction:column;gap:2px;padding-right:12px;max-width:180px"><span style="font-size:14px;line-height:20px;color:#1F2329;font-weight:600">Решение</span><span style="font-size:12px;line-height:16px;color:#9A1D14">Отказ · 14:04</span></div></div><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:12px"><div style="display:flex;align-items:center"><span style="width:24px;height:24px;flex-shrink:0;box-sizing:border-box;border-radius:999px;background:#FFFFFF;border:1.5px dashed #A9AFB7;display:inline-flex;align-items:center;justify-content:center"><span style="width:8px;height:2px;background:#A9AFB7"></span></span><span style="flex:1;min-width:8px;height:2px;border-radius:1px;margin:0 8px;background:#E4E6EA"></span></div><div style="display:flex;flex-direction:column;gap:2px;padding-right:12px;max-width:180px"><span style="font-size:14px;line-height:20px;color:#535C68;font-weight:400;text-decoration:line-through;text-decoration-color:#A9AFB7">Подписание</span><span style="font-size:12px;line-height:16px;color:#535C68">Не состоится</span></div></div><div style="flex:0 0 auto;min-width:0;display:flex;flex-direction:column;gap:12px"><div style="display:flex;align-items:center"><span style="width:24px;height:24px;flex-shrink:0;box-sizing:border-box;border-radius:999px;background:#FFFFFF;border:1.5px dashed #A9AFB7;display:inline-flex;align-items:center;justify-content:center"><span style="width:8px;height:2px;background:#A9AFB7"></span></span></div><div style="display:flex;flex-direction:column;gap:2px;padding-right:12px;max-width:180px"><span style="font-size:14px;line-height:20px;color:#535C68;font-weight:400;text-decoration:line-through;text-decoration-color:#A9AFB7">Выдача</span><span style="font-size:12px;line-height:16px;color:#535C68">Не состоится</span></div></div></div></div>
+  <div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:16px;padding-top:8px"><div style="display:flex;gap:12px;align-items:center;min-width:0"><span style="width:24px;height:24px;flex-shrink:0;border-radius:999px;background:#1E8E5A;display:inline-flex;align-items:center;justify-content:center"><span style="width:9px;height:5px;border-left:2px solid #FFFFFF;border-bottom:2px solid #FFFFFF;transform:translateY(-1px) rotate(-45deg)"></span></span><div style="display:flex;flex-direction:column;min-width:0"><span style="font-size:14px;line-height:20px;font-weight:500">Пройден</span><span style="font-size:12px;line-height:16px;color:#535C68">ok, белая галочка</span></div></div><div style="display:flex;gap:12px;align-items:center;min-width:0"><span style="width:24px;height:24px;flex-shrink:0;border-radius:999px;background:#DC2C26;box-shadow:0 0 0 4px #FFE7E3;display:inline-flex;align-items:center;justify-content:center"><span style="width:8px;height:8px;border-radius:999px;background:#FFFFFF"></span></span><div style="display:flex;flex-direction:column;min-width:0"><span style="font-size:14px;line-height:20px;font-weight:500">Текущий</span><span style="font-size:12px;line-height:16px;color:#535C68">signal, ореол signal 1</span></div></div><div style="display:flex;gap:12px;align-items:center;min-width:0"><span style="width:24px;height:24px;flex-shrink:0;border-radius:999px;background:#F5AF20;box-shadow:0 0 0 4px #FEECD0;display:inline-flex;align-items:center;justify-content:center;color:#1F2329;font-size:14px;line-height:14px;font-weight:600">!</span><div style="display:flex;flex-direction:column;min-width:0"><span style="font-size:14px;line-height:20px;font-weight:500">Нужно действие</span><span style="font-size:12px;line-height:16px;color:#535C68">wait 4, тёмный знак</span></div></div><div style="display:flex;gap:12px;align-items:center;min-width:0"><span style="width:24px;height:24px;flex-shrink:0;box-sizing:border-box;border-radius:999px;background:#FFFFFF;border:1.5px solid #A9AFB7;display:inline-flex;align-items:center;justify-content:center;color:#535C68;font-size:12px;line-height:12px;font-weight:500;font-variant-numeric:tabular-nums">4</span><div style="display:flex;flex-direction:column;min-width:0"><span style="font-size:14px;line-height:20px;font-weight:500">Ожидает</span><span style="font-size:12px;line-height:16px;color:#535C68">рамка gray 4, номер</span></div></div><div style="display:flex;gap:12px;align-items:center;min-width:0"><span style="width:24px;height:24px;flex-shrink:0;border-radius:999px;background:#B42318;display:inline-flex;align-items:center;justify-content:center;position:relative"><span style="position:absolute;width:10px;height:2px;background:#FFFFFF;transform:rotate(45deg)"></span><span style="position:absolute;width:10px;height:2px;background:#FFFFFF;transform:rotate(-45deg)"></span></span><div style="display:flex;flex-direction:column;min-width:0"><span style="font-size:14px;line-height:20px;font-weight:500">Отказ</span><span style="font-size:12px;line-height:16px;color:#535C68">stop, белый крест</span></div></div><div style="display:flex;gap:12px;align-items:center;min-width:0"><span style="width:24px;height:24px;flex-shrink:0;box-sizing:border-box;border-radius:999px;background:#FFFFFF;border:1.5px dashed #A9AFB7;display:inline-flex;align-items:center;justify-content:center"><span style="width:8px;height:2px;background:#A9AFB7"></span></span><div style="display:flex;flex-direction:column;min-width:0"><span style="font-size:14px;line-height:20px;font-weight:500">Отменён</span><span style="font-size:12px;line-height:16px;color:#535C68">пунктир, зачёркнуто</span></div></div></div>
+  <div style="font-size:12px;line-height:16px;color:#535C68;max-width:760px;text-wrap:pretty">Переход этапа: линия до следующего узла заполняется ok слева направо за 320 мс (cubic-bezier(0.2, 0, 0, 1)); прежний узел меняет точку на галочку, новый становится красным, ореол проявляется за 120 мс. Подписи не двигаются; при prefers-reduced-motion — мгновенная смена.</div>
+</section>
+
+<section id="code" style="display:flex;flex-direction:column;gap:24px">
+  <h2 style="margin:0;font-size:24px;line-height:32px;font-weight:600;letter-spacing:-0.01em">Код</h2>
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:16px">
+      <div style="display:flex;flex-direction:column"><b style="font-size:20px;line-height:28px;font-weight:600">CSS custom properties</b><span style="font-size:14px;line-height:20px;color:#535C68">tokens/tokens.css</span></div>
+      <button type="button" onClick="{{ copyCss }}" style="height:40px;padding:0 16px;border-radius:6px;border:0;background:#F2F3F5;color:#1F2329;font:500 14px/20px 'Onest',sans-serif;cursor:pointer" style-hover="background:#E4E6EA">{{ cssLabel }}</button>
+    </div>
+    <pre style="margin:0;background:#F2F3F5;border-radius:12px;padding:24px;overflow:auto;max-height:520px;font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:13px;line-height:20px;color:#1F2329;white-space:pre">{{ css }}</pre>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:16px">
+      <div style="display:flex;flex-direction:column"><b style="font-size:20px;line-height:28px;font-weight:600">Тема Mantine 9</b><span style="font-size:14px;line-height:20px;color:#535C68">tokens/theme.ts — заменяет frontend/src/theme.ts</span></div>
+      <button type="button" onClick="{{ copyTs }}" style="height:40px;padding:0 16px;border-radius:6px;border:0;background:#F2F3F5;color:#1F2329;font:500 14px/20px 'Onest',sans-serif;cursor:pointer" style-hover="background:#E4E6EA">{{ tsLabel }}</button>
+    </div>
+    <pre style="margin:0;background:#F2F3F5;border-radius:12px;padding:24px;overflow:auto;max-height:640px;font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:13px;line-height:20px;color:#1F2329;white-space:pre">{{ ts }}</pre>
+  </div>
+</section>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { css: 'Загрузка…', ts: 'Загрузка…', copied: null };
+  componentDidMount() {
+    fetch('tokens/tokens.css').then(r => r.text()).then(css => this.setState({ css }));
+    fetch('tokens/theme.ts').then(r => r.text()).then(ts => this.setState({ ts }));
+  }
+  copy(key) {
+    navigator.clipboard?.writeText(this.state[key]).then(() => {
+      this.setState({ copied: key });
+      clearTimeout(this.t); this.t = setTimeout(() => this.setState({ copied: null }), 1500);
+    });
+  }
+  renderVals() {
+    const ramps = {
+      signal: ['#FEF4F2','#FFE7E3','#FFCDC6','#FEA69A','#FF7264','#F2443A','#DC2C26','#C42621','#AD211C','#8A1814'],
+      ok: ['#EFFAF3','#DCF4E5','#B9E8CB','#8CD4A9','#61BA88','#3AA36D','#1E8E5A','#17704A','#005330','#003E23'],
+      wait: ['#FEF5E8','#FEECD0','#FFD79B','#FFC25A','#F5AF20','#DF9D08','#B78006','#8B6001','#6D4B04','#513807'],
+      flow: ['#F4F7FA','#E7EEF4','#CFDCEA','#B0C3D7','#91A7BE','#6F869E','#4A6178','#3E5368','#2F4155','#223042'],
+      stop: ['#FFF4F2','#FFE6E2','#FECDC5','#FEA799','#F27A6B','#D64A3C','#B42318','#9A1D14','#7D150E','#600F09'],
+      gray: ['#F7F8F9','#F2F3F5','#E4E6EA','#CDD1D7','#A9AFB7','#8A919B','#6A7280','#535C68','#3A3F47','#1F2329'],
+    };
+    return {
+      statuses: [
+        { name: 'Ok', meaning: 'Одобрено, выдано', base: '#1E8E5A', baseCr: '4,1:1', bg: '#EFFAF3', border: '#B9E8CB', text: '#17704A', textCr: '6,1:1', badge: 'Одобрено', badgeCr: '5,7:1' },
+        { name: 'Wait', meaning: 'Нужно действие клиента', base: '#B78006', baseCr: '3,4:1', bg: '#FEF5E8', border: '#FFD79B', text: '#8B6001', textCr: '5,6:1', badge: 'Нужно ваше действие', badgeCr: '5,2:1' },
+        { name: 'Flow', meaning: 'Идёт обработка', base: '#4A6178', baseCr: '6,4:1', bg: '#F4F7FA', border: '#CFDCEA', text: '#3E5368', textCr: '8,0:1', badge: 'На рассмотрении', badgeCr: '7,4:1' },
+        { name: 'Stop', meaning: 'Отказ', base: '#B42318', baseCr: '6,6:1', bg: '#FFF4F2', border: '#FECDC5', text: '#9A1D14', textCr: '8,2:1', badge: 'Отказ', badgeCr: '7,6:1' },
+      ],
+      idx: [0,1,2,3,4,5,6,7,8,9],
+      ramps: Object.entries(ramps).map(([name, arr]) => ({
+        name,
+        cells: arr.map((hex, i) => ({ hex, fg: i >= 5 ? '#FFFFFF' : '#1F2329', ring: i === 6 ? '0 0 0 2px #FFFFFF, 0 0 0 3px #1F2329' : 'none' })),
+      })),
+      spaces: [
+        { key: '4', px: '4px', use: 'Иконка и подпись, бейдж внутри' },
+        { key: '8', px: '8px', use: 'Подпись поля и поле, между бейджами' },
+        { key: '12', px: '12px', use: 'Между кнопками, строки таблицы андеррайтера' },
+        { key: '16', px: '16px', use: 'Внутри полей и сегментов ленты, между полями' },
+        { key: '24', px: '24px', use: 'Внутри карточки, между карточками' },
+        { key: '32', px: '32px', use: 'Между блоками экрана' },
+        { key: '48', px: '48px', use: 'Поля страницы, отступ до ленты этапов' },
+      ],
+      css: this.state.css,
+      ts: this.state.ts,
+      copyCss: () => this.copy('css'),
+      copyTs: () => this.copy('ts'),
+      cssLabel: this.state.copied === 'css' ? 'Скопировано' : 'Скопировать',
+      tsLabel: this.state.copied === 'ts' ? 'Скопировано' : 'Скопировать',
+    };
+  }
+}
+</script>
+</body>
+</html>

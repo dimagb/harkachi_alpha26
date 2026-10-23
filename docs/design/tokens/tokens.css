@@ -1,0 +1,84 @@
+/* Кредитный кабинет предпринимателя — дизайн-токены v1 */
+@import url('https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600&display=swap');
+
+:root {
+  /* Нейтральные */
+  --cc-ink: #1F2329;          /* основной текст, 15.8:1 на paper */
+  --cc-ink-2: #535C68;        /* вторичный текст, 6.8:1 на paper, 6.1:1 на surface */
+  --cc-ink-3: #6A7280;        /* подсказки — только на paper, 4.9:1 */
+  --cc-ink-disabled: #8A919B; /* текст недоступных элементов (исключение WCAG) */
+  --cc-paper: #FFFFFF;
+  --cc-surface: #F2F3F5;      /* подложки, вторичная кнопка */
+  --cc-surface-2: #E4E6EA;    /* hover на surface, фон disabled */
+  --cc-line: #E4E6EA;         /* разделители, рамки карточек */
+  --cc-line-strong: #CDD1D7;  /* рамка таблиц, active на surface */
+  --cc-line-input: #8A919B;   /* рамка полей, 3.2:1 — WCAG 1.4.11 */
+
+  /* Сигнальный — только главное действие и активный этап */
+  --cc-signal: #DC2C26;       /* белый текст 4.7:1 (было #E8302A — 4.3:1) */
+  --cc-signal-hover: #C42621;
+  --cc-signal-active: #AD211C;
+  --cc-signal-tint: #FEF4F2;
+
+  /* Статусы: base — маркер/иконка/этап (≥3:1), bg / border / text — бейдж */
+  --cc-ok: #1E8E5A;    --cc-ok-bg: #EFFAF3;    --cc-ok-border: #B9E8CB;    --cc-ok-text: #17704A;
+  --cc-wait: #B78006;  --cc-wait-marker: #F5AF20;  --cc-wait-bg: #FEF5E8;  --cc-wait-border: #FFD79B;  --cc-wait-text: #8B6001;
+  --cc-flow: #4A6178;  --cc-flow-bg: #F4F7FA;  --cc-flow-border: #CFDCEA;  --cc-flow-text: #3E5368;
+  --cc-stop: #B42318;  --cc-stop-bg: #FFF4F2;  --cc-stop-border: #FECDC5;  --cc-stop-text: #9A1D14;
+
+  /* Фокус */
+  --cc-focus: #1F2329;
+  --cc-focus-ring: 0 0 0 2px #FFFFFF, 0 0 0 4px #1F2329;
+
+  /* Типографика */
+  --cc-font: 'Onest', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --cc-numeric: tabular-nums;
+  --cc-weight-regular: 400;
+  --cc-weight-medium: 500;
+  --cc-weight-semibold: 600;
+  --cc-text-display: 600 40px/48px var(--cc-font);  /* сумма решения */
+  --cc-text-h1: 600 32px/40px var(--cc-font);       /* заголовок экрана */
+  --cc-text-h2: 600 24px/32px var(--cc-font);       /* блок */
+  --cc-text-h3: 600 20px/28px var(--cc-font);       /* карточка */
+  --cc-text-body: 400 16px/24px var(--cc-font);     /* основной */
+  --cc-text-small: 400 14px/20px var(--cc-font);    /* таблицы, вторичное */
+  --cc-text-caption: 500 12px/16px var(--cc-font);  /* подписи, бейджи */
+  --cc-tracking-display: -0.02em;
+  --cc-tracking-heading: -0.01em;
+
+  /* Отступы */
+  --cc-space-4: 4px;
+  --cc-space-8: 8px;
+  --cc-space-12: 12px;
+  --cc-space-16: 16px;
+  --cc-space-24: 24px;
+  --cc-space-32: 32px;
+  --cc-space-48: 48px;
+
+  /* Радиусы */
+  --cc-radius-xs: 4px;          /* чекбокс, полоска прогресса */
+  --cc-radius-sm: 6px;          /* кнопки, поля, бейджи */
+  --cc-radius-md: 12px;         /* карточки */
+  --cc-radius-lg: 16px;         /* модальные окна */
+  --cc-radius-stage-line: 1px;  /* линия ленты этапов */
+  --cc-stage-node: 24px;        /* узел этапа, круг */
+  --cc-stage-line: 2px;
+  --cc-stage-halo: 4px;         /* ореол текущего узла: signal 1 / wait 1 */
+  --cc-radius-round: 999px;     /* маркер этапа, аватар */
+
+  /* Тени — 2 уровня, карточки без тени */
+  --cc-shadow-raised: 0 0 0 1px rgba(31, 35, 41, 0.08), 0 4px 12px rgba(31, 35, 41, 0.10);  /* меню, выпадающие списки, тултипы */
+  --cc-shadow-overlay: 0 0 0 1px rgba(31, 35, 41, 0.06), 0 16px 40px rgba(31, 35, 41, 0.18); /* модальные окна */
+  --cc-overlay: rgba(31, 35, 41, 0.48);
+
+  /* Движение */
+  --cc-duration-fast: 120ms;
+  --cc-duration-stage: 320ms;
+  --cc-ease: cubic-bezier(0.2, 0, 0, 1);
+}
+
+.cc-money { font-variant-numeric: tabular-nums; white-space: nowrap; }
+:where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--cc-focus);
+  outline-offset: 2px;
+}

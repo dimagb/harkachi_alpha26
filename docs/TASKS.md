@@ -29,7 +29,7 @@
 | B-06 | OTP, согласия, подача, просьба подписать | Аня | 24.10 вечер | нет | B-05 | [черновик] |
 | B-07 | Worker: конвейер до решения, дозапрос | Аня | 24.10 вечер | нет | B-02, B-05, A-01 | [черновик] |
 | A-03 | Сквозные тесты персонажей через API | Катя | 23.10 вечер / 24.10 | **да** | B-01 ✔ | [готова] |
-| F-02 | Тема из токенов дизайна | Лана | 24.10 11:00 | да | F-01, токены | [черновик] |
+| F-02 | Тема из токенов дизайна | Лана | 24.10 11:00 | нет | F-01, токены | [готова] |
 | F-03 | Главная клиента, калькулятор, форма заявки | Лана | 24.10 | да | F-01 | [черновик] |
 | F-04 | Карточка заявки с лентой (ключевой экран 1) | Лана | 24.10 вечер | да | F-03, макет | [черновик] |
 | A-05 | Коллекция HTTP-запросов (T9) | Катя | 24.10 вечер | да | B-01 | [черновик] |
@@ -446,6 +446,7 @@
 - `backend/tests/test_schemas_validation.py` — **только** случай `({"purpose": "OTHER"}, "request")`: перенести в `test_applications_api.py` как API-тест с ожиданием `details.fields.purpose_text`;
 - `backend/app/catalog/calculator.py` — **только** вынести проверку границ продукта в функцию `validate_terms(session, product_code, amount, term_months)`, возвращающую строку `Product` (модель `app.models.Product`, в B-04 импортирована как `ProductRow`); тексты ошибок те же, `calculate` вызывает её;
 - `backend/tests/test_contract_paths.py` — **только** добавить 4 пути в константу `IMPLEMENTED` и обновить `len(...)` на 9;
+- `backend/tests/test_profile.py` — **только** вызов `get_settings.cache_clear()` в фикстуре до и после теста (следствие перехода на `get_settings()`, ответ на вопрос 23.10);
 - попутно, замечания ревью B-04: `backend/app/auth/tokens.py` и `backend/app/integrations/registry.py` — `get_settings()` вместо `Settings()`; `backend/app/auth/service.py` — при неизвестном логине вызывать `verify_password(password, DUMMY_HASH)` (одинаковое время ответа); `backend/tests/test_access_matrix.py` — чужая компания = компания конкретного другого персонажа по ИНН + тест, что тело 404 для чужой и несуществующей компании одинаково;
 - тесты: `backend/tests/test_state_machine.py`, `backend/tests/test_applications_api.py`, `backend/tests/test_application_view.py` (новые).
 
@@ -590,6 +591,45 @@ uv run --no-project --python 3.12 --with pytest --with httpx --with jsonschema p
 - в PR — таблица «персонаж → шаги → что проверяется», ссылки на сценарии S-xx из `docs/test-scenarios.md`.
 
 **Не делать:** не трогать `backend/`, `frontend/`, `contracts/`, CI; не пересчитывать ожидания; не добавлять пауз длиннее 1 с; не создавать проект `pyproject.toml` для тестов.
+
+### F-02 — Тема из токенов дизайна · Лана · Облако: нет (нужны скриншоты) · ≤2 ч
+**Зачем.** Единый вид всех экранов в стиле, близком к Альфа-Банку, по токенам человека из Claude Design (D6). Цвета статусов одинаково читаются на ленте, в бейджах и у андеррайтера.
+
+**Файлы:**
+- `frontend/src/theme.ts` (заменить);
+- `frontend/src/styles/tokens.css` (новый);
+- `frontend/src/ui/status.ts` (новый);
+- `frontend/src/main.tsx` — только импорты стилей и шрифта;
+- `frontend/src/mocks/browser.ts` — только снять `TODO(lead)` (замечание ревью F-01);
+- `frontend/eslint.config.js` — только добавить `public/mockServiceWorker.js` в `ignores`;
+- `frontend/package.json`, `frontend/package-lock.json` — только `@fontsource/onest`;
+- тесты: `frontend/src/theme.test.ts`, `frontend/src/ui/status.test.ts`.
+
+**Читать:** `docs/design/tokens/theme.ts`, `docs/design/tokens/tokens.css` (источник правды), `docs/design/tokens-page/preview.png` (как выглядит), `docs/screens.md` §1–2 (рамка и правила текста), `contracts/codes.md` — раздел «Этапы ленты» (`timeline[].status`).
+
+**Сделать:**
+1. `theme.ts` = `docs/design/tokens/theme.ts` **без изменений значений**. Править можно только то, что не компилируется в Mantine 9.7.3 или противоречит `tsc`/`eslint`; каждую такую правку перечислить в PR с причиной.
+2. `styles/tokens.css` = `docs/design/tokens/tokens.css` байт в байт; импорт в `main.tsx` после стилей Mantine.
+3. Шрифт Onest — **локально** через `@fontsource/onest` (веса 400, 500, 600; импорт в `main.tsx`). Ссылок на `fonts.googleapis.com` в `frontend/` нет: стенд должен работать без интернета (T14).
+4. `ui/status.ts` — единые цвета статусов для всех следующих экранов:
+   - `stageStatusColor(status)`: `done` → `ok`, `current` → `flow`, `action_required` → `wait`, `failed` → `stop`, `cancelled` → `gray`, `pending` → `gray`;
+   - `formatMoney(v: number): string` — через `theme.other.money`;
+   - тип параметра — `components['schemas']['TimelineItem']['status']` из `schema.d.ts`, без строковых литералов вручную.
+5. Цвета в компонентах — только через тему (`c="flow.7"`, `color="ok"`) или CSS-переменные `--cc-*`. Шестнадцатеричных цветов в `src/` нет, кроме `theme.ts` и `styles/tokens.css`.
+
+**Приёмка:**
+- `npm run lint && npm run typecheck && npm test && npm run build` — зелёный; `docker compose build web` — зелёный (или CI `compose-smoke`).
+- `theme.test.ts`:
+  - `primaryColor = "signal"`;
+  - у `signal`, `ok`, `wait`, `flow`, `stop`, `gray` по 10 оттенков; опорные значения: `signal[6] = #DC2C26`, `ok[6] = #1E8E5A`, `wait[6] = #B78006`, `flow[6] = #4A6178`, `stop[6] = #B42318`, `gray[9] = #1F2329`. Импортировать `docs/` из `src/` нельзя: в Docker-сборке этой папки нет. Совпадение остальных значений с `docs/design/tokens/theme.ts` тимлид сверяет диффом;
+  - `fontFamily` начинается с `'Onest'`;
+  - `theme.other.money(1500000)` после замены всех пробельных символов на обычный пробел = `"1 500 000 ₽"`, а в исходной строке обычных пробелов (U+0020) нет.
+- `status.test.ts` — все 6 значений `timeline[].status` → цвет по таблице п. 4; неизвестное значение не компилируется (проверка через `// @ts-expect-error` в тесте разрешена только здесь).
+- `grep -rnE "#[0-9A-Fa-f]{6}\b" frontend/src --include=*.ts --include=*.tsx --include=*.css` — только `theme.ts`, `styles/tokens.css` и `theme.test.ts`.
+- `grep -rn "fonts.googleapis" frontend/` — пусто.
+- Скриншоты `/login` и `/app` в режиме MSW с новой темой — в PR (не коммитить в репозиторий).
+
+**Не делать:** не менять значения токенов, не делать экраны (это F-03…F-08), не трогать `schema.d.ts`.
 
 ### F-01 — Оболочка фронтенда · Лана · Облако: нет (ставит новые npm-пакеты, нужен скриншот) · ≤3 ч
 **Зачем.** Каркас всех экранов: вход тестовыми учётками, маршруты по ролям, единая обработка ошибок, работа без бэкенда на моках (MSW) до готовности API.
