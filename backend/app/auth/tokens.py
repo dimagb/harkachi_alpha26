@@ -2,10 +2,10 @@ from datetime import UTC, datetime, timedelta
 
 import jwt
 
-from app.config import Settings
+from app.config import get_settings
 from app.models import User
 
-settings = Settings()
+settings = get_settings()
 
 
 def create_access_token(user: User) -> str:

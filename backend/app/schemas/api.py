@@ -175,12 +175,6 @@ class ApplicationCreate(Schema):
     purpose_text: str | None = Field(default=None, min_length=10, max_length=500)
     declared_revenue_year: int = Field(gt=0)
 
-    @model_validator(mode="after")
-    def require_other_purpose(self) -> Self:
-        if self.purpose == "OTHER" and self.purpose_text is None:
-            raise ValueError("Укажите цель кредита")
-        return self
-
 
 class ApplicationPatch(Schema):
     product_code: ProductCode | None = None
@@ -189,12 +183,6 @@ class ApplicationPatch(Schema):
     purpose: Purpose | None = None
     purpose_text: str | None = Field(default=None, min_length=10, max_length=500)
     declared_revenue_year: int | None = Field(default=None, gt=0)
-
-    @model_validator(mode="after")
-    def require_other_purpose(self) -> Self:
-        if self.purpose == "OTHER" and self.purpose_text is None:
-            raise ValueError("Укажите цель кредита")
-        return self
 
 
 class TimelineItem(Schema):

@@ -5,7 +5,7 @@ from typing import Literal, Protocol
 import httpx
 from pydantic import BaseModel, ConfigDict, ValidationError
 
-from app.config import Settings
+from app.config import get_settings
 
 
 class RegistryDirector(BaseModel):
@@ -45,7 +45,7 @@ class RegistryProvider(Protocol):
 class HttpRegistryProvider:
     def __init__(self, client: httpx.Client | None = None):
         self.client = client
-        self.base_url = Settings().mocks_url.rstrip("/")
+        self.base_url = get_settings().mocks_url.rstrip("/")
 
     def _get(self, client: httpx.Client, inn: str) -> RegistryRecord | None:
         try:
