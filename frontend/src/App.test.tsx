@@ -9,6 +9,7 @@ import { afterAll, afterEach, beforeAll, expect, it } from 'vitest';
 import App from './App';
 import { api } from './api/client';
 import type { components } from './api/schema';
+import { products } from './mocks/fixtures';
 
 type Me = components['schemas']['MeResponse'];
 const client: Me = {
@@ -27,6 +28,8 @@ const server = setupServer(
     return HttpResponse.json(token === 'Bearer underwriter' ? bank : client);
   }),
   http.get('*/api/v1/health', () => HttpResponse.json({ status: 'ok' })),
+  http.get('*/api/v1/products', () => HttpResponse.json<components['schemas']['Product'][]>(products)),
+  http.get('*/api/v1/applications', () => HttpResponse.json<components['schemas']['ApplicationListItem'][]>([])),
 );
 
 beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
@@ -75,7 +78,7 @@ it.each([['ip_good', '/bank/journal', '/app', 'Мои заявки'], ['underwri
 });
 
 it.each([
-  ['ip_good', '/app/applications/new', 'Заявка'],
+  ['ip_good', '/app/applications/new', 'Зачем нужны деньги?'],
   ['ip_good', '/app/applications/123', 'Карточка заявки'],
   ['underwriter', '/bank/applications/123', 'Карточка андеррайтера'],
   ['underwriter', '/bank/journal', 'Журнал банка'],
@@ -129,14 +132,25 @@ it('оставляет возможность повторить загрузк�
 it('даёт выбрать компанию и перейти к новой заявке', async () => {
   sessionStorage.setItem('access_token', 'ip_good');
   const membership = client.companies[0]!;
+  const requestedCompanies: string[] = [];
   server.use(http.get('*/api/v1/me', () => HttpResponse.json({ ...client, companies: [...client.companies, { ...membership, company: { ...membership.company, id: 'company-2', name: 'Вторая компания' } }] })));
+  server.use(http.get('*/api/v1/applications', ({ request }) => {
+    requestedCompanies.push(new URL(request.url).searchParams.get('company_id')!);
+    return HttpResponse.json<components['schemas']['ApplicationListItem'][]>([]);
+  }));
   open('/app');
+  await screen.findByText('Заявок пока нет');
   const select = await screen.findByRole('combobox', { name: 'Компания' });
   fireEvent.click(select);
   fireEvent.click(await screen.findByRole('option', { name: 'Вторая компания' }));
   await waitFor(() => expect((select as HTMLInputElement).value).toBe('Вторая компания'));
+  await waitFor(() => expect(requestedCompanies).toEqual(['company-1', 'company-2']));
   fireEvent.click(screen.getByRole('link', { name: 'Новая заявка' }));
-  await screen.findByRole('heading', { name: 'Заявка' });
+  await screen.findByRole('heading', { name: 'Зачем нужны деньги?' });
+  expect(screen.getByLabelText('Текущий маршрут').textContent).toBe('/app/applications/new');
+  fireEvent.click(screen.getByRole('button', { name: 'Оборудование и развитие' }));
+  await screen.findByRole('region', { name: 'Экспресс-кредит' });
+  expect(screen.queryByRole('region', { name: 'Оборотный кредит' })).toBeNull();
 });
 
 it('запрашивает health с единственным префиксом API', async () => {

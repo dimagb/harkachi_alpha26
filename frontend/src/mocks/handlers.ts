@@ -1,6 +1,6 @@
 import { http, HttpResponse } from 'msw';
 import type { components } from '../api/schema';
-import { accounts, applications, draftApplication, products } from './fixtures';
+import { accounts, applications, companyProfiles, draftApplication, products } from './fixtures';
 
 type Schema = components['schemas'];
 type ApiError = Schema['ApiError'];
@@ -32,6 +32,30 @@ export function createHandlers() {
       return me ? HttpResponse.json(me) : error(401, 'UNAUTHORIZED', 'Войдите в кабинет.');
     }),
     http.get<EmptyParams, never, Schema['Product'][]>('*/api/v1/products', () => HttpResponse.json(products)),
+    http.post<EmptyParams, Schema['CalculatorRequest'], Schema['CalculatorResponse'] | ApiError>('*/api/v1/calculator', async ({ request }) => {
+      const me = account(request);
+      if (!me) return error(401, 'UNAUTHORIZED', 'Войдите в кабинет.');
+      if (me.user.role !== 'CLIENT') return error(403, 'FORBIDDEN', 'Расчёт доступен клиенту.');
+      const body = await request.json();
+      const product = products.find(({ code }) => code === body.product_code);
+      const fields: Record<string, string> = {};
+      if (!product) fields.product_code = 'Выберите продукт.';
+      if (!Number.isInteger(body.amount) || !product || body.amount < product.min_amount || body.amount > product.max_amount) fields.amount = 'Укажите целую сумму в пределах продукта.';
+      if (!Number.isInteger(body.term_months) || !product || body.term_months < product.min_term_months || body.term_months > product.max_term_months) fields.term_months = 'Выберите срок в пределах продукта.';
+      if (!product || Object.keys(fields).length) return error(422, 'VALIDATION_ERROR', 'Проверьте параметры расчёта.', fields);
+      const rate = product.rate_from + 2;
+      const monthlyRate = rate / 1200;
+      const payment = Math.round(body.amount * monthlyRate / (1 - (1 + monthlyRate) ** -body.term_months));
+      return HttpResponse.json({ rate_estimate: rate, monthly_payment: product.code === 'OVERDRAFT' ? null : payment });
+    }),
+    http.get<{ id: string }, never, Schema['CompanyProfile'] | ApiError>('*/api/v1/companies/:id/profile', ({ request, params }) => {
+      const me = account(request);
+      if (!me) return error(401, 'UNAUTHORIZED', 'Войдите в кабинет.');
+      if (me.user.role !== 'CLIENT') return error(403, 'FORBIDDEN', 'Профиль компании доступен клиенту.');
+      const profile = companyProfiles[params.id];
+      if (!ownsCompany(me, params.id) || !profile) return error(404, 'NOT_FOUND', 'Компания не найдена.');
+      return HttpResponse.json(profile);
+    }),
     http.get<EmptyParams, never, Schema['ApplicationListItem'][] | ApiError>('*/api/v1/applications', ({ request }) => {
       const me = account(request);
       if (!me) return error(401, 'UNAUTHORIZED', 'Войдите в кабинет.');

@@ -9,7 +9,7 @@ beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterAll(() => server.close());
 beforeEach(() => server.resetHandlers(...createHandlers()));
 
-async function request(path: string, token?: string, body?: Schema['LoginRequest'] | Schema['ApplicationCreate']) {
+async function request(path: string, token?: string, body?: Schema['LoginRequest'] | Schema['ApplicationCreate'] | Schema['CalculatorRequest']) {
   return fetch(new Request(`http://localhost/api/v1${path}`, {
     method: body ? 'POST' : 'GET',
     headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}), 'Content-Type': 'application/json' },
@@ -29,6 +29,63 @@ it.each([['ip_good', 'Смирнова Анна Викторовна', 'ИП С�
   const body: Schema['MeResponse'] = await response.json();
   expect(body.user.full_name).toBe(name);
   expect(body.companies[0]?.company.name).toBe(company);
+});
+
+it.each([['EXPRESS', 300000, 6, 24, 53558], ['OVERDRAFT', 100000, 12, 26, null]] as const)('MSW считает платёж %s по контракту', async (product_code, amount, term_months, rate, payment) => {
+  const token = await signIn('ip_good');
+  const response = await request('/calculator', token, { product_code, amount, term_months });
+  expect(response.status).toBe(200);
+  const body: Schema['CalculatorResponse'] = await response.json();
+  expect(body).toEqual({ rate_estimate: rate, monthly_payment: payment });
+});
+
+it.each(['ip_good', 'ooo_load'])('MSW отдаёт публичный профиль компании %s', async (login) => {
+  const token = await signIn(login);
+  const me: Schema['MeResponse'] = await (await request('/me', token)).json();
+  const company = me.companies[0]!.company;
+  const response = await request(`/companies/${company.id}/profile`, token);
+  expect(response.status).toBe(200);
+  const body: Schema['CompanyProfile'] = await response.json();
+  expect(body).toMatchObject({ ...company, status: 'ACTIVE', director_full_name: me.user.full_name });
+  expect(body.ogrn).toMatch(/^\d{13,15}$/);
+  expect(body.avg_monthly_turnover).toBeGreaterThan(0);
+  expect(body.source_note).toMatch(/Данные из ЕГР(ЮЛ|ИП) на/);
+  expect(JSON.stringify(body)).not.toMatch(/risk_flag|internal_reasons|factors|rules_fired|inputs_snapshot|SF_ADDITIONAL/);
+});
+
+it('MSW защищает профиль компании и калькулятор', async () => {
+  const token = await signIn('ooo_load');
+  expect((await request('/companies/20000000-0000-4000-8000-000000000001/profile', token)).status).toBe(404);
+  expect((await request('/companies/20000000-0000-4000-8000-000000000001/profile')).status).toBe(401);
+  expect((await request('/calculator', undefined, { product_code: 'EXPRESS', amount: 300000, term_months: 6 })).status).toBe(401);
+});
+
+it.each([
+  { amount: 299999 }, { amount: 5000001 }, { amount: 300000.5 },
+  { term_months: 5 }, { term_months: 37 },
+  { declared_revenue_year: 0 }, { declared_revenue_year: -1 },
+  { purpose: 'OTHER' as const }, { purpose: 'OTHER' as const, purpose_text: 'коротко' },
+  { purpose: 'OTHER' as const, purpose_text: 'а'.repeat(501) },
+])('MSW показывает поля ошибки создания %j', async (invalid) => {
+  const token = await signIn('ip_good');
+  const response = await request('/applications', token, {
+    company_id: '20000000-0000-4000-8000-000000000001', product_code: 'EXPRESS', amount: 300000,
+    term_months: 6, purpose: 'WORKING_CAPITAL', declared_revenue_year: 12000000, ...invalid,
+  });
+  expect(response.status).toBe(422);
+  const body: Schema['ApiError'] = await response.json();
+  const field = 'purpose' in invalid ? 'purpose_text' : Object.keys(invalid)[0]!;
+  expect(body.error.code).toBe('VALIDATION_ERROR');
+  expect(body.error.details.fields).toHaveProperty(field);
+});
+
+it('MSW отклоняет невалидный расчёт с ошибкой под полем', async () => {
+  const token = await signIn('ip_good');
+  const response = await request('/calculator', token, { product_code: 'EXPRESS', amount: 1, term_months: 5 });
+  expect(response.status).toBe(422);
+  const body: Schema['ApiError'] = await response.json();
+  expect(body.error.details.fields).toHaveProperty('amount');
+  expect(body.error.details.fields).toHaveProperty('term_months');
 });
 
 it('MSW поддерживает учётку сотрудника банка', async () => {
