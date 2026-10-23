@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#E4E6EA;color:#1F2329;font-family:'Onest',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#1F2329;text-decoration:underline;text-underline-offset:3px;text-decoration-color:#8A919B}
+a:hover{text-decoration-color:#1F2329}
+*:focus-visible{outline:2px solid #1F2329;outline-offset:2px}
+</style>
+</helmet>
+<section id="turn-1" style="padding:64px;display:flex;flex-direction:column;gap:40px">
+  <div style="display:flex;flex-direction:column;gap:8px;max-width:1440px">
+    <h1 style="margin:0;font-size:32px;line-height:40px;font-weight:600;letter-spacing:-0.01em">Решение по заявке · клиент · 1440 px</h1>
+    <p style="margin:0;font-size:16px;line-height:24px;color:#535C68">Три состояния: <a href="#1a">1a</a> одобрено, <a href="#1b">1b</a> встречное предложение, <a href="#1c">1c</a> отказ. <a href="#1d">1d</a> — лента этапов на 375 px.</p>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;gap:64px;align-items:flex-start">
+    <sc-for list="{{ variants }}" as="v" hint-placeholder-count="3">
+      <div id="{{ v.id }}" style="display:flex;flex-direction:column;gap:16px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="display:inline-flex;align-items:center;height:28px;padding:0 10px;border-radius:6px;background:#1F2329;color:#FFFFFF;font-size:14px;line-height:20px;font-weight:600">{{ v.id }}</span>
+          <span style="font-size:16px;line-height:24px;font-weight:500">{{ v.caption }}</span>
+        </div>
+
+        <div data-screen-label="{{ v.label }}" style="width:1440px;min-height:940px;display:grid;grid-template-columns:240px minmax(0,1fr);background:#FFFFFF;border-radius:12px;overflow:hidden">
+          <nav style="display:flex;flex-direction:column;justify-content:space-between;padding:32px 16px 24px;border-right:1px solid #E4E6EA">
+            <div style="display:flex;flex-direction:column;gap:32px">
+              <div style="padding:0 12px;font-size:16px;line-height:24px;font-weight:600">Кредитный кабинет</div>
+              <div style="display:flex;flex-direction:column;gap:4px">
+                <a href="#" style="display:flex;align-items:center;min-height:40px;padding:8px 12px;box-sizing:border-box;border-radius:6px;background:#F2F3F5;color:#1F2329;font-size:16px;line-height:24px;font-weight:500;text-decoration:none">Мои заявки</a>
+                <a href="#" style="display:flex;align-items:center;min-height:40px;padding:8px 12px;box-sizing:border-box;border-radius:6px;color:#535C68;font-size:16px;line-height:24px;text-decoration:none" style-hover="background:#F2F3F5;color:#1F2329">Получить финансирование</a>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:4px;padding:16px 12px 0;border-top:1px solid #E4E6EA">
+              <span style="font-size:14px;line-height:20px;font-weight:500">Смирнова Анна</span>
+              <a href="#" style="align-self:flex-start;font-size:14px;line-height:20px;color:#535C68">Выйти</a>
+            </div>
+          </nav>
+
+          <main style="padding:48px 48px 64px;display:flex;flex-direction:column;gap:40px;min-width:0">
+            <header style="display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;align-items:center;gap:12px">
+                <span style="font-size:14px;line-height:20px;color:#535C68;font-variant-numeric:tabular-nums">Заявка № 1042 · {{ v.product }}</span>
+                <span style="display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px 0 4px;box-sizing:border-box;border-radius:6px;background:{{ v.badgeBg }};border:1px solid {{ v.badgeBorder }};color:{{ v.badgeText }};font-size:12px;line-height:16px;font-weight:500">
+                  <span style="width:16px;height:16px;flex-shrink:0;border-radius:999px;background:{{ v.tone }};position:relative;display:inline-flex;align-items:center;justify-content:center;color:#FFFFFF;font-size:11px;line-height:11px;font-weight:600">
+                    <sc-if value="{{ v.isOk }}"><span style="width:6px;height:3px;border-left:1.5px solid #FFFFFF;border-bottom:1.5px solid #FFFFFF;transform:translateY(-1px) rotate(-45deg)"></span></sc-if>
+                    <sc-if value="{{ v.isWait }}"><span style="color:#1F2329">!</span></sc-if>
+                    <sc-if value="{{ v.isStop }}"><span style="position:absolute;left:4px;top:7px;width:8px;height:1.5px;background:#FFFFFF;transform:rotate(45deg)"></span><span style="position:absolute;left:4px;top:7px;width:8px;height:1.5px;background:#FFFFFF;transform:rotate(-45deg)"></span></sc-if>
+                  </span>{{ v.badge }}</span>
+              </div>
+              <h2 style="margin:0;font-size:40px;line-height:48px;font-weight:600;letter-spacing:-0.02em;font-variant-numeric:tabular-nums;text-wrap:balance">{{ v.title }}</h2>
+            </header>
+
+            <div style="border:1px solid #E4E6EA;border-radius:12px;padding:32px;display:flex;flex-direction:column;gap:32px">
+              <div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr))">
+                <sc-for list="{{ v.stages }}" as="s" hint-placeholder-count="6">
+                  <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+                    <div style="display:flex;align-items:center;height:32px">
+                      <sc-if value="{{ s.done }}">
+                        <span style="width:24px;height:24px;flex-shrink:0;border-radius:999px;background:#1E8E5A;display:inline-flex;align-items:center;justify-content:center"><span style="width:9px;height:5px;border-left:2px solid #FFFFFF;border-bottom:2px solid #FFFFFF;transform:translateY(-1px) rotate(-45deg)"></span></span>
+                      </sc-if>
+                      <sc-if value="{{ s.cur }}">
+                        <span style="width:32px;height:32px;flex-shrink:0;border-radius:999px;background:#1F2329;display:inline-flex;align-items:center;justify-content:center;color:#FFFFFF;font-size:14px;line-height:14px;font-weight:600;font-variant-numeric:tabular-nums">{{ s.n }}</span>
+                      </sc-if>
+                      <sc-if value="{{ s.stop }}">
+                        <span style="position:relative;width:32px;height:32px;flex-shrink:0;border-radius:999px;background:#B42318"><span style="position:absolute;left:10px;top:15px;width:12px;height:2px;border-radius:1px;background:#FFFFFF;transform:rotate(45deg)"></span><span style="position:absolute;left:10px;top:15px;width:12px;height:2px;border-radius:1px;background:#FFFFFF;transform:rotate(-45deg)"></span></span>
+                      </sc-if>
+                      <sc-if value="{{ s.wait }}">
+                        <span style="width:24px;height:24px;flex-shrink:0;box-sizing:border-box;border-radius:999px;background:#FFFFFF;border:1.5px solid #CDD1D7;display:inline-flex;align-items:center;justify-content:center;color:#6A7280;font-size:12px;line-height:12px;font-weight:500;font-variant-numeric:tabular-nums">{{ s.n }}</span>
+                      </sc-if>
+                      <sc-if value="{{ s.hasLine }}">
+                        <span style="flex:1;height:2px;border-radius:1px;margin:0 12px;background:{{ s.line }}"></span>
+                      </sc-if>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:2px;padding-right:16px">
+                      <span style="font-size:16px;line-height:24px;font-weight:{{ s.weight }};color:{{ s.color }}">{{ s.name }}</span>
+                      <span style="font-size:14px;line-height:20px;color:{{ s.metaColor }};font-variant-numeric:tabular-nums">{{ s.meta }}</span>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+
+              <sc-if value="{{ v.hasPanel }}" hint-placeholder-val="{{ true }}">
+                <div style="position:relative;background:{{ v.panelBg }};box-shadow:inset 4px 0 0 {{ v.tone }};border-radius:12px;padding:24px 24px 24px 28px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px">
+                  <span style="position:absolute;top:-6px;left:calc(3 * 100% / 6 + 10px);width:12px;height:12px;background:{{ v.panelBg }};border-radius:2px;transform:rotate(45deg)"></span>
+                  <div style="display:flex;flex-direction:column;gap:4px">
+                    <span style="font-size:14px;line-height:20px;font-weight:500;color:#535C68">Что происходит</span>
+                    <span style="font-size:16px;line-height:24px;text-wrap:pretty">{{ v.what }}</span>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:4px">
+                    <span style="font-size:14px;line-height:20px;font-weight:500;color:{{ v.badgeText }}">Что от вас нужно</span>
+                    <span style="font-size:16px;line-height:24px;font-weight:500;text-wrap:pretty">{{ v.need }}</span>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ v.isStop }}">
+                <div style="position:relative;background:#FFFFFF;border:1px solid #FECDC5;box-shadow:inset 4px 0 0 #B42318;border-radius:12px;padding:24px 24px 24px 28px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px">
+                  <div style="display:flex;flex-direction:column;gap:8px">
+                    <span style="font-size:14px;line-height:20px;font-weight:500;color:#9A1D14">Причина</span>
+                    <span style="font-size:20px;line-height:28px;font-weight:600">Кредитная история</span>
+                    <span style="font-size:16px;line-height:24px;text-wrap:pretty">Есть просроченная задолженность по действующим кредитам</span>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:8px">
+                    <span style="font-size:14px;line-height:20px;font-weight:500;color:#535C68">Что можно сделать</span>
+                    <span style="font-size:20px;line-height:28px;font-weight:600">Погасите просрочку</span>
+                    <span style="font-size:16px;line-height:24px;text-wrap:pretty;font-variant-numeric:tabular-nums">Подать новую заявку можно с 22.11.2026</span>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+
+            <sc-if value="{{ v.isOk }}">
+              <div style="display:grid;grid-template-columns:minmax(0,8fr) minmax(0,4fr);gap:32px;align-items:stretch">
+                <div style="border:1px solid #E4E6EA;border-radius:12px;padding:32px;display:flex;flex-direction:column;gap:24px">
+                  <h3 style="margin:0;font-size:20px;line-height:28px;font-weight:600">Условия</h3>
+                  <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;font-variant-numeric:tabular-nums">
+                    <div style="background:#F2F3F5;border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:4px"><span style="font-size:14px;line-height:20px;color:#535C68">Ставка</span><span style="font-size:32px;line-height:40px;font-weight:600;letter-spacing:-0.01em">22%</span><span style="font-size:14px;line-height:20px;color:#535C68">годовых</span></div>
+                    <div style="background:#F2F3F5;border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:4px"><span style="font-size:14px;line-height:20px;color:#535C68">Срок</span><span style="font-size:32px;line-height:40px;font-weight:600;letter-spacing:-0.01em">24</span><span style="font-size:14px;line-height:20px;color:#535C68">месяца</span></div>
+                    <div style="background:#F2F3F5;border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:4px"><span style="font-size:14px;line-height:20px;color:#535C68">Платёж в месяц</span><span style="font-size:32px;line-height:40px;font-weight:600;letter-spacing:-0.01em;white-space:nowrap">77 817 ₽</span><span style="font-size:14px;line-height:20px;color:#535C68">равными частями</span></div>
+                  </div>
+                  <span style="font-size:16px;line-height:24px;color:#535C68;font-variant-numeric:tabular-nums">Предложение действует до 22.11.2026</span>
+                  <div style="display:flex;gap:12px;padding-top:24px;border-top:1px solid #E4E6EA;margin-top:auto">
+                    <button type="button" style="height:48px;padding:0 24px;border-radius:6px;border:0;background:#DC2C26;color:#FFFFFF;font:500 16px/24px 'Onest',sans-serif;cursor:pointer" style-hover="background:#C42621" style-active="background:#AD211C">Принять предложение</button>
+                    <button type="button" style="height:48px;padding:0 24px;border-radius:6px;border:0;background:#F2F3F5;color:#1F2329;font:500 16px/24px 'Onest',sans-serif;cursor:pointer" style-hover="background:#E4E6EA" style-active="background:#CDD1D7">Отказаться</button>
+                  </div>
+                </div>
+                <div style="border:1px solid #E4E6EA;border-radius:12px;padding:32px;display:flex;flex-direction:column;gap:16px">
+                  <h3 style="margin:0;font-size:20px;line-height:28px;font-weight:600">Почему одобрили</h3>
+                  <ul style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column">
+                    <sc-for list="{{ reasons }}" as="r" hint-placeholder-count="3">
+                      <li style="display:flex;align-items:flex-start;gap:12px;padding:14px 0;border-top:1px solid #E4E6EA;font-size:16px;line-height:24px">
+                        <span style="width:20px;height:20px;margin-top:2px;flex-shrink:0;border-radius:999px;background:#1E8E5A;display:inline-flex;align-items:center;justify-content:center"><span style="width:8px;height:4px;border-left:2px solid #FFFFFF;border-bottom:2px solid #FFFFFF;transform:translateY(-1px) rotate(-45deg)"></span></span>
+                        <span style="text-wrap:pretty">{{ r }}</span>
+                      </li>
+                    </sc-for>
+                  </ul>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ v.isWait }}">
+              <div style="border:1px solid #E4E6EA;border-radius:12px;padding:32px;display:flex;flex-direction:column;gap:24px">
+                <p style="margin:0;max-width:760px;font-size:16px;line-height:24px;text-wrap:pretty">Запрошенная сумма даёт слишком высокую нагрузку: платежи заняли бы больше 30% поступлений на ваш счёт. Мы подобрали сумму и срок, при которых платёж посилен.</p>
+                <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;font-variant-numeric:tabular-nums">
+                  <div style="background:#F2F3F5;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:16px">
+                    <span style="font-size:14px;line-height:20px;font-weight:500;color:#535C68">Вы просили</span>
+                    <span style="font-size:32px;line-height:40px;font-weight:600;letter-spacing:-0.01em;color:#535C68">4 000 000 ₽</span>
+                    <dl style="margin:0;display:grid;grid-template-columns:160px minmax(0,1fr);font-size:16px;line-height:24px;color:#535C68">
+                      <dt style="padding:10px 0;border-top:1px solid #CDD1D7">Срок</dt><dd style="margin:0;padding:10px 0;border-top:1px solid #CDD1D7">12 мес.</dd>
+                      <dt style="padding:10px 0;border-top:1px solid #CDD1D7">Ставка</dt><dd style="margin:0;padding:10px 0;border-top:1px solid #CDD1D7">—</dd>
+                      <dt style="padding:10px 0;border-top:1px solid #CDD1D7">Платёж в месяц</dt><dd style="margin:0;padding:10px 0;border-top:1px solid #CDD1D7">~ 380 000 ₽</dd>
+                    </dl>
+                  </div>
+                  <div style="background:#FFFFFF;border:2px solid #1F2329;border-radius:12px;padding:23px;display:flex;flex-direction:column;gap:16px">
+                    <span style="font-size:14px;line-height:20px;font-weight:500;color:#1F2329">Мы предлагаем</span>
+                    <span style="font-size:32px;line-height:40px;font-weight:600;letter-spacing:-0.01em">2 850 000 ₽</span>
+                    <dl style="margin:0;display:grid;grid-template-columns:160px minmax(0,1fr);font-size:16px;line-height:24px">
+                      <dt style="padding:10px 0;border-top:1px solid #E4E6EA;color:#535C68">Срок</dt><dd style="margin:0;padding:10px 0;border-top:1px solid #E4E6EA;font-weight:500">24 мес.</dd>
+                      <dt style="padding:10px 0;border-top:1px solid #E4E6EA;color:#535C68">Ставка</dt><dd style="margin:0;padding:10px 0;border-top:1px solid #E4E6EA;font-weight:500">23% годовых</dd>
+                      <dt style="padding:10px 0;border-top:1px solid #E4E6EA;color:#535C68">Платёж в месяц</dt><dd style="margin:0;padding:10px 0;border-top:1px solid #E4E6EA;font-weight:500">149 264 ₽</dd>
+                    </dl>
+                  </div>
+                </div>
+                <div style="background:#F2F3F5;border-radius:12px;padding:20px 24px;display:flex;flex-direction:column;gap:4px;font-size:16px;line-height:24px">
+                  <span style="font-weight:600">Для ООО нужен поручитель — учредитель с долей больше 50%.</span>
+                  <span style="color:#535C68;text-wrap:pretty">Это вы: подпишете поручительство на следующем шаге.</span>
+                </div>
+                <div style="display:flex;gap:12px;padding-top:24px;border-top:1px solid #E4E6EA">
+                  <button type="button" style="height:48px;padding:0 24px;border-radius:6px;border:0;background:#DC2C26;color:#FFFFFF;font:500 16px/24px 'Onest',sans-serif;cursor:pointer" style-hover="background:#C42621" style-active="background:#AD211C">Принять предложение</button>
+                  <button type="button" style="height:48px;padding:0 24px;border-radius:6px;border:0;background:#F2F3F5;color:#1F2329;font:500 16px/24px 'Onest',sans-serif;cursor:pointer" style-hover="background:#E4E6EA" style-active="background:#CDD1D7">Отказаться</button>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ v.isStop }}">
+              <div style="display:flex;flex-direction:column;gap:32px">
+                <div style="background:#F2F3F5;border-radius:12px;padding:24px 32px;display:flex;align-items:center;justify-content:space-between;gap:32px">
+                  <div style="display:flex;flex-direction:column;gap:4px">
+                    <span style="font-size:16px;line-height:24px;font-weight:600">Не согласны с решением?</span>
+                    <span style="font-size:16px;line-height:24px;color:#535C68">Его пересмотрит специалист банка</span>
+                  </div>
+                  <button type="button" style="height:48px;padding:0 24px;border-radius:6px;border:1px solid #CDD1D7;background:#FFFFFF;color:#1F2329;font:500 16px/24px 'Onest',sans-serif;white-space:nowrap;cursor:pointer" style-hover="background:#E4E6EA" style-active="background:#CDD1D7">Попросить пересмотр</button>
+                </div>
+                <div>
+                  <button type="button" style="height:48px;padding:0 24px;border-radius:6px;border:0;background:#F2F3F5;color:#1F2329;font:500 16px/24px 'Onest',sans-serif;cursor:pointer" style-hover="background:#E4E6EA" style-active="background:#CDD1D7">Вернуться к заявкам</button>
+                </div>
+              </div>
+            </sc-if>
+          </main>
+        </div>
+      </div>
+    </sc-for>
+
+    <div id="1d" style="display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="display:inline-flex;align-items:center;height:28px;padding:0 10px;border-radius:6px;background:#1F2329;color:#FFFFFF;font-size:14px;line-height:20px;font-weight:600">1d</span>
+        <span style="font-size:16px;line-height:24px;font-weight:500">375 px · лента вертикальная</span>
+      </div>
+      <div data-screen-label="1d Мобильная лента" style="width:375px;background:#FFFFFF;border-radius:12px;padding:24px 20px 32px;box-sizing:border-box;display:flex;flex-direction:column;gap:24px">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <span style="font-size:14px;line-height:20px;color:#535C68">Заявка № 1042</span>
+          <h2 style="margin:0;font-size:28px;line-height:36px;font-weight:600;letter-spacing:-0.01em;font-variant-numeric:tabular-nums">Банк одобрил 1 500 000 ₽</h2>
+        </div>
+        <ol style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column">
+          <sc-for list="{{ mobileStages }}" as="s" hint-placeholder-count="6">
+            <li style="display:grid;grid-template-columns:32px minmax(0,1fr);column-gap:16px">
+              <div style="display:flex;flex-direction:column;align-items:center">
+                <sc-if value="{{ s.done }}">
+                  <span style="width:24px;height:24px;margin:4px 0;flex-shrink:0;border-radius:999px;background:#1E8E5A;display:inline-flex;align-items:center;justify-content:center"><span style="width:9px;height:5px;border-left:2px solid #FFFFFF;border-bottom:2px solid #FFFFFF;transform:translateY(-1px) rotate(-45deg)"></span></span>
+                </sc-if>
+                <sc-if value="{{ s.cur }}">
+                  <span style="width:32px;height:32px;flex-shrink:0;border-radius:999px;background:#1F2329;display:inline-flex;align-items:center;justify-content:center;color:#FFFFFF;font-size:14px;line-height:14px;font-weight:600">{{ s.n }}</span>
+                </sc-if>
+                <sc-if value="{{ s.wait }}">
+                  <span style="width:24px;height:24px;margin:4px 0;flex-shrink:0;box-sizing:border-box;border-radius:999px;border:1.5px solid #CDD1D7;display:inline-flex;align-items:center;justify-content:center;color:#6A7280;font-size:12px;line-height:12px;font-weight:500">{{ s.n }}</span>
+                </sc-if>
+                <sc-if value="{{ s.hasLine }}">
+                  <span style="flex:1;width:2px;min-height:16px;margin:4px 0;border-radius:1px;background:{{ s.line }}"></span>
+                </sc-if>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:2px;padding:4px 0 20px">
+                <span style="font-size:16px;line-height:24px;font-weight:{{ s.weight }};color:{{ s.color }}">{{ s.name }}</span>
+                <span style="font-size:14px;line-height:20px;color:{{ s.metaColor }};font-variant-numeric:tabular-nums">{{ s.meta }}</span>
+              </div>
+            </li>
+          </sc-for>
+        </ol>
+        <button type="button" style="height:48px;width:100%;border-radius:6px;border:0;background:#DC2C26;color:#FFFFFF;font:500 16px/24px 'Onest',sans-serif;cursor:pointer" style-hover="background:#C42621">Принять предложение</button>
+      </div>
+    </div>
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const names = ['Заявка', 'Проверка данных', 'Оценка', 'Решение', 'Подписание', 'Выдача'];
+    const G = '#1E8E5A', L = '#E4E6EA';
+    const stages = (spec) => spec.map(([type, meta], i) => ({
+      name: names[i], meta, n: i + 1,
+      done: type === 'done', cur: type === 'cur', stop: type === 'stop', wait: type === 'wait',
+      hasLine: i < 5,
+      line: type === 'done' ? G : L,
+      weight: type === 'cur' || type === 'stop' ? 600 : 400,
+      color: type === 'wait' ? '#535C68' : '#1F2329',
+      metaColor: type === 'stop' ? '#9A1D14' : type === 'done' ? '#17704A' : type === 'cur' ? '#1F2329' : '#6A7280',
+    }));
+    const head = [['done', '14:02'], ['done', '14:02'], ['done', '14:04']];
+    const ahead = [['cur', 'Ждёт вашего ответа'], ['wait', 'Ожидает'], ['wait', 'Ожидает']];
+    return {
+      reasons: ['Стабильные поступления на счёт', 'Нет просрочек по кредитам', 'Бизнес работает больше 4 лет'],
+      mobileStages: stages([...head, ...ahead]),
+      variants: [
+        {
+          id: '1a', caption: 'Одобрено', label: '1a Одобрено', product: 'Экспресс-кредит',
+          title: 'Банк одобрил 1 500 000 ₽', stages: stages([...head, ...ahead]),
+          isOk: true, hasPanel: true, tone: G, panelBg: '#EFFAF3', badge: 'Одобрено', badgeBg: '#EFFAF3', badgeBorder: '#B9E8CB', badgeText: '#17704A',
+          what: 'Банк одобрил заявку на запрошенных условиях.',
+          need: 'Примите предложение до 22.11.2026 — затем перейдём к подписанию.',
+        },
+        {
+          id: '1b', caption: 'Встречное предложение', label: '1b Встречное предложение', product: 'Кредит для ООО',
+          title: 'Банк готов выдать 2 850 000 ₽ на 24 месяца', stages: stages([...head, ...ahead]),
+          isWait: true, hasPanel: true, tone: '#F5AF20', panelBg: '#FEF5E8', badge: 'Другие условия', badgeBg: '#FEF5E8', badgeBorder: '#FFD79B', badgeText: '#8B6001',
+          what: 'Банк предложил другую сумму и срок.',
+          need: 'Сравните условия и примите предложение или откажитесь.',
+        },
+        {
+          id: '1c', caption: 'Отказ', label: '1c Отказ', product: 'Экспресс-кредит',
+          title: 'Банк не может выдать кредит сейчас', stages: stages([...head, ['stop', 'Отказ'], ['wait', ''], ['wait', '']]),
+          isStop: true, hasPanel: false, tone: '#B42318', badge: 'Отказ', badgeBg: '#FFF4F2', badgeBorder: '#FECDC5', badgeText: '#9A1D14',
+        },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>
