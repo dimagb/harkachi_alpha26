@@ -9,6 +9,7 @@ def main() -> None:
     output.write_text(
         json.dumps(app.openapi(), sort_keys=True, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
+        newline="\n",
     )
 
 
