@@ -64,9 +64,9 @@ export const applications: Schema['ApplicationClient'][] = [
   ),
 ];
 
-// TODO(lead): подтвердить параметры каталога MSW: в материалах F-01 нет значений лимитов продуктов.
+// Catalog: docs/TASKS.md F-01 and the product showcase in contracts/codes.md.
 export const products: Schema['Product'][] = [
-  { code: 'EXPRESS', name: 'Экспресс-кредит', description: 'Финансирование текущих задач бизнеса.', purposes: ['WORKING_CAPITAL', 'CASH_GAP', 'EQUIPMENT', 'OTHER'], min_amount: 100000, max_amount: 5000000, min_term_months: 6, max_term_months: 36, rate_from: 22.00, requires_guarantor_ooo: false, key_rate: 14.00, key_rate_date: '2026-10-23' },
-  { code: 'WORKING_CAPITAL', name: 'Оборотный кредит', description: 'Деньги на закупки и развитие оборота.', purposes: ['WORKING_CAPITAL', 'CASH_GAP', 'OTHER'], min_amount: 500000, max_amount: 10000000, min_term_months: 6, max_term_months: 36, rate_from: 22.00, requires_guarantor_ooo: true, key_rate: 14.00, key_rate_date: '2026-10-23' },
-  { code: 'OVERDRAFT', name: 'Овердрафт', description: 'Резерв на случай временного недостатка денег на счёте.', purposes: ['WORKING_CAPITAL', 'CASH_GAP'], min_amount: 100000, max_amount: 3000000, min_term_months: 12, max_term_months: 12, rate_from: 22.00, requires_guarantor_ooo: false, key_rate: 14.00, key_rate_date: '2026-10-23' },
+  { code: 'EXPRESS', name: 'Экспресс-кредит', description: 'На любые цели бизнеса', purposes: ['WORKING_CAPITAL', 'CASH_GAP', 'EQUIPMENT', 'OTHER'], min_amount: 300000, max_amount: 5000000, min_term_months: 6, max_term_months: 36, rate_from: 22.00, requires_guarantor_ooo: true, key_rate: 14.00, key_rate_date: '2026-10-23' },
+  { code: 'WORKING_CAPITAL', name: 'Оборотный кредит', description: 'На пополнение оборотных средств', purposes: ['WORKING_CAPITAL', 'CASH_GAP'], min_amount: 500000, max_amount: 15000000, min_term_months: 3, max_term_months: 24, rate_from: 21.00, requires_guarantor_ooo: true, key_rate: 14.00, key_rate_date: '2026-10-23' },
+  { code: 'OVERDRAFT', name: 'Овердрафт', description: 'На покрытие кассовых разрывов', purposes: ['CASH_GAP', 'WORKING_CAPITAL'], min_amount: 100000, max_amount: 5000000, min_term_months: 12, max_term_months: 12, rate_from: 24.00, requires_guarantor_ooo: true, key_rate: 14.00, key_rate_date: '2026-10-23' },
 ];

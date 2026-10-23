@@ -24,7 +24,7 @@ export function createHandlers() {
     http.post<EmptyParams, Schema['LoginRequest'], Schema['LoginResponse'] | ApiError>('*/api/v1/auth/login', async ({ request }) => {
       const body = await request.json();
       const me = accounts[body.login];
-      if (!me || body.password !== 'demo') return error(401, 'UNAUTHORIZED', 'Неверный логин или пароль. Проверьте данные и повторите вход.');
+      if (!me || body.password !== 'demo2026') return error(401, 'UNAUTHORIZED', 'Неверный логин или пароль. Проверьте данные и повторите вход.');
       return HttpResponse.json({ access_token: `demo:${body.login}`, token_type: 'bearer', expires_in: 3600, user: me.user });
     }),
     http.get<EmptyParams, never, Schema['MeResponse'] | ApiError>('*/api/v1/me', ({ request }) => {

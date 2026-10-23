@@ -17,7 +17,7 @@ async function request(path: string, token?: string, body?: Schema['LoginRequest
   }));
 }
 async function signIn(login: string) {
-  const response = await request('/auth/login', undefined, { login, password: 'demo' });
+  const response = await request('/auth/login', undefined, { login, password: 'demo2026' });
   expect(response.status).toBe(200);
   const body: Schema['LoginResponse'] = await response.json();
   return body.access_token;
@@ -46,8 +46,13 @@ it('MSW отклоняет неизвестный токен и неверный
 
 it('MSW отдаёт каталог трёх продуктов', async () => {
   const response = await request('/products');
+  expect(response.status).toBe(200);
   const body: Schema['Product'][] = await response.json();
-  expect(body.map(({ code }) => code)).toEqual(['EXPRESS', 'WORKING_CAPITAL', 'OVERDRAFT']);
+  expect(body).toEqual([
+    { code: 'EXPRESS', name: 'Экспресс-кредит', description: 'На любые цели бизнеса', purposes: ['WORKING_CAPITAL', 'CASH_GAP', 'EQUIPMENT', 'OTHER'], requires_guarantor_ooo: true, min_amount: 300000, max_amount: 5000000, min_term_months: 6, max_term_months: 36, rate_from: 22.0, key_rate: 14.0, key_rate_date: '2026-10-23' },
+    { code: 'WORKING_CAPITAL', name: 'Оборотный кредит', description: 'На пополнение оборотных средств', purposes: ['WORKING_CAPITAL', 'CASH_GAP'], requires_guarantor_ooo: true, min_amount: 500000, max_amount: 15000000, min_term_months: 3, max_term_months: 24, rate_from: 21.0, key_rate: 14.0, key_rate_date: '2026-10-23' },
+    { code: 'OVERDRAFT', name: 'Овердрафт', description: 'На покрытие кассовых разрывов', purposes: ['CASH_GAP', 'WORKING_CAPITAL'], requires_guarantor_ooo: true, min_amount: 100000, max_amount: 5000000, min_term_months: 12, max_term_months: 12, rate_from: 24.0, key_rate: 14.0, key_rate_date: '2026-10-23' },
+  ]);
 });
 
 it.each([['ip_good', 1500000, 'APPROVED'], ['ooo_load', 2850000, 'COUNTER']])('MSW отдаёт клиентские данные заявки %s', async (login, amount, kind) => {

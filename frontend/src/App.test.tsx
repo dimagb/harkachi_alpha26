@@ -2,7 +2,7 @@ import { MantineProvider } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { http, HttpResponse } from 'msw';
+import { delay, http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { MemoryRouter, useLocation } from 'react-router';
 import { afterAll, afterEach, beforeAll, expect, it } from 'vitest';
@@ -47,7 +47,7 @@ function open(path = '/login') {
 }
 async function login(name: string) {
   fireEvent.change(await screen.findByLabelText(/^Логин/), { target: { value: name } });
-  fireEvent.change(screen.getByLabelText(/^Пароль/), { target: { value: 'demo' } });
+  fireEvent.change(screen.getByLabelText(/^Пароль/), { target: { value: 'demo2026' } });
   fireEvent.click(screen.getByRole('button', { name: 'Войти' }));
 }
 
@@ -142,5 +142,18 @@ it('даёт выбрать компанию и перейти к новой з�
 it('запрашивает health с единственным префиксом API', async () => {
   const { data } = await api.GET('/health');
   expect(data).toEqual({ status: 'ok' });
+});
+
+it('не показывает ошибку соединения при отмене запроса', async () => {
+  server.use(http.get('*/api/v1/products', async () => { await delay(50); return HttpResponse.json([]); }));
+  open();
+  await screen.findByRole('heading', { name: 'Вход' });
+  const controller = new AbortController();
+  await act(async () => {
+    const pending = api.GET('/products', { signal: controller.signal });
+    controller.abort();
+    await expect(pending).rejects.toMatchObject({ name: 'AbortError' });
+  });
+  expect(screen.queryByText('Нет связи с сервером. Проверьте соединение и попробуйте ещё раз.')).toBeNull();
 });
 

@@ -42,7 +42,8 @@ api.use({
       notifications.show({ color: 'red', title: 'Не удалось выполнить действие', message: errorMessage(body) ?? 'Не удалось выполнить запрос. Попробуйте ещё раз.' });
     }
   },
-  onError() {
+  onError({ error }) {
+    if (typeof error === 'object' && error !== null && 'name' in error && error.name === 'AbortError') return;
     notifications.show({ color: 'red', message: 'Нет связи с сервером. Проверьте соединение и попробуйте ещё раз.' });
   },
 });

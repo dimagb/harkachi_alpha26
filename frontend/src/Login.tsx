@@ -44,7 +44,7 @@ export default function Login() {
           <Text size="sm">ip_good — индивидуальный предприниматель</Text>
           <Text size="sm">ooo_load — руководитель компании</Text>
           <Text size="sm">underwriter — сотрудник банка</Text>
-          {import.meta.env.DEV && import.meta.env.VITE_USE_MSW === 'true' && <Text size="sm" c="dimmed">Работа без сервера. Пароль для демо-учёток: demo.</Text>}
+          {import.meta.env.DEV && import.meta.env.VITE_USE_MSW === 'true' && <Text size="sm" c="dimmed">Работа без сервера. Пароль для демо-учёток: demo2026.</Text>}
         </Stack>
       </Stack>
     </Container>
