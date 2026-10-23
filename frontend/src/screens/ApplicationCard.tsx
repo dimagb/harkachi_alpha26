@@ -67,7 +67,7 @@ function CardContent({ id, companies, userId }: CardProps & { id: string }) {
   return <Stack gap="xl" key={id}>
     {pageHeading}
     <Stack gap="sm"><Anchor component={Link} to="/app" size="sm" c="dimmed">К моим заявкам</Anchor>
-      <Group gap="sm"><Text size="sm" c="dimmed">Заявка № {data.number}</Text><Badge color={`${color}.${status === 'current' ? 9 : 6}`} variant="light" leftSection={<span aria-hidden="true">{icon === 'number' ? data.stage.index : icon}</span>}>{data.state === 'WITHDRAWN' ? 'Отозвана' : stateLabels[data.state]}</Badge></Group>
+      <Group gap="sm"><Text size="sm" c="dimmed">Заявка № {data.number}</Text><Badge color={color} c={`${color}.${status === 'current' ? 9 : 6}`} bg={`${color}.0`} variant="light" leftSection={<span aria-hidden="true">{icon === 'number' ? data.stage.index : icon}</span>}>{data.state === 'WITHDRAWN' ? 'Отозвана' : stateLabels[data.state]}</Badge></Group>
       <Title order={2} size="h2" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: '0 12px' }}><Text component="span" inherit c="dimmed">{products.data?.find((product) => product.code === data.product_code)?.name ?? 'Загружаем продукт…'} ·</Text><Text component="span" inherit fz={{ base: 28, sm: 40 }} c="gray.9">{formatMoney(data.offer?.amount ?? data.amount)}</Text><Text component="span" inherit c="dimmed">на {data.offer?.term_months ?? data.term_months} мес.</Text></Title>
     </Stack>
     <Paper withBorder p={{ base: 'md', sm: 'xl' }}><Stack gap="xl"><Timeline timeline={data.timeline} /><StatusPanel application={data} status={status} /></Stack></Paper>

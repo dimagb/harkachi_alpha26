@@ -40,6 +40,9 @@ it('VALIDATION: шесть серверных этапов, текущая пр�
   expect(within(panel).getByText('Проверяем данные заявки')).toBeTruthy();
   expect(within(panel).getByText('Ничего, мы сообщим, когда понадобится ваше участие')).toBeTruthy();
   expect(within(panel).queryByRole('link')).toBeNull();
+  const badge = screen.getByText('Проверяем заявку').closest<HTMLElement>('[data-variant]');
+  expect(badge?.style.background).toBe('var(--mantine-color-gray-0)');
+  expect(badge?.style.color).toBe('var(--mantine-color-gray-9)');
 });
 
 it('опрос каждые 2 с сам показывает предложение и прекращается в OFFER_ISSUED', async () => {
