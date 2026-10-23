@@ -44,12 +44,15 @@ export type CheckStatus = "PENDING" | "OK" | "FAILED";
 // ---------- Ошибки ----------
 export type ErrorCode =
   | "VALIDATION_ERROR" | "UNAUTHORIZED" | "FORBIDDEN" | "NOT_FOUND" | "INVALID_TRANSITION"
-  | "CONFLICT_VERSION" | "OFFER_EXPIRED" | "SIGN_NOT_ALLOWED" | "OTP_INVALID" | "OBJECTION_NOT_ALLOWED";
+  | "CONFLICT_VERSION" | "OFFER_EXPIRED" | "SIGN_NOT_ALLOWED" | "OTP_INVALID" | "OBJECTION_NOT_ALLOWED"
+  | "SERVICE_UNAVAILABLE" | "INTERNAL_ERROR";
 export interface ApiError {
   error: { code: ErrorCode; message: string; details: Record<string, unknown> };
 }
 // HTTP: VALIDATION_ERROR 422, UNAUTHORIZED 401, FORBIDDEN/SIGN_NOT_ALLOWED/OBJECTION_NOT_ALLOWED 403,
-// NOT_FOUND 404, INVALID_TRANSITION/CONFLICT_VERSION/OFFER_EXPIRED 409, OTP_INVALID 422.
+// NOT_FOUND 404, INVALID_TRANSITION/CONFLICT_VERSION/OFFER_EXPIRED 409, OTP_INVALID 422,
+// SERVICE_UNAVAILABLE 503 (/ready: БД недоступна), INTERNAL_ERROR 500 (необработанное исключение, без деталей наружу).
+// Прочие HTTP-ошибки фреймворка (405 и т. п.) отдаются с ближайшим кодом: 405 → NOT_FOUND.
 // details для VALIDATION_ERROR: { fields: { [field: string]: string /* текст для пользователя */ } }
 
 // ---------- Аутентификация ----------
