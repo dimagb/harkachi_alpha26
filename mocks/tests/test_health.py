@@ -8,4 +8,9 @@ def test_health():
         response = client.get("/mock/v1/health")
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
-    assert {route.path for route in app.routes} == {"/mock/v1/health"}
+    assert {route.path for route in app.routes} == {
+        "/mock/v1/health",
+        "/mock/v1/registry/{inn}",
+        "/mock/v1/bki/report",
+        "/mock/v1/fns/check/{inn}",
+    }
