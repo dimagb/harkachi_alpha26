@@ -120,7 +120,7 @@ def company_profile(
     response_model=s.ApplicationClient,
     tags=["Заявки клиента"],
     summary="Создать заявку",
-    responses=errors(401, 403, 409, 422, 501),
+    responses=errors(401, 403, 404, 409, 422, 501),
 )
 def create_application(
     body: s.ApplicationCreate,
@@ -158,7 +158,7 @@ def patch_application(
     response_model=list[s.ApplicationListItem],
     tags=["Заявки клиента"],
     summary="Получить заявки компании",
-    responses=errors(401, 403, 422, 501),
+    responses=errors(401, 403, 404, 422, 501),
 )
 def applications(
     company_id: UUID,
@@ -197,8 +197,15 @@ def application(
     summary="Запросить подпись",
     responses=errors(401, 403, 404, 409, 422, 501),
 )
-def request_signature(id: UUID):
-    not_implemented()
+def request_signature(
+    id: UUID,
+    user: Annotated[User, Depends(client_user)],
+    session: Annotated[Session, Depends(get_session)],
+):
+    from app.applications.serializers import to_client
+    from app.signing.submit import request_signature
+
+    return to_client(session, request_signature(session, id, user), user)
 
 
 @router.post(
@@ -206,10 +213,17 @@ def request_signature(id: UUID):
     response_model=s.OtpResponse,
     tags=["Действия клиента"],
     summary="Запросить код подтверждения",
-    responses=errors(401, 403, 404, 422, 501),
+    responses=errors(401, 403, 404, 409, 422, 501),
 )
-def otp(id: UUID, body: s.OtpRequest):
-    not_implemented()
+def otp(
+    id: UUID,
+    body: s.OtpRequest,
+    user: Annotated[User, Depends(client_user)],
+    session: Annotated[Session, Depends(get_session)],
+):
+    from app.signing.otp import issue
+
+    return issue(session, id, body, user)
 
 
 @router.post(
@@ -219,8 +233,16 @@ def otp(id: UUID, body: s.OtpRequest):
     summary="Подать заявку",
     responses=errors(401, 403, 404, 409, 422, 501),
 )
-def submit(id: UUID, body: s.SubmitRequest):
-    not_implemented()
+def submit(
+    id: UUID,
+    body: s.SubmitRequest,
+    user: Annotated[User, Depends(client_user)],
+    session: Annotated[Session, Depends(get_session)],
+):
+    from app.applications.serializers import to_client
+    from app.signing.submit import submit
+
+    return to_client(session, submit(session, id, body, user), user)
 
 
 @router.post(

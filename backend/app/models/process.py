@@ -257,3 +257,16 @@ class Job(Record, Base):
     attempts: Mapped[int] = mapped_column(default=0)
     run_after: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     last_error: Mapped[str | None] = mapped_column(Text)
+
+
+class Otp(Record, Base):
+    __tablename__ = "otp"
+    __table_args__ = (choices("purpose", "CONSENTS", "OFFER", "GUARANTEE"),)
+    application_id: Mapped[UUID] = mapped_column(ForeignKey("application.id"))
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("user.id"))
+    party_id: Mapped[UUID | None] = mapped_column(ForeignKey("party.id"))
+    purpose: Mapped[str] = mapped_column(String(20))
+    code_hash: Mapped[str] = mapped_column(String(64))
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    attempts: Mapped[int] = mapped_column(default=0, server_default="0")
+    used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

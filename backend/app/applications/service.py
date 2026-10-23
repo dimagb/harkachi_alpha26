@@ -1,5 +1,6 @@
 """Application ownership, draft validation and optimistic concurrency."""
 
+from datetime import UTC, datetime
 from uuid import UUID
 
 from pydantic import ValidationError
@@ -61,6 +62,7 @@ def create(session: Session, body: ApplicationCreate, user: User) -> Application
             actor_type="CLIENT",
             actor_id=user.id,
             payload={},
+            created_at=datetime.now(UTC),
         )
     )
     session.commit()
@@ -92,10 +94,16 @@ def patch(
         raise ApiErrorException(
             409, "INVALID_TRANSITION", "Действие недоступно в текущем состоянии заявки"
         )
-    values = {
-        field: getattr(application, field) for field in ApplicationPatch.model_fields
-    }
-    values.update(body.model_dump(exclude_unset=True))
+    editable = (
+        "product_code",
+        "amount",
+        "term_months",
+        "purpose",
+        "purpose_text",
+        "declared_revenue_year",
+    )
+    values = {field: getattr(application, field) for field in editable}
+    values.update(body.model_dump(exclude_unset=True, include=set(editable)))
     if application.purpose == "OTHER" and values["purpose"] != "OTHER":
         values["purpose_text"] = None
     try:

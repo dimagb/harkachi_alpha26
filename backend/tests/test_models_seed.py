@@ -35,6 +35,7 @@ TABLES = {
     "objection",
     "application_event",
     "job",
+    "otp",
 }
 
 
