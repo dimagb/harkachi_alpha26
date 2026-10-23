@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { components } from '../api/schema';
-import { formatMoney, stageStatusColor } from './status';
+import { formatMoney, stageStatusColor, stageStatusIcon } from './status';
 
 describe('Цвет этапа заявки', () => {
   const cases = [
     ['done', 'ok'],
-    ['current', 'flow'],
+    ['current', 'gray'],
     ['action_required', 'wait'],
     ['failed', 'stop'],
     ['cancelled', 'gray'],
@@ -20,6 +20,10 @@ describe('Цвет этапа заявки', () => {
 
   // @ts-expect-error — неизвестный статус запрещён контрактом; разрешено карточкой F-02.
   stageStatusColor('unknown');
+});
+
+it.each([['done', '✓'], ['current', 'number'], ['action_required', '!'], ['failed', '×'], ['cancelled', '×'], ['pending', 'number']] as const)('иконка %s: %s', (status, icon) => {
+  expect(stageStatusIcon(status)).toBe(icon);
 });
 
 describe('Суммы в рублях', () => {

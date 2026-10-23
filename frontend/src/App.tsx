@@ -10,6 +10,7 @@ import Login from './Login';
 import { CompanyProvider, useCompany } from './company/CompanyContext';
 import MyApplications from './screens/MyApplications';
 import NewApplication from './screens/NewApplication';
+import ApplicationCard from './screens/ApplicationCard';
 
 type Me = components['schemas']['MeResponse'];
 
@@ -68,7 +69,7 @@ export default function App() {
         <Route element={<CompanyProvider key={me.data.user.id} companies={me.data.companies}><Shell me={me.data} /></CompanyProvider>}>
           <Route path="/app" element={client ? <MyApplications /> : <Navigate to={home} replace />} />
           <Route path="/app/applications/new" element={client ? <NewApplication /> : <Navigate to={home} replace />} />
-          <Route path="/app/applications/:id" element={client ? <Title order={1}>Карточка заявки</Title> : <Navigate to={home} replace />} />
+          <Route path="/app/applications/:id" element={client ? <ApplicationCard companies={me.data.companies} userId={me.data.user.id} /> : <Navigate to={home} replace />} />
           <Route path="/bank/queue" element={underwriter ? <Title order={1}>Очередь</Title> : <Navigate to={home} replace />} />
           <Route path="/bank/applications/:id" element={underwriter ? <Title order={1}>Карточка андеррайтера</Title> : <Navigate to={home} replace />} />
           <Route path="/bank/journal" element={underwriter ? <Title order={1}>Журнал банка</Title> : <Navigate to={home} replace />} />

@@ -1,6 +1,6 @@
 import { http, HttpResponse } from 'msw';
 import type { components } from '../api/schema';
-import { accounts, applications, companyProfiles, draftApplication, products } from './fixtures';
+import { accounts, applications, applicationScenarios, companyProfiles, draftApplication, products } from './fixtures';
 
 type Schema = components['schemas'];
 type ApiError = Schema['ApiError'];
@@ -85,10 +85,26 @@ export function createHandlers() {
     http.get<{ id: string }, never, Application | ApiError>('*/api/v1/applications/:id', ({ request, params }) => {
       const me = account(request);
       if (!me) return error(401, 'UNAUTHORIZED', 'Войдите в кабинет.');
-      const application = stored.get(params.id);
+      const application = stored.get(params.id) ?? applicationScenarios.find((item) => item.id === params.id);
       if (!application) return error(404, 'NOT_FOUND', 'Заявка не найдена.');
       if (!ownsCompany(me, application.company_id)) return error(403, 'FORBIDDEN', 'Нет доступа к этой заявке.');
       return HttpResponse.json(application);
+    }),
+    http.post<{ id: string }, never, Application | ApiError>('*/api/v1/applications/:id/withdraw', ({ request, params }) => {
+      const me = account(request);
+      if (!me) return error(401, 'UNAUTHORIZED', 'Войдите в кабинет.');
+      const application = stored.get(params.id) ?? applicationScenarios.find((item) => item.id === params.id);
+      if (!application || !ownsCompany(me, application.company_id)) return error(404, 'NOT_FOUND', 'Заявка не найдена.');
+      if (!me.companies.find(({ company }) => company.id === application.company_id)?.can_sign) return error(403, 'SIGN_NOT_ALLOWED', 'Отозвать заявку может сотрудник с правом подписи.');
+      if (!application.allowed_actions.includes('WITHDRAW')) return error(409, 'INVALID_TRANSITION', 'Заявка уже изменилась.');
+      const now = new Date().toISOString();
+      const updated: Application = { ...application, version: application.version + 1, state: 'WITHDRAWN', updated_at: now,
+        stage: { ...application.stage, what_happens: 'Заявка отозвана', what_to_do: 'Можно подать новую заявку' },
+        timeline: application.timeline.map((step) => step.stage_code === application.stage.code ? { ...step, status: 'cancelled', at: now } : step),
+        allowed_actions: ['NEW_APPLICATION'],
+      };
+      stored.set(updated.id, updated);
+      return HttpResponse.json(updated);
     }),
   ];
 }

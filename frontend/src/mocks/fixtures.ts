@@ -19,6 +19,11 @@ export const accounts: Record<string, Schema['MeResponse']> = {
   },
 };
 
+accounts.ooo_load_accountant = {
+  user: { id: '10000000-0000-4000-8000-000000000004', full_name: 'Белова Ольга Сергеевна', role: 'CLIENT' },
+  companies: accounts.ooo_load!.companies.map((membership) => ({ ...membership, position: 'Главный бухгалтер', can_sign: false, is_founder: false })),
+};
+
 // Public registry responses for the existing personas, checked against the local API.
 export const companyProfiles: Record<string, Schema['CompanyProfile']> = {
   '20000000-0000-4000-8000-000000000001': {
@@ -62,8 +67,8 @@ function offeredApplication(body: Schema['ApplicationCreate'], id: string, numbe
   const draft = draftApplication(body, id, number);
   return {
     ...draft, state: 'OFFER_ISSUED', created_at: at, updated_at: at,
-    stage: { index: 4, code: 'DECISION', title: 'Решение', what_happens: 'Для вас подготовлено предложение.', what_to_do: 'Ознакомьтесь с условиями предложения.' },
-    timeline: draft.timeline.map((step, index) => ({ ...step, status: index < 3 ? 'done' : index === 3 ? 'action_required' : 'pending', at: index < 4 ? at : null })),
+    stage: { index: 4, code: 'DECISION', title: 'Решение', what_happens: 'Предложение готово', what_to_do: 'Примите предложение или откажитесь от него до указанного срока' },
+    timeline: draft.timeline.map((step, index) => ({ ...step, title: index === 1 ? 'Проверка данных' : step.title, status: index < 3 ? 'done' : index === 3 ? 'action_required' : 'pending', at: index < 4 ? at : null })),
     offer, allowed_actions: ['ACCEPT_OFFER', 'REJECT_OFFER', 'WITHDRAW'],
   };
 }
@@ -80,6 +85,37 @@ export const applications: Schema['ApplicationClient'][] = [
     { id: '40000000-0000-4000-8000-000000000002', version: 1, kind: 'COUNTER', status: 'ACTIVE', product_code: 'WORKING_CAPITAL', amount: 2850000, term_months: 24, rate: 23.00, monthly_payment: 149264, expires_at: '2026-10-30T09:00:00Z', explanation: ['Подобраны сумма и срок с учётом текущих обязательств.'], requested: { amount: 4000000, term_months: 12 }, counter_reason: 'Предлагаем меньшую сумму на более длительный срок, чтобы снизить платёж.' },
   ),
 ];
+
+const scenarioStages: [Schema['ApplicationClient']['state'], Schema['Stage']['index'], Schema['TimelineItem']['status'], string, string | null, Schema['ApplicationClient']['allowed_actions']][] = [
+  ['VALIDATION', 2, 'current', 'Проверяем данные заявки', null, ['WITHDRAW']],
+  ['INFO_REQUESTED', 2, 'action_required', 'Нужно уточнить данные заявки', 'Ответьте на вопросы банка до указанного срока', ['ANSWER_INFO_REQUEST', 'WITHDRAW']],
+  ['MANUAL_REVIEW', 3, 'current', 'Заявку рассматривает специалист банка — обычно до 1 рабочего дня', null, ['WITHDRAW']],
+  ['OFFER_ISSUED', 4, 'action_required', 'Предложение готово', 'Примите предложение или откажитесь от него до указанного срока', ['ACCEPT_OFFER', 'REJECT_OFFER', 'WITHDRAW']],
+  ['DECLINED', 4, 'failed', 'Банк не может одобрить заявку', 'Посмотрите причину и что можно сделать', ['NEW_APPLICATION']],
+  ['SIGNING', 5, 'action_required', 'Готовим договор к подписанию', 'Подпишите договор кодом подтверждения', ['SIGN', 'WITHDRAW']],
+  ['DISBURSED', 6, 'done', 'Деньги зачислены на счёт', null, ['NEW_APPLICATION']],
+  ['WITHDRAWN', 3, 'cancelled', 'Заявка отозвана', 'Можно подать новую заявку', ['NEW_APPLICATION']],
+];
+const stageNames = ['Заявка', 'Проверка данных', 'Оценка', 'Решение', 'Подписание', 'Выдача'];
+// Dedicated detail scenarios leave the existing demo lists unchanged.
+export const applicationScenarios: Schema['ApplicationClient'][] = scenarioStages.map(([state, index, status, what_happens, what_to_do, allowed_actions], position) => {
+  const base = applications[0]!;
+  return {
+    ...base, id: `30000000-0000-4000-8000-${String(101 + position).padStart(12, '0')}`, number: 1101 + position, state,
+    stage: { index, code: base.timeline[index - 1]!.stage_code, title: stageNames[index - 1]!, what_happens, what_to_do },
+    timeline: base.timeline.map((step, i) => ({ ...step, title: stageNames[i]!, status: i < index - 1 ? 'done' : i === index - 1 ? status : 'pending', at: i < index ? `2026-10-23T09:0${i}:00Z` : null })),
+    offer: ['OFFER_ISSUED', 'SIGNING', 'DISBURSED'].includes(state) ? base.offer : null,
+    client_reason: state === 'DECLINED' ? { code: 'HIGH_LOAD', category: 'Долговая нагрузка', text: 'Текущая долговая нагрузка слишком высока', action: 'Рассмотрите овердрафт или подайте заявку позже', retry_after: null } : null,
+    info_request: state === 'INFO_REQUESTED' ? { id: '50000000-0000-4000-8000-000000000001', due_at: '2026-10-28T09:00:00Z', items: [{ item_code: 'REVENUE_CONFIRM', question: 'Подтвердите выручку за год', requires_value: true }] } : null,
+    allowed_actions,
+  };
+});
+applicationScenarios.push({
+  ...applications[1]!, id: '30000000-0000-4000-8000-000000000109', number: 1109,
+  stage: { ...applications[1]!.stage, what_happens: 'Предложение готово', what_to_do: 'Ждём решения подписанта компании' },
+  timeline: applications[1]!.timeline.map((step, index) => ({ ...step, title: stageNames[index]!, status: index === 3 ? 'current' : step.status })),
+  allowed_actions: [],
+});
 
 // Catalog: docs/TASKS.md F-01 and the product showcase in contracts/codes.md.
 export const products: Schema['Product'][] = [
