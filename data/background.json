@@ -1,0 +1,4102 @@
+{
+ "_meta": {
+  "as_of": "2026-10-23",
+  "note": "Синтетические данные; исходы рассчитываются конвейером, demo.expected отсутствует.",
+  "seed": 20261023,
+  "turnover_months": "2025-10…2026-09 (YYYY-MM)"
+ },
+ "companies": [
+  {
+   "address": "г. Москва, ул. Примерная, д. 1",
+   "bki": {
+    "loans": [
+     {
+      "balance": 7804269,
+      "current_overdue": 0,
+      "max_dpd_12m": 0,
+      "monthly_payment": 236493,
+      "type": "CREDIT"
+     }
+    ],
+    "summary": {
+     "credit_history_months": 40,
+     "current_overdue_total": 0,
+     "inquiries_30d": 0,
+     "max_dpd_12m": 0,
+     "monthly_payments_total": 236493,
+     "total_balance": 7804269
+    }
+   },
+   "code": "bg_001",
+   "demo": {
+    "apps": [
+     {
+      "app": {
+       "amount": 4500000,
+       "declared_revenue_year": 12925860,
+       "product": "WORKING_CAPITAL",
+       "purpose": "WORKING_CAPITAL",
+       "term": 16
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "DECLINED"
+     },
+     {
+      "app": {
+       "amount": 4800000,
+       "declared_revenue_year": 12925860,
+       "product": "OVERDRAFT",
+       "purpose": "WORKING_CAPITAL",
+       "term": 12
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "DECLINED"
+     }
+    ]
+   },
+   "director": {
+    "full_name": "Иванов Алексей Сергеевич 1"
+   },
+   "fns": {
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "enforcement_sum": 0,
+    "mass_address": false,
+    "mass_director": false,
+    "msp_registry": {
+     "category": "MICRO",
+     "included": true
+    },
+    "tax_debt": 86947
+   },
+   "founders": [
+    {
+     "full_name": "Иванов Алексей Сергеевич 1",
+     "share_pct": 100
+    }
+   ],
+   "inn": "7767686198",
+   "kind": "OOO",
+   "name": "ООО «Фоновая компания 01»",
+   "ogrn": "1267700000017",
+   "okved_main": "62.10",
+   "reg_date": "2022-10-23",
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
+   "status": "ACTIVE",
+   "turnover": [
+    1156181,
+    794444,
+    822693,
+    994760,
+    719053,
+    1036122,
+    837226,
+    1236392,
+    1208340,
+    1232545,
+    1598638,
+    1289466
+   ],
+   "users": [
+    {
+     "can_sign": true,
+     "full_name": "Иванов Алексей Сергеевич 1",
+     "is_founder": true,
+     "login": "bg_001",
+     "position": "Директор",
+     "role": "CLIENT",
+     "share_pct": 100
+    }
+   ]
+  },
+  {
+   "address": "г. Москва, ул. Примерная, д. 2",
+   "bki": {
+    "loans": [
+     {
+      "balance": 12373920,
+      "current_overdue": 0,
+      "max_dpd_12m": 0,
+      "monthly_payment": 687440,
+      "type": "CREDIT"
+     }
+    ],
+    "summary": {
+     "credit_history_months": 40,
+     "current_overdue_total": 0,
+     "inquiries_30d": 0,
+     "max_dpd_12m": 0,
+     "monthly_payments_total": 687440,
+     "total_balance": 12373920
+    }
+   },
+   "code": "bg_002",
+   "demo": {
+    "apps": [
+     {
+      "app": {
+       "amount": 11800000,
+       "declared_revenue_year": 45139740,
+       "product": "WORKING_CAPITAL",
+       "purpose": "WORKING_CAPITAL",
+       "term": 10
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "MANUAL_REVIEW"
+     }
+    ]
+   },
+   "director": {
+    "full_name": "Иванов Алексей Сергеевич 2"
+   },
+   "fns": {
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "enforcement_sum": 0,
+    "mass_address": false,
+    "mass_director": false,
+    "msp_registry": {
+     "category": "MICRO",
+     "included": true
+    },
+    "tax_debt": 0
+   },
+   "founders": [
+    {
+     "full_name": "Иванов Алексей Сергеевич 2",
+     "share_pct": 100
+    }
+   ],
+   "inn": "7741451152",
+   "kind": "OOO",
+   "name": "ООО «Фоновая компания 02»",
+   "ogrn": "1267700000028",
+   "okved_main": "33.10",
+   "reg_date": "2023-06-23",
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
+   "status": "ACTIVE",
+   "turnover": [
+    7822952,
+    4626160,
+    4696037,
+    1323590,
+    1617317,
+    8007395,
+    4018827,
+    1457416,
+    3570290,
+    1805642,
+    3588578,
+    2605536
+   ],
+   "users": [
+    {
+     "can_sign": true,
+     "full_name": "Иванов Алексей Сергеевич 2",
+     "is_founder": true,
+     "login": "bg_002",
+     "position": "Директор",
+     "role": "CLIENT",
+     "share_pct": 100
+    }
+   ]
+  },
+  {
+   "address": "г. Москва, ул. Примерная, д. 3",
+   "bki": {
+    "loans": [
+     {
+      "balance": 11103750,
+      "current_overdue": 0,
+      "max_dpd_12m": 0,
+      "monthly_payment": 317250,
+      "type": "CREDIT"
+     }
+    ],
+    "summary": {
+     "credit_history_months": 10,
+     "current_overdue_total": 0,
+     "inquiries_30d": 0,
+     "max_dpd_12m": 0,
+     "monthly_payments_total": 317250,
+     "total_balance": 11103750
+    }
+   },
+   "code": "bg_003",
+   "demo": {
+    "apps": [
+     {
+      "app": {
+       "amount": 3600000,
+       "declared_revenue_year": 32771568,
+       "product": "EXPRESS",
+       "purpose": "WORKING_CAPITAL",
+       "term": 27
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "DRAFT"
+     },
+     {
+      "app": {
+       "amount": 12100000,
+       "declared_revenue_year": 32771568,
+       "product": "WORKING_CAPITAL",
+       "purpose": "WORKING_CAPITAL",
+       "term": 11
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "SUBMITTED"
+     }
+    ]
+   },
+   "director": {
+    "full_name": "Иванов Алексей Сергеевич 3"
+   },
+   "fns": {
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "enforcement_sum": 0,
+    "mass_address": false,
+    "mass_director": false,
+    "msp_registry": {
+     "category": "MICRO",
+     "included": true
+    },
+    "tax_debt": 0
+   },
+   "founders": [
+    {
+     "full_name": "Иванов Алексей Сергеевич 3",
+     "share_pct": 100
+    }
+   ],
+   "inn": "7759039535",
+   "kind": "OOO",
+   "name": "ООО «Фоновая компания 03»",
+   "ogrn": "1267700000039",
+   "okved_main": "92.10",
+   "reg_date": "2025-12-23",
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
+   "status": "ACTIVE",
+   "turnover": [
+    2670901,
+    1895643,
+    1871124,
+    1887937,
+    1249709,
+    2969254,
+    2247665,
+    3402801,
+    2624510,
+    5276092,
+    4392353,
+    2283579
+   ],
+   "users": [
+    {
+     "can_sign": true,
+     "full_name": "Иванов Алексей Сергеевич 3",
+     "is_founder": true,
+     "login": "bg_003",
+     "position": "Директор",
+     "role": "CLIENT",
+     "share_pct": 100
+    }
+   ]
+  },
+  {
+   "address": "г. Москва, ул. Примерная, д. 4",
+   "bki": {
+    "loans": [
+     {
+      "balance": 34379190,
+      "current_overdue": 0,
+      "max_dpd_12m": 87,
+      "monthly_payment": 1145973,
+      "type": "CREDIT"
+     }
+    ],
+    "summary": {
+     "credit_history_months": 17,
+     "current_overdue_total": 0,
+     "inquiries_30d": 0,
+     "max_dpd_12m": 87,
+     "monthly_payments_total": 1145973,
+     "total_balance": 34379190
+    }
+   },
+   "code": "bg_004",
+   "demo": {
+    "apps": [
+     {
+      "app": {
+       "amount": 900000,
+       "declared_revenue_year": 40982400,
+       "product": "EXPRESS",
+       "purpose": "WORKING_CAPITAL",
+       "term": 20
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "WITHDRAWN"
+     }
+    ]
+   },
+   "director": {
+    "full_name": "Иванов Алексей Сергеевич 4"
+   },
+   "fns": {
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "enforcement_sum": 0,
+    "mass_address": false,
+    "mass_director": false,
+    "msp_registry": {
+     "category": "MICRO",
+     "included": true
+    },
+    "tax_debt": 0
+   },
+   "founders": [
+    {
+     "full_name": "Иванов Алексей Сергеевич 4",
+     "share_pct": 100
+    }
+   ],
+   "inn": "7709912673",
+   "kind": "OOO",
+   "name": "ООО «Фоновая компания 04»",
+   "ogrn": "1267700000040",
+   "okved_main": "46.10",
+   "reg_date": "2025-05-23",
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
+   "status": "ACTIVE",
+   "turnover": [
+    3708318,
+    2724760,
+    2651700,
+    4330332,
+    2620021,
+    4694906,
+    3633878,
+    3956738,
+    2717517,
+    4001455,
+    4035582,
+    1907193
+   ],
+   "users": [
+    {
+     "can_sign": true,
+     "full_name": "Иванов Алексей Сергеевич 4",
+     "is_founder": true,
+     "login": "bg_004",
+     "position": "Директор",
+     "role": "CLIENT",
+     "share_pct": 100
+    }
+   ]
+  },
+  {
+   "address": "г. Москва, ул. Примерная, д. 5",
+   "bki": {
+    "loans": [
+     {
+      "balance": 6690675,
+      "current_overdue": 0,
+      "max_dpd_12m": 28,
+      "monthly_payment": 446045,
+      "type": "CREDIT"
+     }
+    ],
+    "summary": {
+     "credit_history_months": 21,
+     "current_overdue_total": 0,
+     "inquiries_30d": 0,
+     "max_dpd_12m": 28,
+     "monthly_payments_total": 446045,
+     "total_balance": 6690675
+    }
+   },
+   "code": "bg_005",
+   "demo": {
+    "apps": [
+     {
+      "app": {
+       "amount": 4500000,
+       "declared_revenue_year": 40015464,
+       "product": "EXPRESS",
+       "purpose": "WORKING_CAPITAL",
+       "term": 31
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "INFO_REQUESTED"
+     },
+     {
+      "app": {
+       "amount": 1100000,
+       "declared_revenue_year": 20007732,
+       "product": "EXPRESS",
+       "purpose": "WORKING_CAPITAL",
+       "term": 31
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "OFFER_ISSUED"
+     }
+    ]
+   },
+   "director": {
+    "full_name": "Иванов Алексей Сергеевич 5"
+   },
+   "fns": {
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "enforcement_sum": 0,
+    "mass_address": false,
+    "mass_director": false,
+    "msp_registry": {
+     "category": "MICRO",
+     "included": true
+    },
+    "tax_debt": 0
+   },
+   "founders": [
+    {
+     "full_name": "Иванов Алексей Сергеевич 5",
+     "share_pct": 100
+    }
+   ],
+   "inn": "7744376344",
+   "kind": "OOO",
+   "name": "ООО «Фоновая компания 05»",
+   "ogrn": "1267700000050",
+   "okved_main": "33.10",
+   "reg_date": "2025-01-23",
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
+   "status": "ACTIVE",
+   "turnover": [
+    1413443,
+    1594225,
+    1694059,
+    2311909,
+    1921990,
+    1974263,
+    1480953,
+    1900287,
+    1537052,
+    1324567,
+    1480137,
+    1374847
+   ],
+   "users": [
+    {
+     "can_sign": true,
+     "full_name": "Иванов Алексей Сергеевич 5",
+     "is_founder": true,
+     "login": "bg_005",
+     "position": "Директор",
+     "role": "CLIENT",
+     "share_pct": 100
+    }
+   ]
+  },
+  {
+   "address": "г. Москва, ул. Примерная, д. 6",
+   "bki": {
+    "loans": [],
+    "summary": {
+     "credit_history_months": 11,
+     "current_overdue_total": 0,
+     "inquiries_30d": 0,
+     "max_dpd_12m": 0,
+     "monthly_payments_total": 0,
+     "total_balance": 0
+    }
+   },
+   "code": "bg_006",
+   "demo": {
+    "apps": [
+     {
+      "app": {
+       "amount": 4050000,
+       "declared_revenue_year": 7344276,
+       "product": "EXPRESS",
+       "purpose": "WORKING_CAPITAL",
+       "term": 24
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "WITHDRAWN"
+     },
+     {
+      "app": {
+       "amount": 500000,
+       "declared_revenue_year": 7344276,
+       "product": "EXPRESS",
+       "purpose": "WORKING_CAPITAL",
+       "term": 35
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "DISBURSED"
+     }
+    ]
+   },
+   "director": {
+    "full_name": "Иванов Алексей Сергеевич 6"
+   },
+   "fns": {
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "enforcement_sum": 0,
+    "mass_address": false,
+    "mass_director": false,
+    "msp_registry": {
+     "category": "MICRO",
+     "included": true
+    },
+    "tax_debt": 13031
+   },
+   "founders": [
+    {
+     "full_name": "Иванов Алексей Сергеевич 6",
+     "share_pct": 100
+    }
+   ],
+   "inn": "7700498842",
+   "kind": "OOO",
+   "name": "ООО «Фоновая компания 06»",
+   "ogrn": "1267700000061",
+   "okved_main": "43.10",
+   "reg_date": "2025-11-23",
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
+   "status": "ACTIVE",
+   "turnover": [
+    646928,
+    440964,
+    442459,
+    600218,
+    694448,
+    763398,
+    807397,
+    595838,
+    482762,
+    724413,
+    609776,
+    535675
+   ],
+   "users": [
+    {
+     "can_sign": true,
+     "full_name": "Иванов Алексей Сергеевич 6",
+     "is_founder": true,
+     "login": "bg_006",
+     "position": "Директор",
+     "role": "CLIENT",
+     "share_pct": 100
+    }
+   ]
+  },
+  {
+   "address": "г. Москва, ул. Примерная, д. 7",
+   "bki": {
+    "loans": [
+     {
+      "balance": 13792350,
+      "current_overdue": 0,
+      "max_dpd_12m": 0,
+      "monthly_payment": 626925,
+      "type": "CREDIT"
+     }
+    ],
+    "summary": {
+     "credit_history_months": 13,
+     "current_overdue_total": 0,
+     "inquiries_30d": 0,
+     "max_dpd_12m": 0,
+     "monthly_payments_total": 626925,
+     "total_balance": 13792350
+    }
+   },
+   "code": "bg_007",
+   "demo": {
+    "apps": [
+     {
+      "app": {
+       "amount": 3550000,
+       "declared_revenue_year": 23948280,
+       "product": "WORKING_CAPITAL",
+       "purpose": "WORKING_CAPITAL",
+       "term": 13
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "DRAFT"
+     },
+     {
+      "app": {
+       "amount": 2750000,
+       "declared_revenue_year": 23948280,
+       "product": "WORKING_CAPITAL",
+       "purpose": "WORKING_CAPITAL",
+       "term": 22
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "DRAFT"
+     }
+    ]
+   },
+   "director": {
+    "full_name": "Иванов Алексей Сергеевич 7"
+   },
+   "fns": {
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "enforcement_sum": 0,
+    "mass_address": false,
+    "mass_director": false,
+    "msp_registry": {
+     "category": "MICRO",
+     "included": true
+    },
+    "tax_debt": 0
+   },
+   "founders": [
+    {
+     "full_name": "Иванов Алексей Сергеевич 7",
+     "share_pct": 100
+    }
+   ],
+   "inn": "7758871814",
+   "kind": "OOO",
+   "name": "ООО «Фоновая компания 07»",
+   "ogrn": "1267700000072",
+   "okved_main": "52.10",
+   "reg_date": "2025-09-23",
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
+   "status": "ACTIVE",
+   "turnover": [
+    1039290,
+    1755027,
+    1750001,
+    2878254,
+    3316433,
+    3732035,
+    2358955,
+    1246752,
+    1377295,
+    2419369,
+    1049586,
+    1025283
+   ],
+   "users": [
+    {
+     "can_sign": true,
+     "full_name": "Иванов Алексей Сергеевич 7",
+     "is_founder": true,
+     "login": "bg_007",
+     "position": "Директор",
+     "role": "CLIENT",
+     "share_pct": 100
+    }
+   ]
+  },
+  {
+   "address": "г. Москва, ул. Примерная, д. 8",
+   "bki": {
+    "loans": [
+     {
+      "balance": 10051023,
+      "current_overdue": 0,
+      "max_dpd_12m": 4,
+      "monthly_payment": 346587,
+      "type": "CREDIT"
+     }
+    ],
+    "summary": {
+     "credit_history_months": 41,
+     "current_overdue_total": 0,
+     "inquiries_30d": 0,
+     "max_dpd_12m": 4,
+     "monthly_payments_total": 346587,
+     "total_balance": 10051023
+    }
+   },
+   "code": "bg_008",
+   "demo": {
+    "apps": [
+     {
+      "app": {
+       "amount": 11200000,
+       "declared_revenue_year": 36730176,
+       "product": "WORKING_CAPITAL",
+       "purpose": "WORKING_CAPITAL",
+       "term": 10
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "DRAFT"
+     }
+    ]
+   },
+   "director": {
+    "full_name": "Иванов Алексей Сергеевич 8"
+   },
+   "fns": {
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "enforcement_sum": 0,
+    "mass_address": false,
+    "mass_director": false,
+    "msp_registry": {
+     "category": "MICRO",
+     "included": true
+    },
+    "tax_debt": 0
+   },
+   "founders": [
+    {
+     "full_name": "Иванов Алексей Сергеевич 8",
+     "share_pct": 100
+    }
+   ],
+   "inn": "7773754329",
+   "kind": "OOO",
+   "name": "ООО «Фоновая компания 08»",
+   "ogrn": "1267700000083",
+   "okved_main": "33.10",
+   "reg_date": "2023-05-23",
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
+   "status": "ACTIVE",
+   "turnover": [
+    677534,
+    1718124,
+    1643275,
+    2459060,
+    4555951,
+    2803432,
+    6017422,
+    2744303,
+    2671063,
+    4867199,
+    4661057,
+    1911756
+   ],
+   "users": [
+    {
+     "can_sign": true,
+     "full_name": "Иванов Алексей Сергеевич 8",
+     "is_founder": true,
+     "login": "bg_008",
+     "position": "Директор",
+     "role": "CLIENT",
+     "share_pct": 100
+    }
+   ]
+  },
+  {
+   "address": "г. Москва, ул. Примерная, д. 9",
+   "bki": {
+    "loans": [
+     {
+      "balance": 1395660,
+      "current_overdue": 0,
+      "max_dpd_12m": 0,
+      "monthly_payment": 49845,
+      "type": "CREDIT"
+     }
+    ],
+    "summary": {
+     "credit_history_months": 18,
+     "current_overdue_total": 0,
+     "inquiries_30d": 0,
+     "max_dpd_12m": 0,
+     "monthly_payments_total": 49845,
+     "total_balance": 1395660
+    }
+   },
+   "code": "bg_009",
+   "demo": {
+    "apps": [
+     {
+      "app": {
+       "amount": 700000,
+       "declared_revenue_year": 3600000,
+       "product": "OVERDRAFT",
+       "purpose": "WORKING_CAPITAL",
+       "term": 12
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "WITHDRAWN"
+     }
+    ]
+   },
+   "director": {
+    "full_name": "Иванов Алексей Сергеевич 9"
+   },
+   "fns": {
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "enforcement_sum": 2561,
+    "mass_address": false,
+    "mass_director": false,
+    "msp_registry": {
+     "category": "MICRO",
+     "included": true
+    },
+    "tax_debt": 0
+   },
+   "founders": [],
+   "inn": "771562038921",
+   "kind": "IP",
+   "name": "ИП Иванов Алексей Сергеевич 9",
+   "ogrn": "326770000000091",
+   "okved_main": "62.10",
+   "reg_date": "2025-04-23",
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
+   "status": "ACTIVE",
+   "turnover": [
+    289349,
+    158268,
+    346738,
+    459694,
+    280470,
+    208510,
+    470043,
+    258921,
+    412643,
+    289988,
+    206789,
+    218587
+   ],
+   "users": [
+    {
+     "can_sign": true,
+     "full_name": "Иванов Алексей Сергеевич 9",
+     "is_founder": true,
+     "login": "bg_009",
+     "position": "Предприниматель",
+     "role": "CLIENT",
+     "share_pct": 100
+    }
+   ]
+  },
+  {
+   "address": "г. Москва, ул. Примерная, д. 10",
+   "bki": {
+    "loans": [
+     {
+      "balance": 10736982,
+      "current_overdue": 0,
+      "max_dpd_12m": 0,
+      "monthly_payment": 397666,
+      "type": "CREDIT"
+     }
+    ],
+    "summary": {
+     "credit_history_months": 23,
+     "current_overdue_total": 0,
+     "inquiries_30d": 0,
+     "max_dpd_12m": 0,
+     "monthly_payments_total": 397666,
+     "total_balance": 10736982
+    }
+   },
+   "code": "bg_010",
+   "demo": {
+    "apps": [
+     {
+      "app": {
+       "amount": 350000,
+       "declared_revenue_year": 16784400,
+       "product": "EXPRESS",
+       "purpose": "WORKING_CAPITAL",
+       "term": 27
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "SIGNED"
+     },
+     {
+      "app": {
+       "amount": 6250000,
+       "declared_revenue_year": 16784400,
+       "product": "WORKING_CAPITAL",
+       "purpose": "WORKING_CAPITAL",
+       "term": 14
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "MANUAL_REVIEW"
+     }
+    ]
+   },
+   "director": {
+    "full_name": "Иванов Алексей Сергеевич 10"
+   },
+   "fns": {
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "enforcement_sum": 0,
+    "mass_address": false,
+    "mass_director": false,
+    "msp_registry": {
+     "category": "MICRO",
+     "included": true
+    },
+    "tax_debt": 0
+   },
+   "founders": [],
+   "inn": "779118923772",
+   "kind": "IP",
+   "name": "ИП Иванов Алексей Сергеевич 10",
+   "ogrn": "326770000000102",
+   "okved_main": "52.10",
+   "reg_date": "2021-10-23",
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
+   "status": "ACTIVE",
+   "turnover": [
+    2735303,
+    1256011,
+    3427680,
+    855700,
+    1381058,
+    904942,
+    938726,
+    827144,
+    1347280,
+    600342,
+    1596096,
+    914118
+   ],
+   "users": [
+    {
+     "can_sign": true,
+     "full_name": "Иванов Алексей Сергеевич 10",
+     "is_founder": true,
+     "login": "bg_010",
+     "position": "Предприниматель",
+     "role": "CLIENT",
+     "share_pct": 100
+    }
+   ]
+  },
+  {
+   "address": "г. Москва, ул. Примерная, д. 11",
+   "bki": {
+    "loans": [
+     {
+      "balance": 18792702,
+      "current_overdue": 0,
+      "max_dpd_12m": 0,
+      "monthly_payment": 696026,
+      "type": "CREDIT"
+     }
+    ],
+    "summary": {
+     "credit_history_months": 20,
+     "current_overdue_total": 0,
+     "inquiries_30d": 0,
+     "max_dpd_12m": 0,
+     "monthly_payments_total": 696026,
+     "total_balance": 18792702
+    }
+   },
+   "code": "bg_011",
+   "demo": {
+    "apps": [
+     {
+      "app": {
+       "amount": 2200000,
+       "declared_revenue_year": 62263728,
+       "product": "EXPRESS",
+       "purpose": "WORKING_CAPITAL",
+       "term": 6
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "EXPIRED"
+     }
+    ]
+   },
+   "director": {
+    "full_name": "Иванов Алексей Сергеевич 11"
+   },
+   "fns": {
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "enforcement_sum": 0,
+    "mass_address": false,
+    "mass_director": false,
+    "msp_registry": {
+     "category": "MICRO",
+     "included": true
+    },
+    "tax_debt": 0
+   },
+   "founders": [],
+   "inn": "778261894456",
+   "kind": "IP",
+   "name": "ИП Иванов Алексей Сергеевич 11",
+   "ogrn": "326770000000113",
+   "okved_main": "62.10",
+   "reg_date": "2025-02-23",
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
+   "status": "ACTIVE",
+   "turnover": [
+    4483544,
+    7473108,
+    4411552,
+    7857219,
+    6414989,
+    3101349,
+    3024182,
+    2759155,
+    6682960,
+    3800088,
+    8310373,
+    3945209
+   ],
+   "users": [
+    {
+     "can_sign": true,
+     "full_name": "Иванов Алексей Сергеевич 11",
+     "is_founder": true,
+     "login": "bg_011",
+     "position": "Предприниматель",
+     "role": "CLIENT",
+     "share_pct": 100
+    }
+   ]
+  },
+  {
+   "address": "г. Москва, ул. Примерная, д. 12",
+   "bki": {
+    "loans": [
+     {
+      "balance": 1900470,
+      "current_overdue": 0,
+      "max_dpd_12m": 0,
+      "monthly_payment": 126698,
+      "type": "CREDIT"
+     }
+    ],
+    "summary": {
+     "credit_history_months": 40,
+     "current_overdue_total": 0,
+     "inquiries_30d": 0,
+     "max_dpd_12m": 0,
+     "monthly_payments_total": 126698,
+     "total_balance": 1900470
+    }
+   },
+   "code": "bg_012",
+   "demo": {
+    "apps": [
+     {
+      "app": {
+       "amount": 1300000,
+       "declared_revenue_year": 21885600,
+       "product": "OVERDRAFT",
+       "purpose": "WORKING_CAPITAL",
+       "term": 12
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "SUBMITTED"
+     },
+     {
+      "app": {
+       "amount": 9800000,
+       "declared_revenue_year": 21885600,
+       "product": "WORKING_CAPITAL",
+       "purpose": "WORKING_CAPITAL",
+       "term": 9
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "SUBMITTED"
+     }
+    ]
+   },
+   "director": {
+    "full_name": "Иванов Алексей Сергеевич 12"
+   },
+   "fns": {
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "enforcement_sum": 0,
+    "mass_address": false,
+    "mass_director": false,
+    "msp_registry": {
+     "category": "MICRO",
+     "included": true
+    },
+    "tax_debt": 0
+   },
+   "founders": [],
+   "inn": "779084732632",
+   "kind": "IP",
+   "name": "ИП Иванов Алексей Сергеевич 12",
+   "ogrn": "326770000000124",
+   "okved_main": "62.10",
+   "reg_date": "2016-10-23",
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
+   "status": "ACTIVE",
+   "turnover": [
+    1742047,
+    1778668,
+    1242307,
+    1476589,
+    1460940,
+    2042209,
+    1697685,
+    1813395,
+    1850383,
+    2289576,
+    3102142,
+    1389659
+   ],
+   "users": [
+    {
+     "can_sign": true,
+     "full_name": "Иванов Алексей Сергеевич 12",
+     "is_founder": true,
+     "login": "bg_012",
+     "position": "Предприниматель",
+     "role": "CLIENT",
+     "share_pct": 100
+    }
+   ]
+  },
+  {
+   "address": "г. Москва, ул. Примерная, д. 13",
+   "bki": {
+    "loans": [],
+    "summary": {
+     "credit_history_months": 29,
+     "current_overdue_total": 0,
+     "inquiries_30d": 0,
+     "max_dpd_12m": 0,
+     "monthly_payments_total": 0,
+     "total_balance": 0
+    }
+   },
+   "code": "bg_013",
+   "demo": {
+    "apps": [
+     {
+      "app": {
+       "amount": 700000,
+       "declared_revenue_year": 19736928,
+       "product": "OVERDRAFT",
+       "purpose": "WORKING_CAPITAL",
+       "term": 12
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "INFO_REQUESTED"
+     },
+     {
+      "app": {
+       "amount": 3550000,
+       "declared_revenue_year": 19736928,
+       "product": "EXPRESS",
+       "purpose": "WORKING_CAPITAL",
+       "term": 26
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "INFO_REQUESTED"
+     }
+    ]
+   },
+   "director": {
+    "full_name": "Иванов Алексей Сергеевич 13"
+   },
+   "fns": {
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "enforcement_sum": 0,
+    "mass_address": false,
+    "mass_director": false,
+    "msp_registry": {
+     "category": "MICRO",
+     "included": true
+    },
+    "tax_debt": 0
+   },
+   "founders": [],
+   "inn": "773729765208",
+   "kind": "IP",
+   "name": "ИП Иванов Алексей Сергеевич 13",
+   "ogrn": "326770000000135",
+   "okved_main": "46.10",
+   "reg_date": "2018-04-23",
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
+   "status": "ACTIVE",
+   "turnover": [
+    747612,
+    576351,
+    906344,
+    825442,
+    570357,
+    480850,
+    1340232,
+    387085,
+    1014695,
+    1226350,
+    613915,
+    1179231
+   ],
+   "users": [
+    {
+     "can_sign": true,
+     "full_name": "Иванов Алексей Сергеевич 13",
+     "is_founder": true,
+     "login": "bg_013",
+     "position": "Предприниматель",
+     "role": "CLIENT",
+     "share_pct": 100
+    }
+   ]
+  },
+  {
+   "address": "г. Москва, ул. Примерная, д. 14",
+   "bki": {
+    "loans": [],
+    "summary": {
+     "credit_history_months": 28,
+     "current_overdue_total": 0,
+     "inquiries_30d": 0,
+     "max_dpd_12m": 0,
+     "monthly_payments_total": 0,
+     "total_balance": 0
+    }
+   },
+   "code": "bg_014",
+   "demo": {
+    "apps": [
+     {
+      "app": {
+       "amount": 9400000,
+       "declared_revenue_year": 31112244,
+       "product": "WORKING_CAPITAL",
+       "purpose": "WORKING_CAPITAL",
+       "term": 13
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "MANUAL_REVIEW"
+     },
+     {
+      "app": {
+       "amount": 1600000,
+       "declared_revenue_year": 31112244,
+       "product": "WORKING_CAPITAL",
+       "purpose": "WORKING_CAPITAL",
+       "term": 19
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "DRAFT"
+     }
+    ]
+   },
+   "director": {
+    "full_name": "Иванов Алексей Сергеевич 14"
+   },
+   "fns": {
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "enforcement_sum": 0,
+    "mass_address": false,
+    "mass_director": false,
+    "msp_registry": {
+     "category": "MICRO",
+     "included": true
+    },
+    "tax_debt": 0
+   },
+   "founders": [
+    {
+     "full_name": "Иванов Алексей Сергеевич 14",
+     "share_pct": 100
+    }
+   ],
+   "inn": "7773546463",
+   "kind": "OOO",
+   "name": "ООО «Фоновая компания 14»",
+   "ogrn": "1267700000149",
+   "okved_main": "01.10",
+   "reg_date": "2024-06-23",
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
+   "status": "ACTIVE",
+   "turnover": [
+    1577632,
+    1937572,
+    3535381,
+    1688572,
+    3391210,
+    1707939,
+    5366523,
+    2348189,
+    3200272,
+    1084045,
+    2557708,
+    2717201
+   ],
+   "users": [
+    {
+     "can_sign": true,
+     "full_name": "Иванов Алексей Сергеевич 14",
+     "is_founder": true,
+     "login": "bg_014",
+     "position": "Директор",
+     "role": "CLIENT",
+     "share_pct": 100
+    }
+   ]
+  },
+  {
+   "address": "г. Москва, ул. Примерная, д. 15",
+   "bki": {
+    "loans": [],
+    "summary": {
+     "credit_history_months": 35,
+     "current_overdue_total": 0,
+     "inquiries_30d": 0,
+     "max_dpd_12m": 0,
+     "monthly_payments_total": 0,
+     "total_balance": 0
+    }
+   },
+   "code": "bg_015",
+   "demo": {
+    "apps": [
+     {
+      "app": {
+       "amount": 11850000,
+       "declared_revenue_year": 26892924,
+       "product": "WORKING_CAPITAL",
+       "purpose": "WORKING_CAPITAL",
+       "term": 10
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "SUBMITTED"
+     }
+    ]
+   },
+   "director": {
+    "full_name": "Иванов Алексей Сергеевич 15"
+   },
+   "fns": {
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "enforcement_sum": 0,
+    "mass_address": false,
+    "mass_director": false,
+    "msp_registry": {
+     "category": "MICRO",
+     "included": true
+    },
+    "tax_debt": 0
+   },
+   "founders": [
+    {
+     "full_name": "Иванов Алексей Сергеевич 15",
+     "share_pct": 100
+    }
+   ],
+   "inn": "7778795424",
+   "kind": "OOO",
+   "name": "ООО «Фоновая компания 15»",
+   "ogrn": "1267700000150",
+   "okved_main": "69.10",
+   "reg_date": "2021-12-23",
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
+   "status": "ACTIVE",
+   "turnover": [
+    2012391,
+    2038397,
+    1762835,
+    1269879,
+    2182203,
+    1712948,
+    718165,
+    3129918,
+    2372183,
+    1663202,
+    2214800,
+    5816003
+   ],
+   "users": [
+    {
+     "can_sign": true,
+     "full_name": "Иванов Алексей Сергеевич 15",
+     "is_founder": true,
+     "login": "bg_015",
+     "position": "Директор",
+     "role": "CLIENT",
+     "share_pct": 100
+    }
+   ]
+  },
+  {
+   "address": "г. Москва, ул. Примерная, д. 16",
+   "bki": {
+    "loans": [
+     {
+      "balance": 1156008,
+      "current_overdue": 0,
+      "max_dpd_12m": 0,
+      "monthly_payment": 48167,
+      "type": "CREDIT"
+     }
+    ],
+    "summary": {
+     "credit_history_months": 15,
+     "current_overdue_total": 0,
+     "inquiries_30d": 0,
+     "max_dpd_12m": 0,
+     "monthly_payments_total": 48167,
+     "total_balance": 1156008
+    }
+   },
+   "code": "bg_016",
+   "demo": {
+    "apps": [
+     {
+      "app": {
+       "amount": 350000,
+       "declared_revenue_year": 4751580,
+       "product": "EXPRESS",
+       "purpose": "WORKING_CAPITAL",
+       "term": 25
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "EXPIRED"
+     },
+     {
+      "app": {
+       "amount": 3150000,
+       "declared_revenue_year": 4751580,
+       "product": "OVERDRAFT",
+       "purpose": "WORKING_CAPITAL",
+       "term": 12
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "WITHDRAWN"
+     }
+    ]
+   },
+   "director": {
+    "full_name": "Иванов Алексей Сергеевич 16"
+   },
+   "fns": {
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "enforcement_sum": 0,
+    "mass_address": false,
+    "mass_director": false,
+    "msp_registry": {
+     "category": "MICRO",
+     "included": true
+    },
+    "tax_debt": 31484
+   },
+   "founders": [
+    {
+     "full_name": "Иванов Алексей Сергеевич 16",
+     "share_pct": 100
+    }
+   ],
+   "inn": "7762463977",
+   "kind": "OOO",
+   "name": "ООО «Фоновая компания 16»",
+   "ogrn": "1267700000160",
+   "okved_main": "01.10",
+   "reg_date": "2025-07-23",
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
+   "status": "ACTIVE",
+   "turnover": [
+    212025,
+    150284,
+    220136,
+    107996,
+    99867,
+    147187,
+    1648503,
+    647968,
+    763887,
+    341502,
+    162651,
+    249574
+   ],
+   "users": [
+    {
+     "can_sign": true,
+     "full_name": "Иванов Алексей Сергеевич 16",
+     "is_founder": true,
+     "login": "bg_016",
+     "position": "Директор",
+     "role": "CLIENT",
+     "share_pct": 100
+    }
+   ]
+  },
+  {
+   "address": "г. Москва, ул. Примерная, д. 17",
+   "bki": {
+    "loans": [
+     {
+      "balance": 3420813,
+      "current_overdue": 0,
+      "max_dpd_12m": 51,
+      "monthly_payment": 148731,
+      "type": "CREDIT"
+     }
+    ],
+    "summary": {
+     "credit_history_months": 16,
+     "current_overdue_total": 0,
+     "inquiries_30d": 0,
+     "max_dpd_12m": 51,
+     "monthly_payments_total": 148731,
+     "total_balance": 3420813
+    }
+   },
+   "code": "bg_017",
+   "demo": {
+    "apps": [
+     {
+      "app": {
+       "amount": 14200000,
+       "declared_revenue_year": 10922916,
+       "product": "WORKING_CAPITAL",
+       "purpose": "WORKING_CAPITAL",
+       "term": 4
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "SUBMITTED"
+     },
+     {
+      "app": {
+       "amount": 4250000,
+       "declared_revenue_year": 10922916,
+       "product": "OVERDRAFT",
+       "purpose": "WORKING_CAPITAL",
+       "term": 12
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "DRAFT"
+     }
+    ]
+   },
+   "director": {
+    "full_name": "Иванов Алексей Сергеевич 17"
+   },
+   "fns": {
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "enforcement_sum": 0,
+    "mass_address": false,
+    "mass_director": false,
+    "msp_registry": {
+     "category": "MICRO",
+     "included": true
+    },
+    "tax_debt": 0
+   },
+   "founders": [
+    {
+     "full_name": "Иванов Алексей Сергеевич 17",
+     "share_pct": 100
+    }
+   ],
+   "inn": "7723780595",
+   "kind": "OOO",
+   "name": "ООО «Фоновая компания 17»",
+   "ogrn": "1267700000171",
+   "okved_main": "33.10",
+   "reg_date": "2025-06-23",
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
+   "status": "ACTIVE",
+   "turnover": [
+    1449051,
+    1330526,
+    1229217,
+    990784,
+    711884,
+    462902,
+    647900,
+    791199,
+    969375,
+    602981,
+    969606,
+    767491
+   ],
+   "users": [
+    {
+     "can_sign": true,
+     "full_name": "Иванов Алексей Сергеевич 17",
+     "is_founder": true,
+     "login": "bg_017",
+     "position": "Директор",
+     "role": "CLIENT",
+     "share_pct": 100
+    }
+   ]
+  },
+  {
+   "address": "г. Москва, ул. Примерная, д. 18",
+   "bki": {
+    "loans": [
+     {
+      "balance": 6700440,
+      "current_overdue": 0,
+      "max_dpd_12m": 0,
+      "monthly_payment": 279185,
+      "type": "CREDIT"
+     }
+    ],
+    "summary": {
+     "credit_history_months": 11,
+     "current_overdue_total": 0,
+     "inquiries_30d": 0,
+     "max_dpd_12m": 0,
+     "monthly_payments_total": 279185,
+     "total_balance": 6700440
+    }
+   },
+   "code": "bg_018",
+   "demo": {
+    "apps": [
+     {
+      "app": {
+       "amount": 2200000,
+       "declared_revenue_year": 10555404,
+       "product": "OVERDRAFT",
+       "purpose": "WORKING_CAPITAL",
+       "term": 12
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "DECLINED"
+     },
+     {
+      "app": {
+       "amount": 1200000,
+       "declared_revenue_year": 10555404,
+       "product": "EXPRESS",
+       "purpose": "WORKING_CAPITAL",
+       "term": 11
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "DECLINED"
+     }
+    ]
+   },
+   "director": {
+    "full_name": "Иванов Алексей Сергеевич 18"
+   },
+   "fns": {
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": true,
+    "enforcement_sum": 0,
+    "mass_address": false,
+    "mass_director": false,
+    "msp_registry": {
+     "category": "MICRO",
+     "included": true
+    },
+    "tax_debt": 0
+   },
+   "founders": [],
+   "inn": "775709719711",
+   "kind": "IP",
+   "name": "ИП Иванов Алексей Сергеевич 18",
+   "ogrn": "326770000000180",
+   "okved_main": "46.10",
+   "reg_date": "2025-11-23",
+   "risk": {
+    "aml_flag": true,
+    "fraud_flag": false,
+    "note": null
+   },
+   "status": "ACTIVE",
+   "turnover": [
+    1092225,
+    854798,
+    887413,
+    695963,
+    796430,
+    727539,
+    1199460,
+    919180,
+    829810,
+    798007,
+    1021464,
+    733115
+   ],
+   "users": [
+    {
+     "can_sign": true,
+     "full_name": "Иванов Алексей Сергеевич 18",
+     "is_founder": true,
+     "login": "bg_018",
+     "position": "Предприниматель",
+     "role": "CLIENT",
+     "share_pct": 100
+    }
+   ]
+  },
+  {
+   "address": "г. Москва, ул. Примерная, д. 19",
+   "bki": {
+    "loans": [],
+    "summary": {
+     "credit_history_months": 45,
+     "current_overdue_total": 0,
+     "inquiries_30d": 0,
+     "max_dpd_12m": 0,
+     "monthly_payments_total": 0,
+     "total_balance": 0
+    }
+   },
+   "code": "bg_019",
+   "demo": {
+    "apps": [
+     {
+      "app": {
+       "amount": 4500000,
+       "declared_revenue_year": 31590336,
+       "product": "OVERDRAFT",
+       "purpose": "WORKING_CAPITAL",
+       "term": 12
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "SIGNED"
+     },
+     {
+      "app": {
+       "amount": 4950000,
+       "declared_revenue_year": 31590336,
+       "product": "OVERDRAFT",
+       "purpose": "WORKING_CAPITAL",
+       "term": 12
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "DISBURSED"
+     }
+    ]
+   },
+   "director": {
+    "full_name": "Иванов Алексей Сергеевич 19"
+   },
+   "fns": {
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "enforcement_sum": 0,
+    "mass_address": false,
+    "mass_director": false,
+    "msp_registry": {
+     "category": "MICRO",
+     "included": true
+    },
+    "tax_debt": 0
+   },
+   "founders": [],
+   "inn": "773901252644",
+   "kind": "IP",
+   "name": "ИП Иванов Алексей Сергеевич 19",
+   "ogrn": "326770000000191",
+   "okved_main": "33.10",
+   "reg_date": "2023-01-23",
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
+   "status": "ACTIVE",
+   "turnover": [
+    2148670,
+    2779199,
+    2809187,
+    4303153,
+    2632615,
+    3045572,
+    3612240,
+    1709580,
+    2477918,
+    3000852,
+    1503477,
+    1567873
+   ],
+   "users": [
+    {
+     "can_sign": true,
+     "full_name": "Иванов Алексей Сергеевич 19",
+     "is_founder": true,
+     "login": "bg_019",
+     "position": "Предприниматель",
+     "role": "CLIENT",
+     "share_pct": 100
+    }
+   ]
+  },
+  {
+   "address": "г. Москва, ул. Примерная, д. 20",
+   "bki": {
+    "loans": [],
+    "summary": {
+     "credit_history_months": 19,
+     "current_overdue_total": 0,
+     "inquiries_30d": 0,
+     "max_dpd_12m": 0,
+     "monthly_payments_total": 0,
+     "total_balance": 0
+    }
+   },
+   "code": "bg_020",
+   "demo": {
+    "apps": [
+     {
+      "app": {
+       "amount": 250000,
+       "declared_revenue_year": 8302344,
+       "product": "OVERDRAFT",
+       "purpose": "WORKING_CAPITAL",
+       "term": 12
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "OFFER_ISSUED"
+     }
+    ]
+   },
+   "director": {
+    "full_name": "Иванов Алексей Сергеевич 20"
+   },
+   "fns": {
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "enforcement_sum": 0,
+    "mass_address": false,
+    "mass_director": false,
+    "msp_registry": {
+     "category": "MICRO",
+     "included": true
+    },
+    "tax_debt": 0
+   },
+   "founders": [],
+   "inn": "772037341244",
+   "kind": "IP",
+   "name": "ИП Иванов Алексей Сергеевич 20",
+   "ogrn": "326770000000202",
+   "okved_main": "56.10",
+   "reg_date": "2024-09-23",
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
+   "status": "ACTIVE",
+   "turnover": [
+    147777,
+    1393075,
+    788569,
+    756491,
+    480603,
+    1102858,
+    1059330,
+    397370,
+    1040341,
+    327603,
+    272847,
+    535480
+   ],
+   "users": [
+    {
+     "can_sign": true,
+     "full_name": "Иванов Алексей Сергеевич 20",
+     "is_founder": true,
+     "login": "bg_020",
+     "position": "Предприниматель",
+     "role": "CLIENT",
+     "share_pct": 100
+    }
+   ]
+  },
+  {
+   "address": "г. Москва, ул. Примерная, д. 21",
+   "bki": {
+    "loans": [],
+    "summary": {
+     "credit_history_months": 33,
+     "current_overdue_total": 0,
+     "inquiries_30d": 0,
+     "max_dpd_12m": 0,
+     "monthly_payments_total": 0,
+     "total_balance": 0
+    }
+   },
+   "code": "bg_021",
+   "demo": {
+    "apps": [
+     {
+      "app": {
+       "amount": 4750000,
+       "declared_revenue_year": 14926260,
+       "product": "WORKING_CAPITAL",
+       "purpose": "WORKING_CAPITAL",
+       "term": 6
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "OFFER_ISSUED"
+     }
+    ]
+   },
+   "director": {
+    "full_name": "Иванов Алексей Сергеевич 21"
+   },
+   "fns": {
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "enforcement_sum": 61901,
+    "mass_address": false,
+    "mass_director": false,
+    "msp_registry": {
+     "category": "MICRO",
+     "included": true
+    },
+    "tax_debt": 0
+   },
+   "founders": [],
+   "inn": "773721646488",
+   "kind": "IP",
+   "name": "ИП Иванов Алексей Сергеевич 21",
+   "ogrn": "326770000000210",
+   "okved_main": "52.10",
+   "reg_date": "2024-01-23",
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
+   "status": "ACTIVE",
+   "turnover": [
+    671019,
+    614911,
+    957323,
+    3315042,
+    611464,
+    923969,
+    1059505,
+    2005113,
+    1055493,
+    1469751,
+    1064491,
+    1178179
+   ],
+   "users": [
+    {
+     "can_sign": true,
+     "full_name": "Иванов Алексей Сергеевич 21",
+     "is_founder": true,
+     "login": "bg_021",
+     "position": "Предприниматель",
+     "role": "CLIENT",
+     "share_pct": 100
+    }
+   ]
+  },
+  {
+   "address": "г. Москва, ул. Примерная, д. 22",
+   "bki": {
+    "loans": [
+     {
+      "balance": 5485212,
+      "current_overdue": 0,
+      "max_dpd_12m": 0,
+      "monthly_payment": 152367,
+      "type": "CREDIT"
+     }
+    ],
+    "summary": {
+     "credit_history_months": 38,
+     "current_overdue_total": 0,
+     "inquiries_30d": 0,
+     "max_dpd_12m": 0,
+     "monthly_payments_total": 152367,
+     "total_balance": 5485212
+    }
+   },
+   "code": "bg_022",
+   "demo": {
+    "apps": [
+     {
+      "app": {
+       "amount": 2000000,
+       "declared_revenue_year": 20531304,
+       "product": "EXPRESS",
+       "purpose": "WORKING_CAPITAL",
+       "term": 25
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "WITHDRAWN"
+     },
+     {
+      "app": {
+       "amount": 2850000,
+       "declared_revenue_year": 20531304,
+       "product": "EXPRESS",
+       "purpose": "WORKING_CAPITAL",
+       "term": 27
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "EXPIRED"
+     }
+    ]
+   },
+   "director": {
+    "full_name": "Иванов Алексей Сергеевич 22"
+   },
+   "fns": {
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "enforcement_sum": 0,
+    "mass_address": false,
+    "mass_director": false,
+    "msp_registry": {
+     "category": "MICRO",
+     "included": true
+    },
+    "tax_debt": 0
+   },
+   "founders": [
+    {
+     "full_name": "Иванов Алексей Сергеевич 22",
+     "share_pct": 100
+    }
+   ],
+   "inn": "7768472424",
+   "kind": "OOO",
+   "name": "ООО «Фоновая компания 22»",
+   "ogrn": "1267700000226",
+   "okved_main": "62.10",
+   "reg_date": "2023-08-23",
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
+   "status": "ACTIVE",
+   "turnover": [
+    754692,
+    1268798,
+    1620587,
+    1732821,
+    3632025,
+    2740072,
+    1475660,
+    2566156,
+    635151,
+    1837185,
+    1370330,
+    897827
+   ],
+   "users": [
+    {
+     "can_sign": true,
+     "full_name": "Иванов Алексей Сергеевич 22",
+     "is_founder": true,
+     "login": "bg_022",
+     "position": "Директор",
+     "role": "CLIENT",
+     "share_pct": 100
+    }
+   ]
+  },
+  {
+   "address": "г. Москва, ул. Примерная, д. 23",
+   "bki": {
+    "loans": [
+     {
+      "balance": 3077129,
+      "current_overdue": 0,
+      "max_dpd_12m": 0,
+      "monthly_payment": 279739,
+      "type": "CREDIT"
+     }
+    ],
+    "summary": {
+     "credit_history_months": 20,
+     "current_overdue_total": 0,
+     "inquiries_30d": 0,
+     "max_dpd_12m": 0,
+     "monthly_payments_total": 279739,
+     "total_balance": 3077129
+    }
+   },
+   "code": "bg_023",
+   "demo": {
+    "apps": [
+     {
+      "app": {
+       "amount": 1250000,
+       "declared_revenue_year": 22685280,
+       "product": "OVERDRAFT",
+       "purpose": "WORKING_CAPITAL",
+       "term": 12
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "DRAFT"
+     }
+    ]
+   },
+   "director": {
+    "full_name": "Иванов Алексей Сергеевич 23"
+   },
+   "fns": {
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "enforcement_sum": 0,
+    "mass_address": false,
+    "mass_director": false,
+    "msp_registry": {
+     "category": "MICRO",
+     "included": true
+    },
+    "tax_debt": 0
+   },
+   "founders": [
+    {
+     "full_name": "Иванов Алексей Сергеевич 23",
+     "share_pct": 100
+    }
+   ],
+   "inn": "7795936763",
+   "kind": "OOO",
+   "name": "ООО «Фоновая компания 23»",
+   "ogrn": "1267700000237",
+   "okved_main": "41.10",
+   "reg_date": "2022-02-23",
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
+   "status": "ACTIVE",
+   "turnover": [
+    2474817,
+    1140740,
+    1475748,
+    1321590,
+    1998785,
+    1958021,
+    2088230,
+    1769049,
+    2459860,
+    2263022,
+    1660788,
+    2074630
+   ],
+   "users": [
+    {
+     "can_sign": true,
+     "full_name": "Иванов Алексей Сергеевич 23",
+     "is_founder": true,
+     "login": "bg_023",
+     "position": "Директор",
+     "role": "CLIENT",
+     "share_pct": 100
+    }
+   ]
+  },
+  {
+   "address": "г. Москва, ул. Примерная, д. 24",
+   "bki": {
+    "loans": [
+     {
+      "balance": 7558326,
+      "current_overdue": 0,
+      "max_dpd_12m": 0,
+      "monthly_payment": 839814,
+      "type": "CREDIT"
+     }
+    ],
+    "summary": {
+     "credit_history_months": 19,
+     "current_overdue_total": 0,
+     "inquiries_30d": 0,
+     "max_dpd_12m": 0,
+     "monthly_payments_total": 839814,
+     "total_balance": 7558326
+    }
+   },
+   "code": "bg_024",
+   "demo": {
+    "apps": [
+     {
+      "app": {
+       "amount": 350000,
+       "declared_revenue_year": 29354352,
+       "product": "EXPRESS",
+       "purpose": "WORKING_CAPITAL",
+       "term": 24
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "WITHDRAWN"
+     },
+     {
+      "app": {
+       "amount": 11650000,
+       "declared_revenue_year": 29354352,
+       "product": "WORKING_CAPITAL",
+       "purpose": "WORKING_CAPITAL",
+       "term": 22
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "WITHDRAWN"
+     }
+    ]
+   },
+   "director": {
+    "full_name": "Иванов Алексей Сергеевич 24"
+   },
+   "fns": {
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "enforcement_sum": 0,
+    "mass_address": false,
+    "mass_director": false,
+    "msp_registry": {
+     "category": "MICRO",
+     "included": true
+    },
+    "tax_debt": 0
+   },
+   "founders": [],
+   "inn": "773402383909",
+   "kind": "IP",
+   "name": "ИП Иванов Алексей Сергеевич 24",
+   "ogrn": "326770000000243",
+   "okved_main": "47.10",
+   "reg_date": "2023-05-23",
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
+   "status": "ACTIVE",
+   "turnover": [
+    2702903,
+    1503668,
+    2500821,
+    1873022,
+    1541860,
+    3503646,
+    2296176,
+    2976008,
+    3204345,
+    1904228,
+    1997633,
+    3350042
+   ],
+   "users": [
+    {
+     "can_sign": true,
+     "full_name": "Иванов Алексей Сергеевич 24",
+     "is_founder": true,
+     "login": "bg_024",
+     "position": "Предприниматель",
+     "role": "CLIENT",
+     "share_pct": 100
+    }
+   ]
+  },
+  {
+   "address": "г. Москва, ул. Примерная, д. 25",
+   "bki": {
+    "loans": [
+     {
+      "balance": 3826908,
+      "current_overdue": 0,
+      "max_dpd_12m": 0,
+      "monthly_payment": 106303,
+      "type": "CREDIT"
+     }
+    ],
+    "summary": {
+     "credit_history_months": 49,
+     "current_overdue_total": 0,
+     "inquiries_30d": 0,
+     "max_dpd_12m": 0,
+     "monthly_payments_total": 106303,
+     "total_balance": 3826908
+    }
+   },
+   "code": "bg_025",
+   "demo": {
+    "apps": [
+     {
+      "app": {
+       "amount": 500000,
+       "declared_revenue_year": 3799212,
+       "product": "OVERDRAFT",
+       "purpose": "WORKING_CAPITAL",
+       "term": 12
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "OFFER_ISSUED"
+     }
+    ]
+   },
+   "director": {
+    "full_name": "Иванов Алексей Сергеевич 25"
+   },
+   "fns": {
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "enforcement_sum": 0,
+    "mass_address": false,
+    "mass_director": false,
+    "msp_registry": {
+     "category": "MICRO",
+     "included": true
+    },
+    "tax_debt": 0
+   },
+   "founders": [
+    {
+     "full_name": "Иванов Алексей Сергеевич 25",
+     "share_pct": 100
+    }
+   ],
+   "inn": "7764444560",
+   "kind": "OOO",
+   "name": "ООО «Фоновая компания 25»",
+   "ogrn": "1267700000259",
+   "okved_main": "56.10",
+   "reg_date": "2022-09-23",
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
+   "status": "ACTIVE",
+   "turnover": [
+    337164,
+    255884,
+    175850,
+    248206,
+    288649,
+    421486,
+    449782,
+    249695,
+    365666,
+    335323,
+    331985,
+    339522
+   ],
+   "users": [
+    {
+     "can_sign": true,
+     "full_name": "Иванов Алексей Сергеевич 25",
+     "is_founder": true,
+     "login": "bg_025",
+     "position": "Директор",
+     "role": "CLIENT",
+     "share_pct": 100
+    }
+   ]
+  },
+  {
+   "address": "г. Москва, ул. Примерная, д. 26",
+   "bki": {
+    "loans": [],
+    "summary": {
+     "credit_history_months": 24,
+     "current_overdue_total": 0,
+     "inquiries_30d": 0,
+     "max_dpd_12m": 0,
+     "monthly_payments_total": 0,
+     "total_balance": 0
+    }
+   },
+   "code": "bg_026",
+   "demo": {
+    "apps": [
+     {
+      "app": {
+       "amount": 4050000,
+       "declared_revenue_year": 6570564,
+       "product": "WORKING_CAPITAL",
+       "purpose": "WORKING_CAPITAL",
+       "term": 9
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "OFFER_ISSUED"
+     }
+    ]
+   },
+   "director": {
+    "full_name": "Иванов Алексей Сергеевич 26"
+   },
+   "fns": {
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "enforcement_sum": 0,
+    "mass_address": false,
+    "mass_director": false,
+    "msp_registry": {
+     "category": "MICRO",
+     "included": true
+    },
+    "tax_debt": 0
+   },
+   "founders": [
+    {
+     "full_name": "Иванов Алексей Сергеевич 26",
+     "share_pct": 100
+    }
+   ],
+   "inn": "7709538673",
+   "kind": "OOO",
+   "name": "ООО «Фоновая компания 26»",
+   "ogrn": "1267700000260",
+   "okved_main": "56.10",
+   "reg_date": "2024-10-23",
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
+   "status": "ACTIVE",
+   "turnover": [
+    403204,
+    518932,
+    630599,
+    614166,
+    658001,
+    617706,
+    636351,
+    586385,
+    434762,
+    515283,
+    458038,
+    497137
+   ],
+   "users": [
+    {
+     "can_sign": true,
+     "full_name": "Иванов Алексей Сергеевич 26",
+     "is_founder": true,
+     "login": "bg_026",
+     "position": "Директор",
+     "role": "CLIENT",
+     "share_pct": 100
+    }
+   ]
+  },
+  {
+   "address": "г. Москва, ул. Примерная, д. 27",
+   "bki": {
+    "loans": [],
+    "summary": {
+     "credit_history_months": 30,
+     "current_overdue_total": 0,
+     "inquiries_30d": 0,
+     "max_dpd_12m": 0,
+     "monthly_payments_total": 0,
+     "total_balance": 0
+    }
+   },
+   "code": "bg_027",
+   "demo": {
+    "apps": [
+     {
+      "app": {
+       "amount": 3750000,
+       "declared_revenue_year": 29047332,
+       "product": "OVERDRAFT",
+       "purpose": "WORKING_CAPITAL",
+       "term": 12
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "DISBURSED"
+     },
+     {
+      "app": {
+       "amount": 2400000,
+       "declared_revenue_year": 29047332,
+       "product": "EXPRESS",
+       "purpose": "WORKING_CAPITAL",
+       "term": 15
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "DISBURSED"
+     }
+    ]
+   },
+   "director": {
+    "full_name": "Иванов Алексей Сергеевич 27"
+   },
+   "fns": {
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "enforcement_sum": 0,
+    "mass_address": false,
+    "mass_director": false,
+    "msp_registry": {
+     "category": "MICRO",
+     "included": true
+    },
+    "tax_debt": 0
+   },
+   "founders": [
+    {
+     "full_name": "Иванов Алексей Сергеевич 27",
+     "share_pct": 100
+    }
+   ],
+   "inn": "7766277530",
+   "kind": "OOO",
+   "name": "ООО «Фоновая компания 27»",
+   "ogrn": "1267700000270",
+   "okved_main": "43.10",
+   "reg_date": "2023-09-23",
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
+   "status": "ACTIVE",
+   "turnover": [
+    2462302,
+    1854794,
+    1504396,
+    1950071,
+    1948050,
+    2069592,
+    2337514,
+    3238090,
+    3419330,
+    2099534,
+    2488535,
+    3675124
+   ],
+   "users": [
+    {
+     "can_sign": true,
+     "full_name": "Иванов Алексей Сергеевич 27",
+     "is_founder": true,
+     "login": "bg_027",
+     "position": "Директор",
+     "role": "CLIENT",
+     "share_pct": 100
+    }
+   ]
+  },
+  {
+   "address": "г. Москва, ул. Примерная, д. 28",
+   "bki": {
+    "loans": [
+     {
+      "balance": 9814128,
+      "current_overdue": 0,
+      "max_dpd_12m": 0,
+      "monthly_payment": 817844,
+      "type": "CREDIT"
+     }
+    ],
+    "summary": {
+     "credit_history_months": 10,
+     "current_overdue_total": 0,
+     "inquiries_30d": 0,
+     "max_dpd_12m": 0,
+     "monthly_payments_total": 817844,
+     "total_balance": 9814128
+    }
+   },
+   "code": "bg_028",
+   "demo": {
+    "apps": [
+     {
+      "app": {
+       "amount": 4350000,
+       "declared_revenue_year": 33138480,
+       "product": "EXPRESS",
+       "purpose": "WORKING_CAPITAL",
+       "term": 17
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "WITHDRAWN"
+     },
+     {
+      "app": {
+       "amount": 1850000,
+       "declared_revenue_year": 33138480,
+       "product": "EXPRESS",
+       "purpose": "WORKING_CAPITAL",
+       "term": 18
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "SUBMITTED"
+     }
+    ]
+   },
+   "director": {
+    "full_name": "Иванов Алексей Сергеевич 28"
+   },
+   "fns": {
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "enforcement_sum": 0,
+    "mass_address": false,
+    "mass_director": false,
+    "msp_registry": {
+     "category": "MICRO",
+     "included": true
+    },
+    "tax_debt": 0
+   },
+   "founders": [],
+   "inn": "770754998747",
+   "kind": "IP",
+   "name": "ИП Иванов Алексей Сергеевич 28",
+   "ogrn": "326770000000287",
+   "okved_main": "41.10",
+   "reg_date": "2025-12-23",
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
+   "status": "ACTIVE",
+   "turnover": [
+    2166415,
+    2592869,
+    1584173,
+    1517890,
+    1605231,
+    3600777,
+    4983602,
+    2224880,
+    1657071,
+    3661102,
+    4705589,
+    2838881
+   ],
+   "users": [
+    {
+     "can_sign": true,
+     "full_name": "Иванов Алексей Сергеевич 28",
+     "is_founder": true,
+     "login": "bg_028",
+     "position": "Предприниматель",
+     "role": "CLIENT",
+     "share_pct": 100
+    }
+   ]
+  },
+  {
+   "address": "г. Москва, ул. Примерная, д. 29",
+   "bki": {
+    "loans": [],
+    "summary": {
+     "credit_history_months": 28,
+     "current_overdue_total": 0,
+     "inquiries_30d": 0,
+     "max_dpd_12m": 0,
+     "monthly_payments_total": 0,
+     "total_balance": 0
+    }
+   },
+   "code": "bg_029",
+   "demo": {
+    "apps": [
+     {
+      "app": {
+       "amount": 950000,
+       "declared_revenue_year": 65716488,
+       "product": "EXPRESS",
+       "purpose": "WORKING_CAPITAL",
+       "term": 33
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "WITHDRAWN"
+     }
+    ]
+   },
+   "director": {
+    "full_name": "Иванов Алексей Сергеевич 29"
+   },
+   "fns": {
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "enforcement_sum": 0,
+    "mass_address": false,
+    "mass_director": false,
+    "msp_registry": {
+     "category": "MICRO",
+     "included": true
+    },
+    "tax_debt": 0
+   },
+   "founders": [],
+   "inn": "778983838683",
+   "kind": "IP",
+   "name": "ИП Иванов Алексей Сергеевич 29",
+   "ogrn": "326770000000298",
+   "okved_main": "64.91",
+   "reg_date": "2024-06-23",
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
+   "status": "ACTIVE",
+   "turnover": [
+    7105510,
+    2483892,
+    8632639,
+    1504489,
+    10459618,
+    6573226,
+    6046209,
+    4153400,
+    2237654,
+    3990257,
+    5419171,
+    7110423
+   ],
+   "users": [
+    {
+     "can_sign": true,
+     "full_name": "Иванов Алексей Сергеевич 29",
+     "is_founder": true,
+     "login": "bg_029",
+     "position": "Предприниматель",
+     "role": "CLIENT",
+     "share_pct": 100
+    }
+   ]
+  },
+  {
+   "address": "г. Москва, ул. Примерная, д. 30",
+   "bki": {
+    "loans": [],
+    "summary": {
+     "credit_history_months": 12,
+     "current_overdue_total": 0,
+     "inquiries_30d": 0,
+     "max_dpd_12m": 0,
+     "monthly_payments_total": 0,
+     "total_balance": 0
+    }
+   },
+   "code": "bg_030",
+   "demo": {
+    "apps": [
+     {
+      "app": {
+       "amount": 950000,
+       "declared_revenue_year": 24138300,
+       "product": "WORKING_CAPITAL",
+       "purpose": "WORKING_CAPITAL",
+       "term": 19
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "SIGNED"
+     },
+     {
+      "app": {
+       "amount": 3150000,
+       "declared_revenue_year": 24138300,
+       "product": "EXPRESS",
+       "purpose": "WORKING_CAPITAL",
+       "term": 18
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "WITHDRAWN"
+     }
+    ]
+   },
+   "director": {
+    "full_name": "Иванов Алексей Сергеевич 30"
+   },
+   "fns": {
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "enforcement_sum": 0,
+    "mass_address": false,
+    "mass_director": false,
+    "msp_registry": {
+     "category": "MICRO",
+     "included": true
+    },
+    "tax_debt": 0
+   },
+   "founders": [],
+   "inn": "771435665398",
+   "kind": "IP",
+   "name": "ИП Иванов Алексей Сергеевич 30",
+   "ogrn": "326770000000309",
+   "okved_main": "33.10",
+   "reg_date": "2025-10-23",
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
+   "status": "ACTIVE",
+   "turnover": [
+    3026502,
+    1347034,
+    1637551,
+    1963580,
+    2904557,
+    2369808,
+    1638372,
+    2447616,
+    1973331,
+    1242723,
+    1947309,
+    1639917
+   ],
+   "users": [
+    {
+     "can_sign": true,
+     "full_name": "Иванов Алексей Сергеевич 30",
+     "is_founder": true,
+     "login": "bg_030",
+     "position": "Предприниматель",
+     "role": "CLIENT",
+     "share_pct": 100
+    }
+   ]
+  },
+  {
+   "address": "г. Москва, ул. Примерная, д. 31",
+   "bki": {
+    "loans": [],
+    "summary": {
+     "credit_history_months": 48,
+     "current_overdue_total": 0,
+     "inquiries_30d": 0,
+     "max_dpd_12m": 0,
+     "monthly_payments_total": 0,
+     "total_balance": 0
+    }
+   },
+   "code": "bg_031",
+   "demo": {
+    "apps": [
+     {
+      "app": {
+       "amount": 3700000,
+       "declared_revenue_year": 36041052,
+       "product": "WORKING_CAPITAL",
+       "purpose": "WORKING_CAPITAL",
+       "term": 5
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "EXPIRED"
+     }
+    ]
+   },
+   "director": {
+    "full_name": "Иванов Алексей Сергеевич 31"
+   },
+   "fns": {
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "enforcement_sum": 0,
+    "mass_address": false,
+    "mass_director": false,
+    "msp_registry": {
+     "category": "MICRO",
+     "included": true
+    },
+    "tax_debt": 0
+   },
+   "founders": [
+    {
+     "full_name": "Иванов Алексей Сергеевич 31",
+     "share_pct": 100
+    }
+   ],
+   "inn": "7723313142",
+   "kind": "OOO",
+   "name": "ООО «Фоновая компания 31»",
+   "ogrn": "1267700000314",
+   "okved_main": "01.10",
+   "reg_date": "2022-10-23",
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
+   "status": "ACTIVE",
+   "turnover": [
+    3973125,
+    3154614,
+    3366900,
+    3149101,
+    2224487,
+    3118164,
+    2909472,
+    3116097,
+    2719653,
+    2928382,
+    2471545,
+    2909512
+   ],
+   "users": [
+    {
+     "can_sign": true,
+     "full_name": "Иванов Алексей Сергеевич 31",
+     "is_founder": true,
+     "login": "bg_031",
+     "position": "Директор",
+     "role": "CLIENT",
+     "share_pct": 100
+    }
+   ]
+  },
+  {
+   "address": "г. Москва, ул. Примерная, д. 32",
+   "bki": {
+    "loans": [],
+    "summary": {
+     "credit_history_months": 40,
+     "current_overdue_total": 0,
+     "inquiries_30d": 0,
+     "max_dpd_12m": 0,
+     "monthly_payments_total": 0,
+     "total_balance": 0
+    }
+   },
+   "code": "bg_032",
+   "demo": {
+    "apps": [
+     {
+      "app": {
+       "amount": 9150000,
+       "declared_revenue_year": 87304920,
+       "product": "WORKING_CAPITAL",
+       "purpose": "WORKING_CAPITAL",
+       "term": 5
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "MANUAL_REVIEW"
+     },
+     {
+      "app": {
+       "amount": 1550000,
+       "declared_revenue_year": 87304920,
+       "product": "OVERDRAFT",
+       "purpose": "WORKING_CAPITAL",
+       "term": 12
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "OFFER_ISSUED"
+     }
+    ]
+   },
+   "director": {
+    "full_name": "Иванов Алексей Сергеевич 32"
+   },
+   "fns": {
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "enforcement_sum": 0,
+    "mass_address": false,
+    "mass_director": false,
+    "msp_registry": {
+     "category": "MICRO",
+     "included": true
+    },
+    "tax_debt": 0
+   },
+   "founders": [],
+   "inn": "777765430564",
+   "kind": "IP",
+   "name": "ИП Иванов Алексей Сергеевич 32",
+   "ogrn": "326770000000321",
+   "okved_main": "43.10",
+   "reg_date": "2023-06-23",
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
+   "status": "ACTIVE",
+   "turnover": [
+    12408044,
+    18562463,
+    7087642,
+    3398727,
+    3960392,
+    8626340,
+    4491126,
+    9279238,
+    6926610,
+    5699088,
+    1956043,
+    4909207
+   ],
+   "users": [
+    {
+     "can_sign": true,
+     "full_name": "Иванов Алексей Сергеевич 32",
+     "is_founder": true,
+     "login": "bg_032",
+     "position": "Предприниматель",
+     "role": "CLIENT",
+     "share_pct": 100
+    }
+   ]
+  },
+  {
+   "address": "г. Москва, ул. Примерная, д. 33",
+   "bki": {
+    "loans": [
+     {
+      "balance": 7453704,
+      "current_overdue": 0,
+      "max_dpd_12m": 0,
+      "monthly_payment": 310571,
+      "type": "CREDIT"
+     }
+    ],
+    "summary": {
+     "credit_history_months": 39,
+     "current_overdue_total": 0,
+     "inquiries_30d": 0,
+     "max_dpd_12m": 0,
+     "monthly_payments_total": 310571,
+     "total_balance": 7453704
+    }
+   },
+   "code": "bg_033",
+   "demo": {
+    "apps": [
+     {
+      "app": {
+       "amount": 4650000,
+       "declared_revenue_year": 27886968,
+       "product": "EXPRESS",
+       "purpose": "WORKING_CAPITAL",
+       "term": 30
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "MANUAL_REVIEW"
+     }
+    ]
+   },
+   "director": {
+    "full_name": "Иванов Алексей Сергеевич 33"
+   },
+   "fns": {
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "enforcement_sum": 0,
+    "mass_address": false,
+    "mass_director": false,
+    "msp_registry": {
+     "category": "MICRO",
+     "included": true
+    },
+    "tax_debt": 0
+   },
+   "founders": [
+    {
+     "full_name": "Иванов Алексей Сергеевич 33",
+     "share_pct": 100
+    }
+   ],
+   "inn": "7743784686",
+   "kind": "OOO",
+   "name": "ООО «Фоновая компания 33»",
+   "ogrn": "1267700000336",
+   "okved_main": "43.10",
+   "reg_date": "2023-07-23",
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
+   "status": "ACTIVE",
+   "turnover": [
+    1048201,
+    2971371,
+    3273858,
+    2476010,
+    3768163,
+    2237778,
+    1691717,
+    1877538,
+    2634645,
+    2555324,
+    1299151,
+    2053212
+   ],
+   "users": [
+    {
+     "can_sign": true,
+     "full_name": "Иванов Алексей Сергеевич 33",
+     "is_founder": true,
+     "login": "bg_033",
+     "position": "Директор",
+     "role": "CLIENT",
+     "share_pct": 100
+    }
+   ]
+  },
+  {
+   "address": "г. Москва, ул. Примерная, д. 34",
+   "bki": {
+    "loans": [
+     {
+      "balance": 12609963,
+      "current_overdue": 0,
+      "max_dpd_12m": 0,
+      "monthly_payment": 406773,
+      "type": "CREDIT"
+     }
+    ],
+    "summary": {
+     "credit_history_months": 14,
+     "current_overdue_total": 0,
+     "inquiries_30d": 0,
+     "max_dpd_12m": 0,
+     "monthly_payments_total": 406773,
+     "total_balance": 12609963
+    }
+   },
+   "code": "bg_034",
+   "demo": {
+    "apps": [
+     {
+      "app": {
+       "amount": 3350000,
+       "declared_revenue_year": 24273528,
+       "product": "EXPRESS",
+       "purpose": "WORKING_CAPITAL",
+       "term": 24
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "SUBMITTED"
+     }
+    ]
+   },
+   "director": {
+    "full_name": "Иванов Алексей Сергеевич 34"
+   },
+   "fns": {
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "enforcement_sum": 0,
+    "mass_address": false,
+    "mass_director": false,
+    "msp_registry": {
+     "category": "MICRO",
+     "included": true
+    },
+    "tax_debt": 0
+   },
+   "founders": [
+    {
+     "full_name": "Иванов Алексей Сергеевич 34",
+     "share_pct": 100
+    }
+   ],
+   "inn": "7764236306",
+   "kind": "OOO",
+   "name": "ООО «Фоновая компания 34»",
+   "ogrn": "1267700000347",
+   "okved_main": "56.10",
+   "reg_date": "2021-11-23",
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
+   "status": "ACTIVE",
+   "turnover": [
+    1488181,
+    2304094,
+    2834164,
+    2763259,
+    1704210,
+    1924601,
+    1796990,
+    1928432,
+    2482141,
+    1621773,
+    2120516,
+    1305167
+   ],
+   "users": [
+    {
+     "can_sign": true,
+     "full_name": "Иванов Алексей Сергеевич 34",
+     "is_founder": true,
+     "login": "bg_034",
+     "position": "Директор",
+     "role": "CLIENT",
+     "share_pct": 100
+    }
+   ]
+  },
+  {
+   "address": "г. Москва, ул. Примерная, д. 35",
+   "bki": {
+    "loans": [
+     {
+      "balance": 7469500,
+      "current_overdue": 0,
+      "max_dpd_12m": 0,
+      "monthly_payment": 373475,
+      "type": "CREDIT"
+     }
+    ],
+    "summary": {
+     "credit_history_months": 13,
+     "current_overdue_total": 0,
+     "inquiries_30d": 0,
+     "max_dpd_12m": 0,
+     "monthly_payments_total": 373475,
+     "total_balance": 7469500
+    }
+   },
+   "code": "bg_035",
+   "demo": {
+    "apps": [
+     {
+      "app": {
+       "amount": 7750000,
+       "declared_revenue_year": 15554460,
+       "product": "WORKING_CAPITAL",
+       "purpose": "WORKING_CAPITAL",
+       "term": 9
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "MANUAL_REVIEW"
+     }
+    ]
+   },
+   "director": {
+    "full_name": "Иванов Алексей Сергеевич 35"
+   },
+   "fns": {
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "enforcement_sum": 0,
+    "mass_address": false,
+    "mass_director": false,
+    "msp_registry": {
+     "category": "MICRO",
+     "included": true
+    },
+    "tax_debt": 0
+   },
+   "founders": [
+    {
+     "full_name": "Иванов Алексей Сергеевич 35",
+     "share_pct": 100
+    }
+   ],
+   "inn": "7760824956",
+   "kind": "OOO",
+   "name": "ООО «Фоновая компания 35»",
+   "ogrn": "1267700000358",
+   "okved_main": "69.10",
+   "reg_date": "2025-09-23",
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
+   "status": "ACTIVE",
+   "turnover": [
+    873456,
+    1161576,
+    1937422,
+    1151160,
+    2048276,
+    1625513,
+    1523436,
+    894322,
+    1343301,
+    1282165,
+    921797,
+    792036
+   ],
+   "users": [
+    {
+     "can_sign": true,
+     "full_name": "Иванов Алексей Сергеевич 35",
+     "is_founder": true,
+     "login": "bg_035",
+     "position": "Директор",
+     "role": "CLIENT",
+     "share_pct": 100
+    }
+   ]
+  },
+  {
+   "address": "г. Москва, ул. Примерная, д. 36",
+   "bki": {
+    "loans": [
+     {
+      "balance": 5375440,
+      "current_overdue": 26829,
+      "max_dpd_12m": 5,
+      "monthly_payment": 185360,
+      "type": "CREDIT"
+     }
+    ],
+    "summary": {
+     "credit_history_months": 61,
+     "current_overdue_total": 26829,
+     "inquiries_30d": 0,
+     "max_dpd_12m": 5,
+     "monthly_payments_total": 185360,
+     "total_balance": 5375440
+    }
+   },
+   "code": "bg_036",
+   "demo": {
+    "apps": [
+     {
+      "app": {
+       "amount": 7450000,
+       "declared_revenue_year": 17367936,
+       "product": "WORKING_CAPITAL",
+       "purpose": "WORKING_CAPITAL",
+       "term": 19
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "SUBMITTED"
+     }
+    ]
+   },
+   "director": {
+    "full_name": "Иванов Алексей Сергеевич 36"
+   },
+   "fns": {
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "enforcement_sum": 0,
+    "mass_address": false,
+    "mass_director": false,
+    "msp_registry": {
+     "category": "MICRO",
+     "included": true
+    },
+    "tax_debt": 0
+   },
+   "founders": [
+    {
+     "full_name": "Иванов Алексей Сергеевич 36",
+     "share_pct": 100
+    }
+   ],
+   "inn": "7720157551",
+   "kind": "OOO",
+   "name": "ООО «Фоновая компания 36»",
+   "ogrn": "1267700000369",
+   "okved_main": "62.10",
+   "reg_date": "2021-05-23",
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
+   "status": "ACTIVE",
+   "turnover": [
+    2103208,
+    2194884,
+    1061036,
+    1008612,
+    1345290,
+    1175248,
+    1196867,
+    1133384,
+    1459730,
+    1456788,
+    1529601,
+    1703288
+   ],
+   "users": [
+    {
+     "can_sign": true,
+     "full_name": "Иванов Алексей Сергеевич 36",
+     "is_founder": true,
+     "login": "bg_036",
+     "position": "Директор",
+     "role": "CLIENT",
+     "share_pct": 100
+    }
+   ]
+  },
+  {
+   "address": "г. Москва, ул. Примерная, д. 37",
+   "bki": {
+    "loans": [
+     {
+      "balance": 5959646,
+      "current_overdue": 0,
+      "max_dpd_12m": 24,
+      "monthly_payment": 541786,
+      "type": "CREDIT"
+     }
+    ],
+    "summary": {
+     "credit_history_months": 16,
+     "current_overdue_total": 0,
+     "inquiries_30d": 0,
+     "max_dpd_12m": 24,
+     "monthly_payments_total": 541786,
+     "total_balance": 5959646
+    }
+   },
+   "code": "bg_037",
+   "demo": {
+    "apps": [
+     {
+      "app": {
+       "amount": 3300000,
+       "declared_revenue_year": 18820080,
+       "product": "OVERDRAFT",
+       "purpose": "WORKING_CAPITAL",
+       "term": 12
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "DISBURSED"
+     },
+     {
+      "app": {
+       "amount": 4950000,
+       "declared_revenue_year": 18820080,
+       "product": "EXPRESS",
+       "purpose": "WORKING_CAPITAL",
+       "term": 24
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "WITHDRAWN"
+     }
+    ]
+   },
+   "director": {
+    "full_name": "Иванов Алексей Сергеевич 37"
+   },
+   "fns": {
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "enforcement_sum": 0,
+    "mass_address": false,
+    "mass_director": false,
+    "msp_registry": {
+     "category": "MICRO",
+     "included": true
+    },
+    "tax_debt": 0
+   },
+   "founders": [],
+   "inn": "771204630479",
+   "kind": "IP",
+   "name": "ИП Иванов Алексей Сергеевич 37",
+   "ogrn": "326770000000373",
+   "okved_main": "43.10",
+   "reg_date": "2019-06-23",
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
+   "status": "ACTIVE",
+   "turnover": [
+    1425905,
+    1675777,
+    1613142,
+    1168654,
+    2156176,
+    1933358,
+    2180221,
+    1278752,
+    1019508,
+    1758986,
+    967901,
+    1641700
+   ],
+   "users": [
+    {
+     "can_sign": true,
+     "full_name": "Иванов Алексей Сергеевич 37",
+     "is_founder": true,
+     "login": "bg_037",
+     "position": "Предприниматель",
+     "role": "CLIENT",
+     "share_pct": 100
+    }
+   ]
+  },
+  {
+   "address": "г. Москва, ул. Примерная, д. 38",
+   "bki": {
+    "loans": [],
+    "summary": {
+     "credit_history_months": 26,
+     "current_overdue_total": 0,
+     "inquiries_30d": 0,
+     "max_dpd_12m": 0,
+     "monthly_payments_total": 0,
+     "total_balance": 0
+    }
+   },
+   "code": "bg_038",
+   "demo": {
+    "apps": [
+     {
+      "app": {
+       "amount": 2750000,
+       "declared_revenue_year": 21205176,
+       "product": "EXPRESS",
+       "purpose": "WORKING_CAPITAL",
+       "term": 29
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "DRAFT"
+     }
+    ]
+   },
+   "director": {
+    "full_name": "Иванов Алексей Сергеевич 38"
+   },
+   "fns": {
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "enforcement_sum": 0,
+    "mass_address": false,
+    "mass_director": false,
+    "msp_registry": {
+     "category": "MICRO",
+     "included": true
+    },
+    "tax_debt": 0
+   },
+   "founders": [
+    {
+     "full_name": "Иванов Алексей Сергеевич 38",
+     "share_pct": 100
+    }
+   ],
+   "inn": "7774893639",
+   "kind": "OOO",
+   "name": "ООО «Фоновая компания 38»",
+   "ogrn": "1267700000380",
+   "okved_main": "46.10",
+   "reg_date": "2024-08-23",
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
+   "status": "ACTIVE",
+   "turnover": [
+    1767572,
+    2120971,
+    1963044,
+    2007312,
+    1494692,
+    1186562,
+    1625009,
+    1417780,
+    1408899,
+    1955383,
+    2040773,
+    2217179
+   ],
+   "users": [
+    {
+     "can_sign": true,
+     "full_name": "Иванов Алексей Сергеевич 38",
+     "is_founder": true,
+     "login": "bg_038",
+     "position": "Директор",
+     "role": "CLIENT",
+     "share_pct": 100
+    }
+   ]
+  },
+  {
+   "address": "г. Москва, ул. Примерная, д. 39",
+   "bki": {
+    "loans": [],
+    "summary": {
+     "credit_history_months": 37,
+     "current_overdue_total": 0,
+     "inquiries_30d": 0,
+     "max_dpd_12m": 0,
+     "monthly_payments_total": 0,
+     "total_balance": 0
+    }
+   },
+   "code": "bg_039",
+   "demo": {
+    "apps": [
+     {
+      "app": {
+       "amount": 13750000,
+       "declared_revenue_year": 14079000,
+       "product": "WORKING_CAPITAL",
+       "purpose": "WORKING_CAPITAL",
+       "term": 6
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "WITHDRAWN"
+     }
+    ]
+   },
+   "director": {
+    "full_name": "Иванов Алексей Сергеевич 39"
+   },
+   "fns": {
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "enforcement_sum": 0,
+    "mass_address": false,
+    "mass_director": false,
+    "msp_registry": {
+     "category": "MICRO",
+     "included": true
+    },
+    "tax_debt": 0
+   },
+   "founders": [],
+   "inn": "772765559840",
+   "kind": "IP",
+   "name": "ИП Иванов Алексей Сергеевич 39",
+   "ogrn": "326770000000395",
+   "okved_main": "62.10",
+   "reg_date": "2023-09-23",
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
+   "status": "ACTIVE",
+   "turnover": [
+    529060,
+    1455695,
+    775833,
+    1358078,
+    795356,
+    1935243,
+    688794,
+    1440813,
+    1218789,
+    1500212,
+    1566081,
+    815046
+   ],
+   "users": [
+    {
+     "can_sign": true,
+     "full_name": "Иванов Алексей Сергеевич 39",
+     "is_founder": true,
+     "login": "bg_039",
+     "position": "Предприниматель",
+     "role": "CLIENT",
+     "share_pct": 100
+    }
+   ]
+  },
+  {
+   "address": "г. Москва, ул. Примерная, д. 40",
+   "bki": {
+    "loans": [],
+    "summary": {
+     "credit_history_months": 18,
+     "current_overdue_total": 0,
+     "inquiries_30d": 0,
+     "max_dpd_12m": 0,
+     "monthly_payments_total": 0,
+     "total_balance": 0
+    }
+   },
+   "code": "bg_040",
+   "demo": {
+    "apps": [
+     {
+      "app": {
+       "amount": 2150000,
+       "declared_revenue_year": 29589996,
+       "product": "OVERDRAFT",
+       "purpose": "WORKING_CAPITAL",
+       "term": 12
+      },
+      "consents": {
+       "auto_decision": true,
+       "bki": true,
+       "pdn": true
+      },
+      "target_state": "DRAFT"
+     }
+    ]
+   },
+   "director": {
+    "full_name": "Иванов Алексей Сергеевич 40"
+   },
+   "fns": {
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "enforcement_sum": 0,
+    "mass_address": false,
+    "mass_director": false,
+    "msp_registry": {
+     "category": "MICRO",
+     "included": true
+    },
+    "tax_debt": 0
+   },
+   "founders": [
+    {
+     "full_name": "Иванов Алексей Сергеевич 40",
+     "share_pct": 100
+    }
+   ],
+   "inn": "7782696659",
+   "kind": "OOO",
+   "name": "ООО «Фоновая компания 40»",
+   "ogrn": "1267700000402",
+   "okved_main": "43.10",
+   "reg_date": "2024-05-23",
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
+   "status": "ACTIVE",
+   "turnover": [
+    1215576,
+    1943665,
+    1600352,
+    2214346,
+    2780912,
+    1572765,
+    1059520,
+    6087493,
+    2250424,
+    1354025,
+    4032364,
+    3478554
+   ],
+   "users": [
+    {
+     "can_sign": true,
+     "full_name": "Иванов Алексей Сергеевич 40",
+     "is_founder": true,
+     "login": "bg_040",
+     "position": "Директор",
+     "role": "CLIENT",
+     "share_pct": 100
+    }
+   ]
+  }
+ ]
+}
