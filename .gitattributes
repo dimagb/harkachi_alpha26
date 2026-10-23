@@ -1,0 +1,14 @@
+# Переносы строк: в репозитории и в рабочих копиях — LF (скрипты в Docker ломаются от CRLF)
+* text=auto eol=lf
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
