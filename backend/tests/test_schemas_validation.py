@@ -1,14 +1,28 @@
 from copy import deepcopy
+from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
 from fixtures_bodies import BODIES, ID
 
+from app.auth.deps import current_user
 from app.main import app
+from app.models import User
 
 CREATE = "/api/v1/applications"
 DECIDE = f"/api/v1/underwriting/{ID}/decision"
 INFO = f"/api/v1/applications/{ID}/info-response"
+
+
+@pytest.fixture(autouse=True)
+def validation_user():
+    app.dependency_overrides[current_user] = lambda: User(
+        id=uuid4(), role="CLIENT", login="t", full_name="t", password_hash=""
+    )
+    try:
+        yield
+    finally:
+        app.dependency_overrides.pop(current_user, None)
 
 
 @pytest.mark.parametrize(
