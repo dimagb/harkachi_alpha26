@@ -1,6 +1,6 @@
 # Модель данных (credit-core, PostgreSQL)
 
-Все таблицы: `id` (UUID), `created_at`, `updated_at`. Деньги — `numeric(15,2)`, ставки — `numeric(5,2)`. Перечисления — строковые enum. Связь с требованиями — в скобках.
+Все таблицы: `id` (UUID), `created_at`, `updated_at`. Деньги — целые рубли `bigint` (платёж — ROUND_HALF_UP до рубля), ставки — `numeric(5,2)`, месяц — `YYYY-MM`. Перечисления — строковые enum. Связь с требованиями — в скобках.
 
 ## Участники и справочники
 | Таблица | Ключевые поля | Назначение |
@@ -17,8 +17,8 @@
 ## Заявка и процесс
 | Таблица | Ключевые поля | Назначение |
 | --- | --- | --- |
-| `application` | company_id, created_by, product_code, amount, term_months, purpose, purpose_text, declared_revenue_year, **state**, current_offer_id, previous_application_id, **version** | Заявка; состояние — `state-machine.md` (F5, F6, F19) |
-| `party` | application_id, role (`BORROWER_SIGNATORY`/`GUARANTOR`), user_id (nullable), full_name, required_signature, status | Участники с подписью; задел Б1 |
+| `application` | number (последовательный), company_id, created_by, product_code, amount, term_months, purpose, purpose_text, declared_revenue_year, **state**, current_offer_id, previous_application_id, awaiting_signature, submitted_at, **version** | Заявка; состояние — `state-machine.md` (F5, F6, F19) |
+| `party` | application_id, role (`BORROWER_SIGNATORY`/`GUARANTOR`), user_id (nullable), full_name, required_signature, status (`PENDING`/`SIGNED`; в API → `signed: boolean`) | Участники с подписью; задел Б1 |
 | `consent` | application_id, party_id, type (`PDN`/`BKI`/`AUTO_DECISION`), granted, signed_at, expires_at, doc_hash | Согласия (F14; БКИ — 1 год для МСП) |
 | `info_request` | application_id, source (`SYSTEM`/`UNDERWRITER`), items (json), due_at, response (json), responded_at | Дозапрос (F9) |
 | `external_check` | application_id, source (`BKI`/`EGRUL`/`FNS`), request, response, status, attempts, fetched_at | Обогащение (F10) |
@@ -34,6 +34,19 @@
 
 ## Мок-сервис (external-mocks)
 Без БД: ответы строятся из `contracts/personas.json` (тот же файл, что и сиды credit-core) + детерминированный генератор для неизвестных ИНН. Настройка `MOCK_FAILURE_INN` — какие ИНН отвечают ошибкой (демо повторов).
+
+## Синтетические данные (T5)
+
+Два слоя, оба детерминированные (фиксированный seed) и воспроизводимые при каждом `docker compose up`:
+1. **Персонажи для демо** — `contracts/personas.json`: 6 компаний с точными входами и ожидаемым исходом (golden-тесты). Обороты — 12 месяцев (октябрь 2025 — сентябрь 2026), заданы явно.
+2. **Фон для банка** — генератор (`seed --background 40`): ~40 компаний и ~60 заявок в разных состояниях, чтобы журнал банка и очередь андеррайтера выглядели живыми. Правила генерации:
+   - тип: 60% ООО / 40% ИП; ИНН с правильной контрольной суммой; ОКВЭД из списка отраслей `decision-model.md`;
+   - дата регистрации: 3–120 мес. назад (лог-нормальное, медиана ~30 мес.);
+   - обороты: средний 0,3–8 млн/мес. (лог-нормальное) × сезонность (синусоида ±15%) × шум (CV 0,1–0,7);
+   - БКИ: у 60% есть кредиты (платежи 5–35% оборота); просрочка 1–30 дней у 10%, 31–90 у 5%, текущая у 3%;
+   - ФНС: налоговый долг у 8% (у трети — выше стоп-порога), исполнительные производства у 5%, банкротство у 1%; флаг ПОД/ФТ у 2%;
+   - заявки фона проходят **тот же** конвейер и модель решения (не подставляются готовыми результатами) — это заодно нагрузочная проверка правил.
+Генератор и сиды — задача агента аналитики; проверка — тест «все персонажи дают `demo.expected`».
 
 ## Правила видимости
 Клиентский API отдаёт: заявку, ленту (`application_event` → этапы ленты), оферту, `client_reason` (из `reason_catalog` по `client_reason_code`), свои согласия и подписи. **Не отдаёт:** `risk_flag`, `internal_reasons`, `factors`, `rules_fired`, `inputs_snapshot`, пороги. Андеррайтер видит всё.

@@ -2,13 +2,14 @@
  "_meta": {
   "as_of": "2026-10-23",
   "key_rate": 14.0,
-  "note": "Единственный источник данных персонажей: из него генерируются сиды БД (company, company_member, user, account_turnover, risk_flag) и фикстуры external-mocks. Пароль всех учёток — в .env.example (DEMO_PASSWORD). Месяцы оборотов: 2025-10…2026-09."
+  "turnover_months": "2025-10…2026-09 (YYYY-MM)",
+  "note": "Единственный источник данных персонажей: сиды БД и фикстуры external-mocks генерируются отсюда. demo.expected — golden-тест (decision_reference.py). Пароль всех учёток — DEMO_PASSWORD из .env.example."
  },
  "staff": [
   {
    "login": "underwriter",
-   "role": "UNDERWRITER",
-   "full_name": "Орлова Мария Андреевна"
+   "full_name": "Орлова Мария Андреевна",
+   "role": "UNDERWRITER"
   }
  ],
  "personas": [
@@ -16,9 +17,16 @@
    "code": "ip_good",
    "kind": "IP",
    "inn": "770112345695",
+   "ogrn": "322774600012345",
    "name": "ИП Смирнова Анна Викторовна",
-   "okved": "56.10",
+   "okved_main": "56.10",
    "reg_date": "2022-09-01",
+   "status": "ACTIVE",
+   "address": "г. Москва, ул. Покровка, д. 12",
+   "director": {
+    "full_name": "Смирнова Анна Викторовна"
+   },
+   "founders": [],
    "turnover": [
     1020000,
     1380000,
@@ -34,21 +42,37 @@
     1380000
    ],
    "bki": {
-    "monthly_payments_total": 0,
-    "current_overdue_total": 0,
-    "max_dpd_12m": 0
+    "loans": [],
+    "summary": {
+     "monthly_payments_total": 0,
+     "total_balance": 0,
+     "current_overdue_total": 0,
+     "max_dpd_12m": 0,
+     "credit_history_months": 40,
+     "inquiries_30d": 0
+    }
    },
    "fns": {
     "tax_debt": 0,
     "enforcement_sum": 0,
-    "bankruptcy": false
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "mass_director": false,
+    "mass_address": false,
+    "msp_registry": {
+     "included": true,
+     "category": "MICRO"
+    }
    },
-   "status": "ACTIVE",
-   "aml_flag": false,
-   "fraud_flag": false,
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
    "users": [
     {
      "login": "ip_good",
+     "full_name": "Смирнова Анна Викторовна",
      "role": "CLIENT",
      "position": "Индивидуальный предприниматель",
      "can_sign": true,
@@ -57,21 +81,66 @@
     }
    ],
    "demo": {
-    "product": "EXPRESS",
-    "amount": 1500000,
-    "term": 24,
-    "purpose": "WORKING_CAPITAL",
-    "declared_revenue_year": 14000000,
-    "expected": "A, 98 баллов → авто-одобрение 1 500 000 / 24 мес. под 22%, платёж 77 817 → подписать → DISBURSED"
+    "app": {
+     "product": "EXPRESS",
+     "amount": 1500000,
+     "term": 24,
+     "purpose": "WORKING_CAPITAL",
+     "declared_revenue_year": 14000000
+    },
+    "consents": {
+     "pdn": true,
+     "bki": true,
+     "auto_decision": true
+    },
+    "expected": {
+     "state": "OFFER_ISSUED",
+     "outcome": "APPROVE",
+     "offer": {
+      "amount": 1500000,
+      "term_months": 24,
+      "rate": 22.0,
+      "monthly_payment": 77817
+     },
+     "grade": "A",
+     "score": 98,
+     "points": {
+      "business_age": 10,
+      "industry_risk": 3,
+      "mass_registration": 5,
+      "turnover_stability": 10,
+      "turnover_trend": 10,
+      "zero_months": 10,
+      "payment_to_turnover": 15,
+      "debt_to_turnover": 10,
+      "delinquency_12m": 10,
+      "credit_history_length": 5,
+      "bureau_inquiries_30d": 5,
+      "payment_discipline": 5
+     },
+     "ptr_pct": 6.7
+    }
    }
   },
   {
    "code": "ooo_load",
    "kind": "OOO",
    "inn": "7702123454",
+   "ogrn": "1237700012345",
    "name": "ООО «Северный склад»",
-   "okved": "52.10",
+   "okved_main": "52.10",
    "reg_date": "2023-03-01",
+   "status": "ACTIVE",
+   "address": "г. Москва, Складской пр., д. 4",
+   "director": {
+    "full_name": "Петров Илья Игоревич"
+   },
+   "founders": [
+    {
+     "full_name": "Петров Илья Игоревич",
+     "share_pct": 100
+    }
+   ],
    "turnover": [
     1300000,
     2700000,
@@ -87,21 +156,45 @@
     2700000
    ],
    "bki": {
-    "monthly_payments_total": 450000,
-    "current_overdue_total": 0,
-    "max_dpd_12m": 0
+    "loans": [
+     {
+      "type": "CREDIT",
+      "balance": 7000000,
+      "monthly_payment": 450000,
+      "current_overdue": 0,
+      "max_dpd_12m": 0
+     }
+    ],
+    "summary": {
+     "monthly_payments_total": 450000,
+     "total_balance": 7000000,
+     "current_overdue_total": 0,
+     "max_dpd_12m": 0,
+     "credit_history_months": 30,
+     "inquiries_30d": 3
+    }
    },
    "fns": {
     "tax_debt": 0,
     "enforcement_sum": 0,
-    "bankruptcy": false
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "mass_director": false,
+    "mass_address": false,
+    "msp_registry": {
+     "included": true,
+     "category": "MICRO"
+    }
    },
-   "status": "ACTIVE",
-   "aml_flag": false,
-   "fraud_flag": false,
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
    "users": [
     {
      "login": "ooo_load",
+     "full_name": "Петров Илья Игоревич",
      "role": "CLIENT",
      "position": "Генеральный директор",
      "can_sign": true,
@@ -110,6 +203,7 @@
     },
     {
      "login": "ooo_load_accountant",
+     "full_name": "Белова Ольга Сергеевна",
      "role": "CLIENT",
      "position": "Главный бухгалтер",
      "can_sign": false,
@@ -118,21 +212,66 @@
     }
    ],
    "demo": {
-    "product": "WORKING_CAPITAL",
-    "amount": 4000000,
-    "term": 12,
-    "purpose": "WORKING_CAPITAL",
-    "declared_revenue_year": 24000000,
-    "expected": "B, 65 баллов, PTR 41,5% → встречное 2 850 000 / 24 мес. под 23%, платёж 149 264 → принять → подпись директора и поручителя (то же лицо) → DISBURSED"
+    "app": {
+     "product": "WORKING_CAPITAL",
+     "amount": 4000000,
+     "term": 12,
+     "purpose": "WORKING_CAPITAL",
+     "declared_revenue_year": 24000000
+    },
+    "consents": {
+     "pdn": true,
+     "bki": true,
+     "auto_decision": false
+    },
+    "expected": {
+     "state": "OFFER_ISSUED",
+     "outcome": "COUNTER",
+     "offer": {
+      "amount": 2850000,
+      "term_months": 24,
+      "rate": 23.0,
+      "monthly_payment": 149264
+     },
+     "grade": "B",
+     "score": 72,
+     "points": {
+      "business_age": 10,
+      "industry_risk": 5,
+      "mass_registration": 5,
+      "turnover_stability": 5,
+      "turnover_trend": 10,
+      "zero_months": 10,
+      "payment_to_turnover": 0,
+      "debt_to_turnover": 5,
+      "delinquency_12m": 10,
+      "credit_history_length": 5,
+      "bureau_inquiries_30d": 2,
+      "payment_discipline": 5
+     },
+     "ptr_pct": 41.5
+    }
    }
   },
   {
    "code": "ooo_gap",
    "kind": "OOO",
    "inn": "7703123457",
+   "ogrn": "1247700023456",
    "name": "ООО «Ремонт-Сервис»",
-   "okved": "43.39",
+   "okved_main": "43.39",
    "reg_date": "2024-09-01",
+   "status": "ACTIVE",
+   "address": "г. Москва, ул. Мастеровая, д. 7",
+   "director": {
+    "full_name": "Гусев Артём Павлович"
+   },
+   "founders": [
+    {
+     "full_name": "Гусев Артём Павлович",
+     "share_pct": 100
+    }
+   ],
    "turnover": [
     1200000,
     1800000,
@@ -148,21 +287,37 @@
     1800000
    ],
    "bki": {
-    "monthly_payments_total": 0,
-    "current_overdue_total": 0,
-    "max_dpd_12m": 0
+    "loans": [],
+    "summary": {
+     "monthly_payments_total": 0,
+     "total_balance": 0,
+     "current_overdue_total": 0,
+     "max_dpd_12m": 0,
+     "credit_history_months": 12,
+     "inquiries_30d": 1
+    }
    },
    "fns": {
     "tax_debt": 0,
     "enforcement_sum": 0,
-    "bankruptcy": false
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "mass_director": false,
+    "mass_address": false,
+    "msp_registry": {
+     "included": true,
+     "category": "MICRO"
+    }
    },
-   "status": "ACTIVE",
-   "aml_flag": false,
-   "fraud_flag": false,
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
    "users": [
     {
      "login": "ooo_gap",
+     "full_name": "Гусев Артём Павлович",
      "role": "CLIENT",
      "position": "Генеральный директор",
      "can_sign": true,
@@ -171,21 +326,72 @@
     }
    ],
    "demo": {
-    "product": "EXPRESS",
-    "amount": 1000000,
-    "term": 24,
-    "purpose": "EQUIPMENT",
-    "declared_revenue_year": 48000000,
-    "expected": "VAL_REVENUE_MISMATCH (48 млн против 18 млн оборотов) → дозапрос → ответ «часть выручки идёт на счёт в другом банке» → A, 88 баллов → авто-одобрение 1 000 000 / 24 мес. под 22%"
+    "app": {
+     "product": "EXPRESS",
+     "amount": 1000000,
+     "term": 24,
+     "purpose": "EQUIPMENT",
+     "declared_revenue_year": 48000000
+    },
+    "consents": {
+     "pdn": true,
+     "bki": true,
+     "auto_decision": false
+    },
+    "info_response": [
+     {
+      "item_code": "REVENUE_CONFIRM",
+      "value": 48000000,
+      "comment": "Часть выручки поступает на расчётный счёт в другом банке"
+     }
+    ],
+    "expected": {
+     "first_state": "INFO_REQUESTED",
+     "validation_rule": "VAL_REVENUE_MISMATCH",
+     "after_info": {
+      "state": "OFFER_ISSUED",
+      "outcome": "APPROVE",
+      "offer": {
+       "amount": 1000000,
+       "term_months": 24,
+       "rate": 22.0,
+       "monthly_payment": 51878
+      },
+      "grade": "A",
+      "score": 91,
+      "points": {
+       "business_age": 5,
+       "industry_risk": 3,
+       "mass_registration": 5,
+       "turnover_stability": 10,
+       "turnover_trend": 10,
+       "zero_months": 10,
+       "payment_to_turnover": 15,
+       "debt_to_turnover": 10,
+       "delinquency_12m": 10,
+       "credit_history_length": 3,
+       "bureau_inquiries_30d": 5,
+       "payment_discipline": 5
+      },
+      "ptr_pct": 3.6
+     }
+    }
    }
   },
   {
    "code": "ip_bad",
    "kind": "IP",
    "inn": "770412345664",
+   "ogrn": "321774600054321",
    "name": "ИП Козлов Дмитрий Сергеевич",
-   "okved": "47.71",
+   "okved_main": "47.71",
    "reg_date": "2021-04-01",
+   "status": "ACTIVE",
+   "address": "г. Москва, ул. Торговая, д. 3",
+   "director": {
+    "full_name": "Козлов Дмитрий Сергеевич"
+   },
+   "founders": [],
    "turnover": [
     560000,
     1040000,
@@ -201,21 +407,45 @@
     1040000
    ],
    "bki": {
-    "monthly_payments_total": 60000,
-    "current_overdue_total": 35000,
-    "max_dpd_12m": 45
+    "loans": [
+     {
+      "type": "CREDIT",
+      "balance": 900000,
+      "monthly_payment": 60000,
+      "current_overdue": 35000,
+      "max_dpd_12m": 45
+     }
+    ],
+    "summary": {
+     "monthly_payments_total": 60000,
+     "total_balance": 900000,
+     "current_overdue_total": 35000,
+     "max_dpd_12m": 45,
+     "credit_history_months": 50,
+     "inquiries_30d": 4
+    }
    },
    "fns": {
     "tax_debt": 0,
     "enforcement_sum": 0,
-    "bankruptcy": false
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "mass_director": false,
+    "mass_address": false,
+    "msp_registry": {
+     "included": true,
+     "category": "MICRO"
+    }
    },
-   "status": "ACTIVE",
-   "aml_flag": false,
-   "fraud_flag": false,
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
    "users": [
     {
      "login": "ip_bad",
+     "full_name": "Козлов Дмитрий Сергеевич",
      "role": "CLIENT",
      "position": "Индивидуальный предприниматель",
      "can_sign": true,
@@ -224,21 +454,47 @@
     }
    ],
    "demo": {
-    "product": "EXPRESS",
-    "amount": 700000,
-    "term": 12,
-    "purpose": "WORKING_CAPITAL",
-    "declared_revenue_year": 9500000,
-    "expected": "SF_OVERDUE → авто-отказ, категория «Кредитная история», повторно через 30 дней; доступна кнопка «Попросить пересмотр»"
+    "app": {
+     "product": "EXPRESS",
+     "amount": 700000,
+     "term": 12,
+     "purpose": "WORKING_CAPITAL",
+     "declared_revenue_year": 9500000
+    },
+    "consents": {
+     "pdn": true,
+     "bki": true,
+     "auto_decision": true
+    },
+    "expected": {
+     "state": "DECLINED",
+     "outcome": "DECLINE",
+     "reason_code": "SF_OVERDUE",
+     "client_reason_code": "SF_OVERDUE",
+     "grade": null,
+     "score": null
+    }
    }
   },
   {
    "code": "ooo_border",
    "kind": "OOO",
    "inn": "7705123452",
+   "ogrn": "1257700034567",
    "name": "ООО «ТехноМонтаж»",
-   "okved": "43.21",
+   "okved_main": "43.21",
    "reg_date": "2025-08-01",
+   "status": "ACTIVE",
+   "address": "г. Москва, Электродный пр., д. 9",
+   "director": {
+    "full_name": "Захаров Роман Олегович"
+   },
+   "founders": [
+    {
+     "full_name": "Захаров Роман Олегович",
+     "share_pct": 100
+    }
+   ],
    "turnover": [
     500000,
     1500000,
@@ -249,26 +505,50 @@
     500000,
     1500000,
     500000,
-    1500000,
-    500000,
-    1500000
+    1050000,
+    350000,
+    1050000
    ],
    "bki": {
-    "monthly_payments_total": 150000,
-    "current_overdue_total": 0,
-    "max_dpd_12m": 0
+    "loans": [
+     {
+      "type": "CREDIT",
+      "balance": 7000000,
+      "monthly_payment": 150000,
+      "current_overdue": 0,
+      "max_dpd_12m": 0
+     }
+    ],
+    "summary": {
+     "monthly_payments_total": 150000,
+     "total_balance": 7000000,
+     "current_overdue_total": 0,
+     "max_dpd_12m": 0,
+     "credit_history_months": 14,
+     "inquiries_30d": 2
+    }
    },
    "fns": {
     "tax_debt": 20000,
     "enforcement_sum": 0,
-    "bankruptcy": false
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "mass_director": false,
+    "mass_address": false,
+    "msp_registry": {
+     "included": true,
+     "category": "MICRO"
+    }
    },
-   "status": "ACTIVE",
-   "aml_flag": false,
-   "fraud_flag": false,
+   "risk": {
+    "aml_flag": false,
+    "fraud_flag": false,
+    "note": null
+   },
    "users": [
     {
      "login": "ooo_border",
+     "full_name": "Захаров Роман Олегович",
      "role": "CLIENT",
      "position": "Генеральный директор",
      "can_sign": true,
@@ -277,21 +557,69 @@
     }
    ],
    "demo": {
-    "product": "EXPRESS",
-    "amount": 1000000,
-    "term": 24,
-    "purpose": "WORKING_CAPITAL",
-    "declared_revenue_year": 12000000,
-    "expected": "C, 53 балла → MANUAL_REVIEW, рекомендация системы: одобрить 1 000 000 / 24 мес. под 26% → андеррайтер решает"
+    "app": {
+     "product": "EXPRESS",
+     "amount": 1000000,
+     "term": 24,
+     "purpose": "WORKING_CAPITAL",
+     "declared_revenue_year": 12000000
+    },
+    "consents": {
+     "pdn": true,
+     "bki": true,
+     "auto_decision": false
+    },
+    "expected": {
+     "state": "MANUAL_REVIEW",
+     "route_reason": "GRADE_C",
+     "recommendation": {
+      "outcome": "APPROVE",
+      "offer": {
+       "amount": 1000000,
+       "term_months": 24,
+       "rate": 26.0,
+       "monthly_payment": 53875
+      },
+      "grade": "C",
+      "score": 54,
+      "points": {
+       "business_age": 5,
+       "industry_risk": 3,
+       "mass_registration": 5,
+       "turnover_stability": 5,
+       "turnover_trend": 5,
+       "zero_months": 10,
+       "payment_to_turnover": 4,
+       "debt_to_turnover": 0,
+       "delinquency_12m": 10,
+       "credit_history_length": 3,
+       "bureau_inquiries_30d": 2,
+       "payment_discipline": 2
+      },
+      "ptr_pct": 22.3
+     }
+    }
    }
   },
   {
    "code": "ooo_aml",
    "kind": "OOO",
    "inn": "7706123455",
+   "ogrn": "1227700045678",
    "name": "ООО «Альфа-Трейд»",
-   "okved": "46.90",
+   "okved_main": "46.90",
    "reg_date": "2022-01-01",
+   "status": "ACTIVE",
+   "address": "г. Москва, ул. Оптовая, д. 21",
+   "director": {
+    "full_name": "Сорокин Виктор Андреевич"
+   },
+   "founders": [
+    {
+     "full_name": "Сорокин Виктор Андреевич",
+     "share_pct": 100
+    }
+   ],
    "turnover": [
     2400000,
     3600000,
@@ -307,21 +635,37 @@
     3600000
    ],
    "bki": {
-    "monthly_payments_total": 0,
-    "current_overdue_total": 0,
-    "max_dpd_12m": 0
+    "loans": [],
+    "summary": {
+     "monthly_payments_total": 0,
+     "total_balance": 0,
+     "current_overdue_total": 0,
+     "max_dpd_12m": 0,
+     "credit_history_months": 36,
+     "inquiries_30d": 0
+    }
    },
    "fns": {
     "tax_debt": 0,
     "enforcement_sum": 0,
-    "bankruptcy": false
+    "arbitration_defendant_sum": 0,
+    "bankruptcy": false,
+    "mass_director": false,
+    "mass_address": false,
+    "msp_registry": {
+     "included": true,
+     "category": "MICRO"
+    }
    },
-   "status": "ACTIVE",
-   "aml_flag": true,
-   "fraud_flag": false,
+   "risk": {
+    "aml_flag": true,
+    "fraud_flag": false,
+    "note": "Синтетический флаг ПОД/ФТ для теста"
+   },
    "users": [
     {
      "login": "ooo_aml",
+     "full_name": "Сорокин Виктор Андреевич",
      "role": "CLIENT",
      "position": "Генеральный директор",
      "can_sign": true,
@@ -330,12 +674,26 @@
     }
    ],
    "demo": {
-    "product": "EXPRESS",
-    "amount": 1000000,
-    "term": 12,
-    "purpose": "WORKING_CAPITAL",
-    "declared_revenue_year": 36000000,
-    "expected": "SF_ADDITIONAL → отказ ADDITIONAL_CHECKS, клиент видит только нейтральный текст (для тестов, в README не входит)"
+    "app": {
+     "product": "EXPRESS",
+     "amount": 1000000,
+     "term": 12,
+     "purpose": "WORKING_CAPITAL",
+     "declared_revenue_year": 36000000
+    },
+    "consents": {
+     "pdn": true,
+     "bki": true,
+     "auto_decision": false
+    },
+    "expected": {
+     "state": "DECLINED",
+     "outcome": "DECLINE",
+     "reason_code": "SF_ADDITIONAL",
+     "client_reason_code": "ADDITIONAL_CHECKS",
+     "grade": null,
+     "score": null
+    }
    }
   }
  ]

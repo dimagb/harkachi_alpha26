@@ -17,16 +17,17 @@
 ```json
 { "inn": "…", "kind": "FULL", "loans": [ { "type": "CREDIT", "balance": 1200000, "monthly_payment": 450000,
   "current_overdue": 0, "max_dpd_12m": 0 } ], "summary": { "monthly_payments_total": 450000,
-  "current_overdue_total": 0, "max_dpd_12m": 0 } }
+  "total_balance": 7000000, "current_overdue_total": 0, "max_dpd_12m": 0,
+  "credit_history_months": 30, "inquiries_30d": 3 } }
 ```
 `INFO` (информационная часть) — только `summary` без деталей по кредитам.
 
 ## ФНС («Прозрачный бизнес» + ФССП + банкротство в одном ответе)
 `GET /fns/check/{inn}` →
 ```json
-{ "inn": "…", "tax_debt": 0, "enforcement_sum": 0, "bankruptcy": false,
+{ "inn": "…", "tax_debt": 0, "enforcement_sum": 0, "arbitration_defendant_sum": 0, "bankruptcy": false,
   "msp_registry": { "included": true, "category": "MICRO" }, "mass_director": false, "mass_address": false }
 ```
 
 ## Служебное
-`GET /health`. Фикстуры — `external-mocks/fixtures/{inn}.json`, по одному файлу на демо-компанию (`decision-model.md` §8).
+`GET /health`. Ответы для демо-компаний строятся из `contracts/personas.json`: ЕГРЮЛ/ЕГРИП — `inn, ogrn, kind, name, status, reg_date, okved_main, address, director, founders`; БКИ — `bki.loans` + `bki.summary`; ФНС — `fns`; `INFO`-запрос БКИ отдаёт только `summary`. Каждый источник в credit-core вызывается через адаптер (`RegistryProvider`, `BureauProvider`, `TaxProvider`): мок — по умолчанию, реальный провайдер подключается заменой адаптера (раздел «Развитие»).
