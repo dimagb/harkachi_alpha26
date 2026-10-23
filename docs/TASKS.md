@@ -327,7 +327,7 @@
    - `reason_catalog` — все коды раздела «Коды причин» `codes.md` с клиентскими текстами из `decision-model.md` §3.
 
    Фоновые данные здесь **не** загружаются (это B-10).
-4. Сиды запускаются в сервисе `migrate` после `alembic upgrade head`. Правка команды в `docker-compose.yml` — через `TODO(lead)` в PR, compose правит тимлид.
+4. Сиды запускаются в сервисе `migrate` после `alembic upgrade head`. **Исключение из владения:** в этом PR разрешено изменить в `docker-compose.yml` только строку `command` сервиса `migrate` на `["sh", "-c", "/app/.venv/bin/alembic upgrade head && /app/.venv/bin/python -m app.seed"]`. Тексты причин, служебные перечисления и `decision_config.params` — в `contracts/codes.md` (разделы «Клиентские тексты причин», «Служебные перечисления», «decision_config.params»). Postgres в CI уже есть: `TEST_DATABASE_URL`.
 
 **Приёмка:**
 - `cd backend && uv run pytest -q` — зелёный. Тесты берут БД из `TEST_DATABASE_URL`: локально это `docker compose up -d db` с открытым портом из `docker-compose.override.yml` (файл не коммитить), в CI — сервис Postgres, который добавляет тимлид (L-03). Если переменной нет, тесты БД пропускаются с понятным сообщением. Тесты применяют миграции и сиды дважды, затем проверяют:
