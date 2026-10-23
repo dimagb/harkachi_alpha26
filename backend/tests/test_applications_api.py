@@ -394,3 +394,16 @@ def test_patch_explicit_null_and_empty_patch(application_client):
     response = client.patch(path, headers={"If-Match": "2"}, json={})
     assert response.status_code == 200, response.text
     assert response.json()["version"] == 3
+
+
+def test_patch_cannot_change_state(application_client):
+    session, client = application_client
+    data = created(session, client)
+    response = client.patch(
+        f"/applications/{data['id']}",
+        headers={"If-Match": "1"},
+        json={"state": "SUBMITTED"},
+    )
+    assert response.status_code == 422, response.text
+    assert session.get(Application, UUID(data["id"])).state == "DRAFT"
+    assert session.scalar(select(func.count()).select_from(ApplicationEvent)) == 1
