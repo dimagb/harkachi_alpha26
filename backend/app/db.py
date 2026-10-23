@@ -1,4 +1,5 @@
 from collections.abc import Generator
+from importlib import import_module
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
@@ -15,6 +16,9 @@ SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
 
 class Base(DeclarativeBase):
     pass
+
+
+import_module("app.models")
 
 
 def get_session() -> Generator[Session, None, None]:
