@@ -75,7 +75,42 @@ network_access = true
 ## 6. Codex Cloud — когда тебя нет за ноутбуком
 Codex Cloud входит в Plus. Задача выполняется на серверах OpenAI, **ноутбук можно закрыть**, результат приходит готовым PR. Используй его, когда уходишь, а задача ещё не сделана: Аня 24.10 утром, Катя 25.10.
 1. Один раз: зайти на chatgpt.com/codex своим аккаунтом, подключить GitHub и выбрать репозиторий `dimagb/harkachi_alpha26`. Если репозитория нет в списке, написать человеку: приложение ChatGPT для GitHub ставит владелец репозитория.
-2. Один раз: создать окружение для репозитория (Codex сам предложит установить `uv` и Node) и опубликовать его.
+2. Один раз: создать окружение для репозитория и опубликовать его. В настройках окружения:
+   - **Setup script** (после слияния каркаса):
+     ```
+     curl -LsSf https://astral.sh/uv/install.sh | sh
+     export PATH="$HOME/.local/bin:$PATH"
+     (cd backend && uv sync) ; (cd mocks && uv sync) ; (cd frontend && npm ci)
+     uv tool install pytest
+     ```
+   - **Agent internet access: On**, список доменов — «Common dependencies». Без этого агент не поставит пакеты.
 3. Перед уходом: открыть задачу из `docs/TASKS.md`, у которой стоит пометка **«можно в облаке»**, вставить её стартовый промпт и запустить. Вернувшись — открыть результат, нажать «Create PR» и сообщить в группу.
 - **В облаке нет Docker и базы данных**, поэтому туда — только задачи с этой пометкой (без БД: модель решения, проверки, генератор, компоненты интерфейса).
 - Своим аккаунтом не делиться: задачу запускает только владелица аккаунта.
+
+## 7. MCP и скиллы для Codex (делать сейчас, 10 минут)
+```powershell
+codex mcp add context7 -- npx -y @upstash/context7-mcp          # всем: актуальная документация библиотек
+codex mcp add playwright npx "@playwright/mcp@latest"           # только Лане: посмотреть экран в браузере
+git clone https://github.com/obra/superpowers.git $HOME\.codex\superpowers
+New-Item -ItemType Directory -Force $HOME\.agents\skills | Out-Null
+foreach ($s in 'test-driven-development','systematic-debugging','verification-before-completion') {
+  Copy-Item -Recurse -Force "$HOME\.codex\superpowers\skills\$s" "$HOME\.agents\skills\$s"
+}
+codex mcp list                                                  # должен показать context7 (и playwright у Ланы)
+```
+Ставим только эти три скилла из superpowers. Не ставим `using-superpowers` и остальные: они заставляют агента вызывать скиллы на каждом шаге и тратят лимит Plus. Других скиллов и плагинов не искать и не ставить. Скиллы `gh-fix-ci` и `gh-address-comments` по желанию: `$skill-installer gh-fix-ci` внутри Codex.
+
+## 8. Уведомления в Telegram (`.notify.env`)
+Человек создаёт бота и присылает каждой участнице токен и id чата личным сообщением, не в общий чат. В корне клона сначала исключить файл из git, затем создать его:
+```powershell
+Add-Content .git\info\exclude ".notify.env"
+notepad .notify.env
+```
+Содержимое:
+```
+TG_BOT_TOKEN=<токен>
+TG_CHAT_ID=<id группы>
+AGENT_ID=<backend | frontend | analytics>
+```
+Проверка: `uv run --no-project python tools/notify.py START TEST "проверка связи"` — сообщение появилось в группе.

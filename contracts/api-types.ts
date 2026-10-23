@@ -45,7 +45,8 @@ export type CheckStatus = "PENDING" | "OK" | "FAILED";
 export type ErrorCode =
   | "VALIDATION_ERROR" | "UNAUTHORIZED" | "FORBIDDEN" | "NOT_FOUND" | "INVALID_TRANSITION"
   | "CONFLICT_VERSION" | "OFFER_EXPIRED" | "SIGN_NOT_ALLOWED" | "OTP_INVALID" | "OBJECTION_NOT_ALLOWED"
-  | "SERVICE_UNAVAILABLE" | "INTERNAL_ERROR";
+  | "SERVICE_UNAVAILABLE" | "INTERNAL_ERROR"
+  | "NOT_IMPLEMENTED"; // 501 — только заглушки на время разработки; к 26.10 ни один путь из api.md не отвечает 501
 export interface ApiError {
   error: { code: ErrorCode; message: string; details: Record<string, unknown> };
 }
