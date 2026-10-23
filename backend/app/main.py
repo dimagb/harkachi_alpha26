@@ -5,6 +5,7 @@ from pydantic import BaseModel, ConfigDict
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
+from app.api.routes import auth_router, router
 from app.config import get_settings
 from app.db import engine
 from app.errors import ApiError, register_error_handlers
@@ -25,9 +26,12 @@ app = FastAPI(
     openapi_url="/api/v1/openapi.json",
     redoc_url=None,
     swagger_ui_oauth2_redirect_url="/api/v1/docs/oauth2-redirect",
+    separate_input_output_schemas=False,
 )
 register_error_handlers(app)
 app.add_middleware(CorrelationMiddleware)
+app.include_router(auth_router)
+app.include_router(router)
 
 
 @app.get("/api/v1/health", response_model=HealthResponse)

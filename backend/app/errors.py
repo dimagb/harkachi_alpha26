@@ -22,6 +22,7 @@ class ErrorCode(StrEnum):
     OBJECTION_NOT_ALLOWED = "OBJECTION_NOT_ALLOWED"
     SERVICE_UNAVAILABLE = "SERVICE_UNAVAILABLE"
     INTERNAL_ERROR = "INTERNAL_ERROR"
+    NOT_IMPLEMENTED = "NOT_IMPLEMENTED"
 
 
 class ErrorBody(BaseModel):
@@ -36,6 +37,43 @@ class ApiError(BaseModel):
     error: ErrorBody
 
 
+class ApiErrorException(Exception):
+    def __init__(
+        self,
+        status: int,
+        code: ErrorCode,
+        message: str,
+        details: dict[str, object] | None = None,
+    ) -> None:
+        super().__init__(message)
+        self.status = status
+        self.code = code
+        self.message = message
+        self.details = details
+
+
+def validation_message(item: dict) -> str:
+    context = item.get("ctx", {})
+    messages = {
+        "missing": "Заполните обязательное поле",
+        "string_too_short": f"Введите не менее {context.get('min_length')} символов",
+        "string_too_long": f"Введите не более {context.get('max_length')} символов",
+        "greater_than": f"Укажите значение больше {context.get('gt')}",
+        "greater_than_equal": f"Укажите значение не меньше {context.get('ge')}",
+        "less_than_equal": f"Укажите значение не больше {context.get('le')}",
+        "literal_error": "Выберите допустимое значение",
+        "extra_forbidden": "Неизвестное поле",
+        "uuid_parsing": "Укажите корректный идентификатор",
+        "int_parsing": "Укажите целое число",
+        "int_from_float": "Укажите целое число",
+        "too_short": f"Укажите не менее {context.get('min_length')} элементов",
+        "too_long": f"Укажите не более {context.get('max_length')} элементов",
+    }
+    if item["type"] == "value_error":
+        return str(context.get("error", "Проверьте значение поля"))
+    return messages.get(item["type"], "Проверьте значение поля")
+
+
 def error_response(
     status: int,
     code: ErrorCode,
@@ -43,6 +81,8 @@ def error_response(
     details: dict[str, Any] | None = None,
     headers: dict[str, str] | None = None,
 ) -> JSONResponse:
+    if code == ErrorCode.INTERNAL_ERROR:
+        message = "Внутренняя ошибка сервера"
     return JSONResponse(
         status_code=status,
         content=ApiError(
@@ -53,6 +93,10 @@ def error_response(
 
 
 def register_error_handlers(app: FastAPI) -> None:
+    @app.exception_handler(ApiErrorException)
+    async def api_error(request: Request, exc: ApiErrorException) -> JSONResponse:
+        return error_response(exc.status, exc.code, exc.message, exc.details)
+
     @app.exception_handler(HTTPException)
     async def http_error(request: Request, exc: HTTPException) -> JSONResponse:
         codes = {
@@ -68,11 +112,16 @@ def register_error_handlers(app: FastAPI) -> None:
             exc.status_code,
             ErrorCode.INTERNAL_ERROR if exc.status_code >= 500 else ErrorCode.NOT_FOUND,
         )
-        message = (
-            "Internal server error"
-            if exc.status_code >= 500 and exc.status_code != 503
-            else str(exc.detail)
-        )
+        messages = {
+            401: "Войдите в кабинет",
+            403: "Недостаточно прав",
+            404: "Запрошенные данные не найдены",
+            405: "Действие не найдено",
+            409: "Действие недоступно в текущем состоянии",
+            422: "Проверьте заполнение полей",
+            503: "Сервис временно недоступен",
+        }
+        message = messages.get(exc.status_code, "Внутренняя ошибка сервера")
         return error_response(exc.status_code, code, message, headers=exc.headers)
 
     @app.exception_handler(RequestValidationError)
@@ -80,14 +129,20 @@ def register_error_handlers(app: FastAPI) -> None:
         request: Request, exc: RequestValidationError
     ) -> JSONResponse:
         fields = {
-            ".".join(str(part) for part in item["loc"][1:]) or "request": item["msg"]
+            ".".join(str(part) for part in item["loc"][1:])
+            or "request": validation_message(item)
             for item in exc.errors()
         }
         return error_response(
-            422, ErrorCode.VALIDATION_ERROR, "Validation failed", {"fields": fields}
+            422,
+            ErrorCode.VALIDATION_ERROR,
+            "Проверьте заполнение полей",
+            {"fields": fields},
         )
 
     @app.exception_handler(Exception)
     async def internal_error(request: Request, exc: Exception) -> JSONResponse:
         logging.getLogger("app.errors").error("Unhandled request exception")
-        return error_response(500, ErrorCode.INTERNAL_ERROR, "Internal server error")
+        return error_response(
+            500, ErrorCode.INTERNAL_ERROR, "Внутренняя ошибка сервера"
+        )

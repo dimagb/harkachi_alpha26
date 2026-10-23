@@ -4,6 +4,280 @@
  */
 
 export interface paths {
+    "/api/v1/applications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Получить заявки компании */
+        get: operations["applications_api_v1_applications_get"];
+        put?: never;
+        /** Создать заявку */
+        post: operations["create_application_api_v1_applications_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/applications/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Получить заявку */
+        get: operations["application_api_v1_applications__id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Изменить черновик заявки */
+        patch: operations["patch_application_api_v1_applications__id__patch"];
+        trace?: never;
+    };
+    "/api/v1/applications/{id}/info-response": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Ответить на запрос сведений */
+        post: operations["info_response_api_v1_applications__id__info_response_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/applications/{id}/objection": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Подать возражение */
+        post: operations["objection_api_v1_applications__id__objection_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/applications/{id}/offer/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Принять предложение */
+        post: operations["accept_offer_api_v1_applications__id__offer_accept_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/applications/{id}/offer/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Отклонить предложение */
+        post: operations["reject_offer_api_v1_applications__id__offer_reject_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/applications/{id}/otp": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Запросить код подтверждения */
+        post: operations["otp_api_v1_applications__id__otp_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/applications/{id}/request-signature": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Запросить подпись */
+        post: operations["request_signature_api_v1_applications__id__request_signature_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/applications/{id}/sign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Подписать документы */
+        post: operations["sign_api_v1_applications__id__sign_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/applications/{id}/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Подать заявку */
+        post: operations["submit_api_v1_applications__id__submit_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/applications/{id}/withdraw": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Отозвать заявку */
+        post: operations["withdraw_api_v1_applications__id__withdraw_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Войти в кабинет */
+        post: operations["login_api_v1_auth_login_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/bank/applications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Получить список заявок банка */
+        get: operations["bank_applications_api_v1_bank_applications_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/calculator": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Рассчитать условия кредита */
+        post: operations["calculator_api_v1_calculator_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/companies/{id}/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Получить профиль компании */
+        get: operations["company_profile_api_v1_companies__id__profile_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/demo/time-shift": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Сдвинуть сроки заявки для демонстрации */
+        post: operations["time_shift_api_v1_demo_time_shift_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/health": {
         parameters: {
             query?: never;
@@ -13,6 +287,40 @@ export interface paths {
         };
         /** Health */
         get: operations["health_api_v1_health_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Получить данные пользователя */
+        get: operations["me_api_v1_me_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Получить кредитные продукты */
+        get: operations["products_api_v1_products_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -38,13 +346,419 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/underwriting/applications/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Получить данные заявки для банка */
+        get: operations["underwriting_application_api_v1_underwriting_applications__id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/underwriting/queue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Получить очередь заявок */
+        get: operations["underwriting_queue_api_v1_underwriting_queue_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/underwriting/{id}/decision": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Принять решение по заявке */
+        post: operations["underwriting_decision_api_v1_underwriting__id__decision_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AcceptOfferRequest */
+        AcceptOfferRequest: {
+            /** Offer Version */
+            offer_version: number;
+        };
         /** ApiError */
         ApiError: {
             error: components["schemas"]["ErrorBody"];
+        };
+        /** ApplicationBank */
+        ApplicationBank: {
+            /** Allowed Actions */
+            allowed_actions: ("EDIT_DRAFT" | "SUBMIT" | "REQUEST_SIGNATURE" | "ANSWER_INFO_REQUEST" | "ACCEPT_OFFER" | "REJECT_OFFER" | "SIGN" | "WITHDRAW" | "OBJECT" | "NEW_APPLICATION")[];
+            /** Amount */
+            amount: number;
+            /** Awaiting Signature */
+            awaiting_signature: boolean;
+            client_reason: components["schemas"]["ClientReason"] | null;
+            company: components["schemas"]["CompanyProfile"];
+            /** Company Id */
+            company_id: string;
+            /** Created At */
+            created_at: string;
+            /** Decisions */
+            decisions: components["schemas"]["DecisionBank"][];
+            /** Declared Revenue Year */
+            declared_revenue_year: number;
+            /** Events */
+            events: components["schemas"]["EventBank"][];
+            /** External Checks */
+            external_checks: components["schemas"]["ExternalCheckBank"][];
+            /** Id */
+            id: string;
+            info_request: components["schemas"]["InfoRequestClient"] | null;
+            /** Number */
+            number: number;
+            objection: components["schemas"]["ObjectionClient"] | null;
+            offer: components["schemas"]["OfferClient"] | null;
+            /** Parties */
+            parties: components["schemas"]["PartyClient"][];
+            /**
+             * Product Code
+             * @enum {string}
+             */
+            product_code: "EXPRESS" | "WORKING_CAPITAL" | "OVERDRAFT";
+            /**
+             * Purpose
+             * @enum {string}
+             */
+            purpose: "WORKING_CAPITAL" | "CASH_GAP" | "EQUIPMENT" | "OTHER";
+            /** Purpose Text */
+            purpose_text: string | null;
+            risk_flags: components["schemas"]["RiskFlags"];
+            stage: components["schemas"]["Stage"];
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "DRAFT" | "SUBMITTED" | "VALIDATION" | "INFO_REQUESTED" | "ENRICHMENT" | "ASSESSMENT" | "MANUAL_REVIEW" | "OFFER_ISSUED" | "DECLINED" | "SIGNING" | "SIGNED" | "DISBURSED" | "WITHDRAWN" | "EXPIRED";
+            /** Term Months */
+            term_months: number;
+            /** Timeline */
+            timeline: components["schemas"]["TimelineItem"][];
+            /** Turnover 12M */
+            turnover_12m: components["schemas"]["TurnoverMonth"][];
+            /** Updated At */
+            updated_at: string;
+            /** Version */
+            version: number;
+        };
+        /** ApplicationClient */
+        ApplicationClient: {
+            /** Allowed Actions */
+            allowed_actions: ("EDIT_DRAFT" | "SUBMIT" | "REQUEST_SIGNATURE" | "ANSWER_INFO_REQUEST" | "ACCEPT_OFFER" | "REJECT_OFFER" | "SIGN" | "WITHDRAW" | "OBJECT" | "NEW_APPLICATION")[];
+            /** Amount */
+            amount: number;
+            /** Awaiting Signature */
+            awaiting_signature: boolean;
+            client_reason: components["schemas"]["ClientReason"] | null;
+            /** Company Id */
+            company_id: string;
+            /** Created At */
+            created_at: string;
+            /** Declared Revenue Year */
+            declared_revenue_year: number;
+            /** Id */
+            id: string;
+            info_request: components["schemas"]["InfoRequestClient"] | null;
+            /** Number */
+            number: number;
+            objection: components["schemas"]["ObjectionClient"] | null;
+            offer: components["schemas"]["OfferClient"] | null;
+            /** Parties */
+            parties: components["schemas"]["PartyClient"][];
+            /**
+             * Product Code
+             * @enum {string}
+             */
+            product_code: "EXPRESS" | "WORKING_CAPITAL" | "OVERDRAFT";
+            /**
+             * Purpose
+             * @enum {string}
+             */
+            purpose: "WORKING_CAPITAL" | "CASH_GAP" | "EQUIPMENT" | "OTHER";
+            /** Purpose Text */
+            purpose_text: string | null;
+            stage: components["schemas"]["Stage"];
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "DRAFT" | "SUBMITTED" | "VALIDATION" | "INFO_REQUESTED" | "ENRICHMENT" | "ASSESSMENT" | "MANUAL_REVIEW" | "OFFER_ISSUED" | "DECLINED" | "SIGNING" | "SIGNED" | "DISBURSED" | "WITHDRAWN" | "EXPIRED";
+            /** Term Months */
+            term_months: number;
+            /** Timeline */
+            timeline: components["schemas"]["TimelineItem"][];
+            /** Updated At */
+            updated_at: string;
+            /** Version */
+            version: number;
+        };
+        /** ApplicationCreate */
+        ApplicationCreate: {
+            /** Amount */
+            amount: number;
+            /** Company Id */
+            company_id: string;
+            /** Declared Revenue Year */
+            declared_revenue_year: number;
+            /**
+             * Product Code
+             * @enum {string}
+             */
+            product_code: "EXPRESS" | "WORKING_CAPITAL" | "OVERDRAFT";
+            /**
+             * Purpose
+             * @enum {string}
+             */
+            purpose: "WORKING_CAPITAL" | "CASH_GAP" | "EQUIPMENT" | "OTHER";
+            /** Purpose Text */
+            purpose_text?: string | null;
+            /** Term Months */
+            term_months: number;
+        };
+        /** ApplicationListItem */
+        ApplicationListItem: {
+            /** Amount */
+            amount: number;
+            /** Awaiting Signature */
+            awaiting_signature: boolean;
+            /** Id */
+            id: string;
+            /** Number */
+            number: number;
+            /**
+             * Product Code
+             * @enum {string}
+             */
+            product_code: "EXPRESS" | "WORKING_CAPITAL" | "OVERDRAFT";
+            stage: components["schemas"]["Stage"];
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "DRAFT" | "SUBMITTED" | "VALIDATION" | "INFO_REQUESTED" | "ENRICHMENT" | "ASSESSMENT" | "MANUAL_REVIEW" | "OFFER_ISSUED" | "DECLINED" | "SIGNING" | "SIGNED" | "DISBURSED" | "WITHDRAWN" | "EXPIRED";
+            /** Updated At */
+            updated_at: string;
+        };
+        /** ApplicationPatch */
+        ApplicationPatch: {
+            /** Amount */
+            amount?: number | null;
+            /** Declared Revenue Year */
+            declared_revenue_year?: number | null;
+            /** Product Code */
+            product_code?: ("EXPRESS" | "WORKING_CAPITAL" | "OVERDRAFT") | null;
+            /** Purpose */
+            purpose?: ("WORKING_CAPITAL" | "CASH_GAP" | "EQUIPMENT" | "OTHER") | null;
+            /** Purpose Text */
+            purpose_text?: string | null;
+            /** Term Months */
+            term_months?: number | null;
+        };
+        /** BankListItem */
+        BankListItem: {
+            /** Amount */
+            amount: number;
+            /**
+             * Company Kind
+             * @enum {string}
+             */
+            company_kind: "IP" | "OOO";
+            /** Company Name */
+            company_name: string;
+            /** Grade */
+            grade: ("A" | "B" | "C" | "D") | null;
+            /** Id */
+            id: string;
+            /** Number */
+            number: number;
+            /**
+             * Product Code
+             * @enum {string}
+             */
+            product_code: "EXPRESS" | "WORKING_CAPITAL" | "OVERDRAFT";
+            /**
+             * Route Reason
+             * @enum {string}
+             */
+            route_reason: "GRADE_C" | "AMOUNT_ABOVE_AUTO" | "NO_AUTO_CONSENT" | "SOURCE_UNAVAILABLE" | "OBJECTION" | "INFO_RESPONSE";
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "DRAFT" | "SUBMITTED" | "VALIDATION" | "INFO_REQUESTED" | "ENRICHMENT" | "ASSESSMENT" | "MANUAL_REVIEW" | "OFFER_ISSUED" | "DECLINED" | "SIGNING" | "SIGNED" | "DISBURSED" | "WITHDRAWN" | "EXPIRED";
+            /** Updated At */
+            updated_at: string;
+            /** Waiting Since */
+            waiting_since: string;
+        };
+        /** CalculatorRequest */
+        CalculatorRequest: {
+            /** Amount */
+            amount: number;
+            /**
+             * Product Code
+             * @enum {string}
+             */
+            product_code: "EXPRESS" | "WORKING_CAPITAL" | "OVERDRAFT";
+            /** Term Months */
+            term_months: number;
+        };
+        /** CalculatorResponse */
+        CalculatorResponse: {
+            /** Monthly Payment */
+            monthly_payment: number | null;
+            /** Rate Estimate */
+            rate_estimate: number;
+        };
+        /** ClientReason */
+        ClientReason: {
+            /** Action */
+            action: string | null;
+            /** Category */
+            category: ("Данные о компании" | "Финансовое положение" | "Срок ведения бизнеса" | "Кредитная история" | "Налоги и обязательства" | "Условия продукта" | "Дополнительные проверки" | "Финансовые показатели" | "Долговая нагрузка") | null;
+            /** Code */
+            code: string;
+            /** Retry After */
+            retry_after: string | null;
+            /** Text */
+            text: string;
+        };
+        /** CompanyBrief */
+        CompanyBrief: {
+            /** Id */
+            id: string;
+            /** Inn */
+            inn: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "IP" | "OOO";
+            /** Name */
+            name: string;
+        };
+        /** CompanyProfile */
+        CompanyProfile: {
+            /** Address */
+            address: string;
+            /** Avg Monthly Turnover */
+            avg_monthly_turnover: number;
+            /** Director Full Name */
+            director_full_name: string;
+            /** Founders */
+            founders: components["schemas"]["Founder"][];
+            /** Id */
+            id: string;
+            /** Inn */
+            inn: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "IP" | "OOO";
+            /** Name */
+            name: string;
+            /** Ogrn */
+            ogrn: string;
+            /** Okved Main */
+            okved_main: string;
+            /** Reg Date */
+            reg_date: string;
+            /** Source Note */
+            source_note: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ACTIVE" | "LIQUIDATING" | "LIQUIDATED";
+        };
+        /** Consents */
+        Consents: {
+            /** Auto Decision */
+            auto_decision: boolean;
+            /**
+             * Bki
+             * @constant
+             */
+            bki: true;
+            /**
+             * Pdn
+             * @constant
+             */
+            pdn: true;
+        };
+        /** DecisionBank */
+        DecisionBank: {
+            /** Client Reason Code */
+            client_reason_code: string | null;
+            /** Comment */
+            comment: string | null;
+            /** Config Version */
+            config_version: string;
+            /** Created At */
+            created_at: string;
+            /** Factors */
+            factors: components["schemas"]["FactorLine"][];
+            /** Grade */
+            grade: ("A" | "B" | "C" | "D") | null;
+            /** Id */
+            id: string;
+            /** Internal Reasons */
+            internal_reasons: string[];
+            /** Key Rate */
+            key_rate: number;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "AUTO" | "MANUAL";
+            /** Made By */
+            made_by: string | null;
+            /**
+             * Outcome
+             * @enum {string}
+             */
+            outcome: "APPROVE" | "COUNTER" | "DECLINE" | "MANUAL" | "REQUEST_INFO" | "RETRY_ENRICHMENT";
+            policy: components["schemas"]["PolicyCalc"] | null;
+            recommendation: components["schemas"]["Recommendation"] | null;
+            /** Route Reason */
+            route_reason: ("GRADE_C" | "AMOUNT_ABOVE_AUTO" | "NO_AUTO_CONSENT" | "SOURCE_UNAVAILABLE" | "OBJECTION" | "INFO_RESPONSE") | null;
+            /** Rules Fired */
+            rules_fired: components["schemas"]["RuleFired"][];
+            /** Score */
+            score: number | null;
+            /** What If */
+            what_if: string[];
         };
         /** ErrorBody */
         ErrorBody: {
@@ -60,7 +774,67 @@ export interface components {
          * ErrorCode
          * @enum {string}
          */
-        ErrorCode: "VALIDATION_ERROR" | "UNAUTHORIZED" | "FORBIDDEN" | "NOT_FOUND" | "INVALID_TRANSITION" | "CONFLICT_VERSION" | "OFFER_EXPIRED" | "SIGN_NOT_ALLOWED" | "OTP_INVALID" | "OBJECTION_NOT_ALLOWED" | "SERVICE_UNAVAILABLE" | "INTERNAL_ERROR";
+        ErrorCode: "VALIDATION_ERROR" | "UNAUTHORIZED" | "FORBIDDEN" | "NOT_FOUND" | "INVALID_TRANSITION" | "CONFLICT_VERSION" | "OFFER_EXPIRED" | "SIGN_NOT_ALLOWED" | "OTP_INVALID" | "OBJECTION_NOT_ALLOWED" | "SERVICE_UNAVAILABLE" | "INTERNAL_ERROR" | "NOT_IMPLEMENTED";
+        /** EventBank */
+        EventBank: {
+            /** Actor */
+            actor: string;
+            /** At */
+            at: string;
+            /** Event Type */
+            event_type: string;
+            /** From State */
+            from_state: ("DRAFT" | "SUBMITTED" | "VALIDATION" | "INFO_REQUESTED" | "ENRICHMENT" | "ASSESSMENT" | "MANUAL_REVIEW" | "OFFER_ISSUED" | "DECLINED" | "SIGNING" | "SIGNED" | "DISBURSED" | "WITHDRAWN" | "EXPIRED") | null;
+            /** Note */
+            note: string | null;
+            /** Reason Code */
+            reason_code: string | null;
+            /** To State */
+            to_state: ("DRAFT" | "SUBMITTED" | "VALIDATION" | "INFO_REQUESTED" | "ENRICHMENT" | "ASSESSMENT" | "MANUAL_REVIEW" | "OFFER_ISSUED" | "DECLINED" | "SIGNING" | "SIGNED" | "DISBURSED" | "WITHDRAWN" | "EXPIRED") | null;
+        };
+        /** ExternalCheckBank */
+        ExternalCheckBank: {
+            /** Attempts */
+            attempts: number;
+            /** Fetched At */
+            fetched_at: string | null;
+            /** Response */
+            response: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "BKI" | "EGRUL" | "FNS";
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "PENDING" | "OK" | "FAILED";
+        };
+        /** FactorLine */
+        FactorLine: {
+            /** Code */
+            code: string;
+            /** Max Points */
+            max_points: number;
+            /** Points */
+            points: number;
+            /** Rule */
+            rule: string;
+            /** Title */
+            title: string;
+            /** Value */
+            value: string;
+        };
+        /** Founder */
+        Founder: {
+            /** Full Name */
+            full_name: string;
+            /** Share Pct */
+            share_pct: number;
+        };
         /** HealthResponse */
         HealthResponse: {
             /**
@@ -69,6 +843,414 @@ export interface components {
              * @constant
              */
             status: "ok";
+        };
+        /** InfoAnswer */
+        InfoAnswer: {
+            /** Comment */
+            comment: string;
+            /**
+             * Item Code
+             * @enum {string}
+             */
+            item_code: "REVENUE_CONFIRM" | "PURPOSE_DETAILS" | "UNDERWRITER_QUESTION";
+            /** Value */
+            value?: number | null;
+        };
+        /** InfoRequestClient */
+        InfoRequestClient: {
+            /** Due At */
+            due_at: string;
+            /** Id */
+            id: string;
+            /** Items */
+            items: components["schemas"]["InfoRequestItem"][];
+        };
+        /** InfoRequestItem */
+        InfoRequestItem: {
+            /**
+             * Item Code
+             * @enum {string}
+             */
+            item_code: "REVENUE_CONFIRM" | "PURPOSE_DETAILS" | "UNDERWRITER_QUESTION";
+            /** Question */
+            question: string;
+            /** Requires Value */
+            requires_value: boolean;
+        };
+        /** InfoResponseRequest */
+        InfoResponseRequest: {
+            /** Answers */
+            answers: components["schemas"]["InfoAnswer"][];
+        };
+        /** LoginRequest */
+        LoginRequest: {
+            /** Login */
+            login: string;
+            /** Password */
+            password: string;
+        };
+        /** LoginResponse */
+        LoginResponse: {
+            /** Access Token */
+            access_token: string;
+            /** Expires In */
+            expires_in: number;
+            /**
+             * Token Type
+             * @constant
+             */
+            token_type: "bearer";
+            user: components["schemas"]["UserBrief"];
+        };
+        /** MeResponse */
+        MeResponse: {
+            /** Companies */
+            companies: components["schemas"]["Membership"][];
+            user: components["schemas"]["UserBrief"];
+        };
+        /** Membership */
+        Membership: {
+            /** Can Sign */
+            can_sign: boolean;
+            company: components["schemas"]["CompanyBrief"];
+            /** Is Founder */
+            is_founder: boolean;
+            /** Position */
+            position: string;
+        };
+        /** ObjectionClient */
+        ObjectionClient: {
+            /** Created At */
+            created_at: string;
+            /** Outcome Text */
+            outcome_text: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "PENDING" | "RESOLVED";
+        };
+        /** ObjectionRequest */
+        ObjectionRequest: {
+            /** Text */
+            text: string;
+        };
+        /** OfferClient */
+        OfferClient: {
+            /** Amount */
+            amount: number;
+            /** Counter Reason */
+            counter_reason: string | null;
+            /** Expires At */
+            expires_at: string;
+            /** Explanation */
+            explanation: string[];
+            /** Id */
+            id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "APPROVED" | "COUNTER";
+            /** Monthly Payment */
+            monthly_payment: number | null;
+            /**
+             * Product Code
+             * @enum {string}
+             */
+            product_code: "EXPRESS" | "WORKING_CAPITAL" | "OVERDRAFT";
+            /** Rate */
+            rate: number;
+            requested: components["schemas"]["RequestedTerms"] | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ACTIVE" | "ACCEPTED" | "REJECTED" | "EXPIRED" | "SUPERSEDED";
+            /** Term Months */
+            term_months: number;
+            /** Version */
+            version: number;
+        };
+        /** OtpRequest */
+        OtpRequest: {
+            /** Party Id */
+            party_id?: string | null;
+            /**
+             * Purpose
+             * @enum {string}
+             */
+            purpose: "CONSENTS" | "OFFER" | "GUARANTEE";
+        };
+        /** OtpResponse */
+        OtpResponse: {
+            /** Demo Code */
+            demo_code: string;
+            /** Expires At */
+            expires_at: string;
+            /** Otp Id */
+            otp_id: string;
+        };
+        /** Page[BankListItem] */
+        Page_BankListItem_: {
+            /** Items */
+            items: components["schemas"]["BankListItem"][];
+            /** Page */
+            page: number;
+            /** Size */
+            size: number;
+            /** Total */
+            total: number;
+        };
+        /** PartyClient */
+        PartyClient: {
+            /** Full Name */
+            full_name: string;
+            /** Id */
+            id: string;
+            /** Is Me */
+            is_me: boolean;
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "BORROWER_SIGNATORY" | "GUARANTOR";
+            /** Signed */
+            signed: boolean;
+        };
+        /** PolicyCalc */
+        PolicyCalc: {
+            /** Avg Turnover */
+            avg_turnover: number;
+            /** Cap By Turnover */
+            cap_by_turnover: number;
+            /** Existing Payments */
+            existing_payments: number;
+            /** Free Payment */
+            free_payment: number;
+            /** Max Amount */
+            max_amount: number;
+            /** Ptr Requested */
+            ptr_requested: number | null;
+            /** Rate */
+            rate: number;
+            /** Requested Payment */
+            requested_payment: number | null;
+            /** Steps */
+            steps: string[];
+        };
+        /** Product */
+        Product: {
+            /**
+             * Code
+             * @enum {string}
+             */
+            code: "EXPRESS" | "WORKING_CAPITAL" | "OVERDRAFT";
+            /** Description */
+            description: string;
+            /** Key Rate */
+            key_rate: number;
+            /** Key Rate Date */
+            key_rate_date: string;
+            /** Max Amount */
+            max_amount: number;
+            /** Max Term Months */
+            max_term_months: number;
+            /** Min Amount */
+            min_amount: number;
+            /** Min Term Months */
+            min_term_months: number;
+            /** Name */
+            name: string;
+            /** Purposes */
+            purposes: ("WORKING_CAPITAL" | "CASH_GAP" | "EQUIPMENT" | "OTHER")[];
+            /** Rate From */
+            rate_from: number;
+            /** Requires Guarantor Ooo */
+            requires_guarantor_ooo: boolean;
+        };
+        /** QueueItem */
+        QueueItem: {
+            /** Amount */
+            amount: number;
+            /**
+             * Company Kind
+             * @enum {string}
+             */
+            company_kind: "IP" | "OOO";
+            /** Company Name */
+            company_name: string;
+            /** Grade */
+            grade: ("A" | "B" | "C" | "D") | null;
+            /** Id */
+            id: string;
+            /** Number */
+            number: number;
+            /**
+             * Product Code
+             * @enum {string}
+             */
+            product_code: "EXPRESS" | "WORKING_CAPITAL" | "OVERDRAFT";
+            /**
+             * Route Reason
+             * @enum {string}
+             */
+            route_reason: "GRADE_C" | "AMOUNT_ABOVE_AUTO" | "NO_AUTO_CONSENT" | "SOURCE_UNAVAILABLE" | "OBJECTION" | "INFO_RESPONSE";
+            /** Waiting Since */
+            waiting_since: string;
+        };
+        /** Recommendation */
+        Recommendation: {
+            /** Amount */
+            amount: number | null;
+            /**
+             * Outcome
+             * @enum {string}
+             */
+            outcome: "APPROVE" | "COUNTER" | "DECLINE";
+            /** Rate */
+            rate: number | null;
+            /** Term Months */
+            term_months: number | null;
+        };
+        /** RequestedTerms */
+        RequestedTerms: {
+            /** Amount */
+            amount: number;
+            /** Term Months */
+            term_months: number;
+        };
+        /** RiskFlags */
+        RiskFlags: {
+            /** Aml Flag */
+            aml_flag: boolean;
+            /** Fraud Flag */
+            fraud_flag: boolean;
+        };
+        /** RuleFired */
+        RuleFired: {
+            /** Code */
+            code: string;
+            /**
+             * Effect
+             * @enum {string}
+             */
+            effect: "STOP" | "ROUTE" | "INFO" | "POLICY";
+            /** Threshold */
+            threshold: string;
+            /** Title */
+            title: string;
+            /** Value */
+            value: string;
+        };
+        /** SignRequest */
+        SignRequest: {
+            /** Code */
+            code: string;
+            /** Otp Id */
+            otp_id: string;
+            /** Party Id */
+            party_id: string;
+        };
+        /** Stage */
+        Stage: {
+            /**
+             * Code
+             * @enum {string}
+             */
+            code: "APPLICATION" | "CHECK" | "ASSESSMENT" | "DECISION" | "SIGNING" | "DISBURSEMENT";
+            /**
+             * Index
+             * @enum {integer}
+             */
+            index: 1 | 2 | 3 | 4 | 5 | 6;
+            /** Title */
+            title: string;
+            /** What Happens */
+            what_happens: string;
+            /** What To Do */
+            what_to_do: string | null;
+        };
+        /** SubmitRequest */
+        SubmitRequest: {
+            /** Code */
+            code: string;
+            consents: components["schemas"]["Consents"];
+            /** Otp Id */
+            otp_id: string;
+        };
+        /** TimeShiftRequest */
+        TimeShiftRequest: {
+            /** Application Id */
+            application_id: string;
+            /** Days */
+            days: number;
+        };
+        /** TimeShiftResponse */
+        TimeShiftResponse: {
+            /** Application Id */
+            application_id: string;
+            /** Expired Now */
+            expired_now: boolean;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "DRAFT" | "SUBMITTED" | "VALIDATION" | "INFO_REQUESTED" | "ENRICHMENT" | "ASSESSMENT" | "MANUAL_REVIEW" | "OFFER_ISSUED" | "DECLINED" | "SIGNING" | "SIGNED" | "DISBURSED" | "WITHDRAWN" | "EXPIRED";
+        };
+        /** TimelineItem */
+        TimelineItem: {
+            /** At */
+            at: string | null;
+            /**
+             * Stage Code
+             * @enum {string}
+             */
+            stage_code: "APPLICATION" | "CHECK" | "ASSESSMENT" | "DECISION" | "SIGNING" | "DISBURSEMENT";
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "done" | "current" | "action_required" | "pending" | "failed" | "cancelled";
+            /** Title */
+            title: string;
+        };
+        /** TurnoverMonth */
+        TurnoverMonth: {
+            /** Amount */
+            amount: number;
+            /** Month */
+            month: string;
+        };
+        /** UnderwriterDecisionRequest */
+        UnderwriterDecisionRequest: {
+            /** Amount */
+            amount?: number | null;
+            /** Client Reason Category */
+            client_reason_category?: ("Данные о компании" | "Финансовое положение" | "Срок ведения бизнеса" | "Кредитная история" | "Налоги и обязательства" | "Условия продукта" | "Дополнительные проверки" | "Финансовые показатели" | "Долговая нагрузка") | null;
+            /** Comment */
+            comment: string;
+            /** Info Questions */
+            info_questions?: string[] | null;
+            /**
+             * Outcome
+             * @enum {string}
+             */
+            outcome: "APPROVE" | "COUNTER" | "DECLINE" | "REQUEST_INFO" | "RETRY_ENRICHMENT";
+            /** Term Months */
+            term_months?: number | null;
+        };
+        /** UserBrief */
+        UserBrief: {
+            /** Full Name */
+            full_name: string;
+            /** Id */
+            id: string;
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "CLIENT" | "UNDERWRITER" | "GUARANTOR";
         };
     };
     responses: never;
@@ -79,6 +1261,1279 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    applications_api_v1_applications_get: {
+        parameters: {
+            query: {
+                company_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApplicationListItem"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    create_application_api_v1_applications_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApplicationCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApplicationClient"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    application_api_v1_applications__id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApplicationClient"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    patch_application_api_v1_applications__id__patch: {
+        parameters: {
+            query?: never;
+            header: {
+                "If-Match": number;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApplicationPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApplicationClient"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    info_response_api_v1_applications__id__info_response_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InfoResponseRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApplicationClient"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    objection_api_v1_applications__id__objection_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ObjectionRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApplicationClient"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    accept_offer_api_v1_applications__id__offer_accept_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AcceptOfferRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApplicationClient"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    reject_offer_api_v1_applications__id__offer_reject_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApplicationClient"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    otp_api_v1_applications__id__otp_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OtpRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OtpResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    request_signature_api_v1_applications__id__request_signature_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApplicationClient"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    sign_api_v1_applications__id__sign_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SignRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApplicationClient"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    submit_api_v1_applications__id__submit_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubmitRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApplicationClient"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    withdraw_api_v1_applications__id__withdraw_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApplicationClient"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    login_api_v1_auth_login_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoginResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    bank_applications_api_v1_bank_applications_get: {
+        parameters: {
+            query?: {
+                state?: ("DRAFT" | "SUBMITTED" | "VALIDATION" | "INFO_REQUESTED" | "ENRICHMENT" | "ASSESSMENT" | "MANUAL_REVIEW" | "OFFER_ISSUED" | "DECLINED" | "SIGNING" | "SIGNED" | "DISBURSED" | "WITHDRAWN" | "EXPIRED") | null;
+                page?: number;
+                size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_BankListItem_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    calculator_api_v1_calculator_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CalculatorRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CalculatorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    company_profile_api_v1_companies__id__profile_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompanyProfile"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    time_shift_api_v1_demo_time_shift_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TimeShiftRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TimeShiftResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
     health_api_v1_health_get: {
         parameters: {
             query?: never;
@@ -95,6 +2550,91 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HealthResponse"];
+                };
+            };
+        };
+    };
+    me_api_v1_me_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MeResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    products_api_v1_products_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Product"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
                 };
             };
         };
@@ -119,6 +2659,200 @@ export interface operations {
             };
             /** @description Service Unavailable */
             503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    underwriting_application_api_v1_underwriting_applications__id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApplicationBank"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    underwriting_queue_api_v1_underwriting_queue_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QueueItem"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    underwriting_decision_api_v1_underwriting__id__decision_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UnderwriterDecisionRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApplicationBank"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
                 headers: {
                     [name: string]: unknown;
                 };
