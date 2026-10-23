@@ -147,6 +147,7 @@
 - `backend/app/errors.py` — добавить `NOT_IMPLEMENTED` в `ErrorCode` и класс исключения, если его нет; перевести на русский `message` («Проверьте заполнение полей», «Внутренняя ошибка сервера» и т. п.) и тексты `details.fields` для частых типов ошибок Pydantic (`missing`, `string_too_short`, `string_too_long`, `greater_than`, `less_than_equal`, `literal_error`, `extra_forbidden`, `uuid_parsing`, `int_parsing`): их видит пользователь;
 - `backend/tests/fixtures_bodies.py` (новый);
 - `backend/tests/test_contract_paths.py`, `backend/tests/test_schemas_validation.py`;
+- `backend/tests/test_health.py` — **только** две правки (решение тимлида на блокер 23.10): в `test_docs_and_schema` равенство путей заменить на `{"/api/v1/health", "/api/v1/ready"} <= set(schema["paths"])` (полный список проверяет `test_contract_paths.py`); в ожидаемых `message` английские тексты заменить на новые русские **точным равенством**, весь остальной словарь ответа сравнивать как раньше. Удалять тесты и ослаблять другие проверки нельзя;
 - `contracts/openapi.json` (генерируется);
 - `frontend/src/api/schema.d.ts` (генерируется);
 - `frontend/contract-parity/parity.ts` (новый, **вне `src/`**);
