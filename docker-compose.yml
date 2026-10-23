@@ -1,0 +1,107 @@
+x-core: &core
+  image: credit-core:local
+  build:
+    context: .
+    dockerfile: backend/Dockerfile
+  environment: &core-env
+    DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://credit:credit@db:5432/credit}
+    JWT_SECRET: ${JWT_SECRET:-local-demo-secret-change-before-deployment}
+    JWT_TTL_HOURS: ${JWT_TTL_HOURS:-8}
+    DEMO_MODE: ${DEMO_MODE:-true}
+    DEMO_PASSWORD: ${DEMO_PASSWORD:-demo2026}
+    MOCKS_URL: ${MOCKS_URL:-http://mocks:8001/mock/v1}
+    LOG_LEVEL: ${LOG_LEVEL:-INFO}
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-credit}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-credit}
+      POSTGRES_DB: ${POSTGRES_DB:-credit}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
+  mocks:
+    build:
+      context: .
+      dockerfile: mocks/Dockerfile
+    healthcheck:
+      test: ["CMD", "/app/.venv/bin/python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/mock/v1/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 6
+    restart: unless-stopped
+
+  migrate:
+    <<: *core
+    command: ["/app/.venv/bin/alembic", "upgrade", "head"]
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/app/.venv/bin/python", "-c", "from app.db import engine; from sqlalchemy import text; c = engine.connect(); c.execute(text('SELECT 1')); c.close()"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+    restart: "no"
+
+  api:
+    <<: *core
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      mocks:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/app/.venv/bin/python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/ready', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 6
+    restart: unless-stopped
+
+  worker:
+    <<: *core
+    command: ["/app/.venv/bin/python", "-m", "app.worker"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      mocks:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/app/.venv/bin/python", "-c", "from pathlib import Path; import time; p = Path('/tmp/worker-heartbeat'); assert p.exists() and time.time() - p.stat().st_mtime < 15"]
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+    restart: unless-stopped
+    stop_grace_period: 10s
+
+  web:
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/"]
+      interval: 10s
+      timeout: 5s
+      start_period: 5s
+      retries: 6
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+

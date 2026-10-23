@@ -7,6 +7,10 @@ node_modules/
 __pycache__/
 .venv/
 dist/
+.pytest_cache/
+.ruff_cache/
+coverage/
+.notify.env
 *.gguf
 *.safetensors
 drafts/telegram-bus/bus.db*
