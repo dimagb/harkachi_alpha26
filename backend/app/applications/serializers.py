@@ -1,13 +1,29 @@
-"""Explicit client projection; no decision or risk data is accessed."""
+"""Explicit client projection with only public decision details."""
+
+from datetime import timedelta
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.auth.deps import member_company
-from app.models import Application, ApplicationEvent, Party, User
+from app.decision import DEFAULT_CONFIG, eligible_date
+from app.models import (
+    Application,
+    ApplicationEvent,
+    Company,
+    Decision,
+    InfoRequest,
+    Offer,
+    Party,
+    ReasonCatalog,
+    User,
+)
 from app.schemas.api import (
     ApplicationClient,
     ApplicationListItem,
+    ClientReason,
+    InfoRequestClient,
+    OfferClient,
     PartyClient,
     Stage,
     TimelineItem,
@@ -178,12 +194,115 @@ def _presentation(session: Session, application: Application, user: User):
     return stage, timeline, actions, parties
 
 
+def _offer_client(
+    session: Session, application: Application, decision: Decision | None
+) -> OfferClient | None:
+    offer = (
+        session.get(Offer, application.current_offer_id)
+        if application.current_offer_id is not None
+        else None
+    )
+    if offer is None:
+        return None
+    explanation = [
+        f"{factor['title']} — {factor['value']}"
+        for factor in (decision.factors if decision else [])
+        if factor["points"] == factor["max_points"]
+    ][:3]
+    requested = None
+    counter_reason = None
+    if offer.kind == "COUNTER":
+        requested = {
+            "amount": application.amount,
+            "term_months": application.term_months,
+        }
+        counter_reason = (
+            "Лимит овердрафта ограничен 40% среднемесячных поступлений на счёт"
+            if offer.product_code == "OVERDRAFT"
+            else "Платёж по запрошенным условиям был бы слишком большим для текущих "
+            "оборотов. Предлагаем условия, при которых платёж не превышает 30% "
+            "среднемесячных поступлений на счёт"
+        )
+    return OfferClient(
+        id=str(offer.id),
+        version=offer.version,
+        kind=offer.kind,
+        status=offer.status,
+        product_code=offer.product_code,
+        amount=offer.amount,
+        term_months=offer.term_months,
+        rate=offer.rate,
+        monthly_payment=offer.monthly_payment,
+        expires_at=offer.expires_at.isoformat(),
+        explanation=explanation,
+        requested=requested,
+        counter_reason=counter_reason,
+    )
+
+
+def _client_reason(
+    session: Session, application: Application, decision: Decision | None
+) -> ClientReason | None:
+    if application.state != "DECLINED" or decision is None:
+        return None
+    reason = session.scalar(
+        select(ReasonCatalog).where(
+            ReasonCatalog.code == decision.client_reason_code,
+            ReasonCatalog.client_visible.is_(True),
+        )
+    )
+    if reason is None:
+        return None
+    action = reason.client_action
+    retry_after = None
+    if reason.code == "SF_OVERDUE":
+        retry_after = decision.created_at.date() + timedelta(days=30)
+    elif reason.code == "SF_AGE":
+        company = session.get(Company, application.company_id)
+        retry_after = eligible_date(company.reg_date, DEFAULT_CONFIG)
+        if action is not None:
+            action = action.replace(
+                "{date}", (retry_after - timedelta(days=1)).strftime("%d.%m.%Y")
+            )
+    return ClientReason(
+        code=reason.code,
+        category=reason.client_category,
+        text=reason.client_text,
+        action=action,
+        retry_after=retry_after.isoformat() if retry_after else None,
+    )
+
+
+def _info_request_client(
+    session: Session, application: Application
+) -> InfoRequestClient | None:
+    request = session.scalar(
+        select(InfoRequest)
+        .where(
+            InfoRequest.application_id == application.id,
+            InfoRequest.responded_at.is_(None),
+        )
+        .order_by(InfoRequest.created_at.desc(), InfoRequest.id.desc())
+        .limit(1)
+    )
+    if request is None:
+        return None
+    return InfoRequestClient(
+        id=str(request.id), items=request.items, due_at=request.due_at.isoformat()
+    )
+
+
 def to_client(
     session: Session, application: Application, user: User
 ) -> ApplicationClient:
     stage, timeline, actions, parties = _presentation(session, application, user)
-    # TODO(lead): заполнить offer/client_reason/info_request/objection
-    # и OBJECT в B-07/B-09.
+    decision = session.scalar(
+        select(Decision)
+        .where(Decision.application_id == application.id)
+        .order_by(Decision.created_at.desc(), Decision.id.desc())
+        .limit(1)
+    )
+    # TODO(lead): заполнить objection и OBJECT в B-09.
     return ApplicationClient(
         id=str(application.id),
         number=application.number,
@@ -198,9 +317,9 @@ def to_client(
         purpose=application.purpose,
         purpose_text=application.purpose_text,
         declared_revenue_year=application.declared_revenue_year,
-        offer=None,
-        client_reason=None,
-        info_request=None,
+        offer=_offer_client(session, application, decision),
+        client_reason=_client_reason(session, application, decision),
+        info_request=_info_request_client(session, application),
         objection=None,
         parties=[
             PartyClient(
