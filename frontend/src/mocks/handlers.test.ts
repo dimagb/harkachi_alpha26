@@ -2,6 +2,7 @@ import { setupServer } from 'msw/node';
 import { afterAll, beforeEach, beforeAll, expect, it } from 'vitest';
 import type { components } from '../api/schema';
 import { createHandlers } from './handlers';
+import { applicationScenarios } from './fixtures';
 
 type Schema = components['schemas'];
 const server = setupServer();
@@ -29,6 +30,42 @@ it.each([['ip_good', 'Смирнова Анна Викторовна', 'ИП С�
   const body: Schema['MeResponse'] = await response.json();
   expect(body.user.full_name).toBe(name);
   expect(body.companies[0]?.company.name).toBe(company);
+});
+
+it.each(['VALIDATION', 'INFO_REQUESTED', 'MANUAL_REVIEW', 'OFFER_ISSUED', 'DECLINED', 'SIGNING', 'DISBURSED', 'WITHDRAWN'] as const)('MSW отдаёт клиентскую фикстуру %s без внутренних данных', async (state) => {
+  const token = await signIn('ip_good');
+  const fixture = applicationScenarios.find((item) => item.state === state)!;
+  const response = await request(`/applications/${fixture.id}`, token);
+  expect(response.status).toBe(200);
+  const body: Schema['ApplicationClient'] = await response.json();
+  expect(body.state).toBe(state);
+  expect(body.timeline).toHaveLength(6);
+  expect(body.stage.title).toBe(body.timeline[body.stage.index - 1]!.title);
+  expect(JSON.stringify(body)).not.toMatch(/risk_flag|internal_reasons|rules_fired|inputs_snapshot|SF_ADDITIONAL/);
+});
+
+async function withdraw(id: string, token?: string) {
+  return fetch(`http://localhost/api/v1/applications/${id}/withdraw`, { method: 'POST', headers: token ? { Authorization: `Bearer ${token}` } : {} });
+}
+it('MSW отзывает заявку и сохраняет ответ, повтор возвращает 409', async () => {
+  const token = await signIn('ip_good');
+  const response = await withdraw('30000000-0000-4000-8000-000000000001', token);
+  expect(response.status).toBe(200);
+  const body: Schema['ApplicationClient'] = await response.json();
+  expect(body).toMatchObject({ state: 'WITHDRAWN', version: 2, allowed_actions: ['NEW_APPLICATION'], stage: { what_happens: 'Заявка отозвана', what_to_do: 'Можно подать новую заявку' } });
+  expect(body.timeline[3]!.status).toBe('cancelled');
+  expect(await (await request(`/applications/${body.id}`, token)).json()).toEqual(body);
+  expect((await withdraw(body.id, token)).status).toBe(409);
+});
+it('MSW проверяет доступ и состояние при отзыве', async () => {
+  const ip = await signIn('ip_good');
+  const other = await signIn('ooo_load');
+  const accountant = await signIn('ooo_load_accountant');
+  expect((await withdraw('missing', ip)).status).toBe(404);
+  expect((await withdraw('30000000-0000-4000-8000-000000000001')).status).toBe(401);
+  expect((await withdraw('30000000-0000-4000-8000-000000000001', other)).status).toBe(404);
+  expect((await withdraw('30000000-0000-4000-8000-000000000002', accountant)).status).toBe(403);
+  expect((await withdraw(applicationScenarios.find((item) => item.state === 'DISBURSED')!.id, ip)).status).toBe(409);
 });
 
 it.each([['EXPRESS', 300000, 6, 24, 53558], ['OVERDRAFT', 100000, 12, 26, null]] as const)('MSW считает платёж %s по контракту', async (product_code, amount, term_months, rate, payment) => {

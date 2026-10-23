@@ -3,7 +3,7 @@ import { theme } from '../theme';
 
 const stageColors = {
   done: 'ok',
-  current: 'flow',
+  current: 'gray',
   action_required: 'wait',
   failed: 'stop',
   cancelled: 'gray',
@@ -12,6 +12,10 @@ const stageColors = {
 
 export function stageStatusColor(status: components['schemas']['TimelineItem']['status']) {
   return stageColors[status];
+}
+
+export function stageStatusIcon(status: components['schemas']['TimelineItem']['status']) {
+  return { done: '✓', current: 'number', action_required: '!', failed: '×', cancelled: '×', pending: 'number' }[status];
 }
 
 export function formatMoney(v: number): string {
