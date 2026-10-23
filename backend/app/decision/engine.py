@@ -5,19 +5,39 @@ from dataclasses import replace
 from datetime import date
 
 from .config import DecisionConfig
-from .models import DecisionInputs, DecisionResult, RuleFired
+from .models import AppParams, DecisionInputs, DecisionResult, RuleFired
 from .policy import apply_policy, max_at_term
 from .scoring import money, months_between, number, score
 
 
+def validation_rule(
+    app: AppParams,
+    turnover: tuple[int, ...],
+    answered_items: frozenset[str],
+    cfg: DecisionConfig,
+) -> str | None:
+    annual = 12 * st.mean(turnover)
+    mismatch = abs(app.declared_revenue_year - annual) / annual
+    if (
+        "REVENUE_CONFIRM" not in answered_items
+        and mismatch > cfg.revenue_mismatch_ratio
+    ):
+        return "VAL_REVENUE_MISMATCH"
+    if (
+        app.purpose == "OTHER"
+        and not app.purpose_text
+        and "PURPOSE_DETAILS" not in answered_items
+    ):
+        return "VAL_PURPOSE_UNCLEAR"
+    return None
+
+
 def _validation(inputs: DecisionInputs, cfg: DecisionConfig) -> RuleFired | None:
+    rule = validation_rule(inputs.app, inputs.turnover, inputs.answered_items, cfg)
     avg = st.mean(inputs.turnover)
     annual = 12 * avg
     mismatch = abs(inputs.app.declared_revenue_year - annual) / annual
-    if (
-        "REVENUE_CONFIRM" not in inputs.answered_items
-        and mismatch > cfg.revenue_mismatch_ratio
-    ):
+    if rule == "VAL_REVENUE_MISMATCH":
         return RuleFired(
             "VAL_REVENUE_MISMATCH",
             "Нужно подтвердить выручку",
@@ -26,11 +46,7 @@ def _validation(inputs: DecisionInputs, cfg: DecisionConfig) -> RuleFired | None
             f"> {number(cfg.revenue_mismatch_ratio * 100)}%",
             "INFO",
         )
-    if (
-        inputs.app.purpose == "OTHER"
-        and not inputs.app.purpose_text
-        and "PURPOSE_DETAILS" not in inputs.answered_items
-    ):
+    if rule == "VAL_PURPOSE_UNCLEAR":
         return RuleFired(
             "VAL_PURPOSE_UNCLEAR",
             "Нужно описать цель",
