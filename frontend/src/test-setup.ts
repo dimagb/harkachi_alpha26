@@ -1,5 +1,8 @@
 import { vi } from 'vitest';
 
+// jsdom does not implement scrolling used by Mantine Select.
+HTMLElement.prototype.scrollIntoView = vi.fn();
+
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: vi.fn().mockImplementation((query: string) => ({
