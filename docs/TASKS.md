@@ -26,7 +26,7 @@
 | F-01 | Оболочка фронтенда: вход, маршруты, роли, клиент API, MSW | Лана | 24.10 8:00 | нет | B-01 | слит (PR #8) |
 | B-04 | Вход, `/me`, продукты, калькулятор, профиль | Аня | 23.10 вечер (часть 1), после B-01 — часть 2 | нет | B-03 ✔, B-01 (часть 2) | слит (PR #6) |
 | B-05 | Заявка: создание и правка, автомат состояний, журнал, лента | Аня | 24.10 15:00 | нет | B-04 | [готова] |
-| B-06 | OTP, согласия, подача, просьба подписать | Аня | 24.10 вечер | нет | B-05 | [черновик] |
+| B-06 | OTP, согласия, подача, просьба подписать | Аня | 24.10 вечер | нет | B-05 | [готова] |
 | B-07 | Worker: конвейер до решения, дозапрос | Аня | 24.10 вечер | нет | B-02, B-05, A-01 | [черновик] |
 | A-03 | Сквозные тесты персонажей через API | Катя | 23.10 вечер / 24.10 | **да** | B-01 ✔ | слит (PR #9); прогон на стенде — M1/M2 |
 | F-02 | Тема из токенов дизайна | Лана | 24.10 11:00 | нет | F-01, токены | [готова] |
@@ -631,6 +631,70 @@ uv run --no-project --python 3.12 --with pytest --with httpx --with jsonschema p
 
 **Не делать:** не менять значения токенов, не делать экраны (это F-03…F-08), не трогать `schema.d.ts`.
 
+### B-06 — Код подтверждения, согласия, подача, просьба подписать · Аня · Облако: нет · ≤4 ч
+**Зачем.** Подача заявки юридически осмысленна: согласия на ПДн и БКИ подписаны простой подписью кодом, с хэшем документа и журналом (F14, A5). Без права подписи нельзя ни подать, ни подписать (F14a). После подачи заявка встаёт в очередь worker'а (B-07).
+
+**Начинать после слияния B-05** (`git ls-tree -r origin/main --name-only | grep backend/app/applications/state_machine.py` — непусто).
+
+**Соглашение:** пользователь — через `client_user` / `authenticated_user` из `app/api/routes.py`; состояние меняет только `transition` из `app/applications/state_machine.py`; клиентский ответ строит только `to_client` из `app/applications/serializers.py`.
+
+**Файлы:**
+- `backend/app/signing/*.py` (новые: `otp.py`, `consents.py`, `submit.py`);
+- `backend/app/models/process.py` — **только** новая модель `Otp`;
+- `backend/alembic/versions/` — **одна новая** миграция (создана `autogenerate`, вычитана) только для таблицы `otp`;
+- `backend/app/api/routes.py` — **только** тела `POST /applications/{id}/otp`, `/submit`, `/request-signature` и `Depends(...)`;
+- `backend/tests/test_contract_paths.py` — **только** +3 пути в `IMPLEMENTED`, `len` = 12;
+- тесты: `backend/tests/test_otp.py`, `backend/tests/test_submit.py` (новые).
+
+**Читать:** `docs/state-machine.md` (строка `DRAFT → SUBMITTED`, раздел «Участники подписи»), `docs/data-model.md` (`party`, `consent`, `signature`, `job`, `otp`), `docs/assumptions.md` (A5), `contracts/api-types.ts` (`OtpRequest`, `OtpResponse`, `SubmitRequest`, коды ошибок), `contracts/codes.md` («Служебные перечисления», «Типы событий журнала», «Лента и действия по состояниям»), `backend/app/applications/`.
+
+**Сделать:**
+1. **Таблица `otp`:** `application_id`, `user_id`, `party_id` (nullable), `purpose` (`CONSENTS`/`OFFER`/`GUARANTEE`, CHECK), `code_hash`, `expires_at`, `attempts` (int, 0), `used_at` (nullable). Код хранится только хэшем (SHA-256 от `otp.id` + кода).
+2. **`POST /applications/{id}/otp`** (`client_user`; заявка своей компании, иначе 404):
+   - `CONSENTS` — только в `DRAFT` и только при `can_sign`;
+   - `OFFER` — в `OFFER_ISSUED` или `SIGNING`, нужен `party_id` своей `party` с ролью `BORROWER_SIGNATORY`;
+   - `GUARANTEE` — в `SIGNING`, нужен `party_id` своей `party` с ролью `GUARANTOR`.
+
+   Нарушение: нет права подписи или `party` не своя → 403 `SIGN_NOT_ALLOWED` «Подписать может только сотрудник с правом подписи»; не то состояние → 409 `INVALID_TRANSITION`; нет нужного `party_id` → 422 `details.fields.party_id`.
+
+   Код — 6 случайных цифр (`secrets`), срок 5 минут. Ответ: `otp_id`, `demo_code` (код при `DEMO_MODE=true`, иначе пустая строка), `expires_at`.
+3. **Проверка кода** — функция `verify_otp(session, otp_id, code, *, application, user, purpose, party_id=None)` для B-06 и B-09:
+   - чужой, не та цель, не та заявка, не тот `party_id`, уже использован, истёк → 422 `OTP_INVALID` «Код недействителен или истёк — запросите новый»;
+   - неверный код → `attempts += 1` и 422 `OTP_INVALID` «Неверный код»; на 5-й неверной попытке код сгорает (`used_at` = сейчас);
+   - верный → `used_at` = сейчас.
+
+   Сравнение — `hmac.compare_digest`.
+4. **`POST /applications/{id}/submit`** (`DRAFT → SUBMITTED`), всё в одной транзакции:
+   - нет `can_sign` → 403 `SIGN_NOT_ALLOWED`; не `DRAFT` → 409 `INVALID_TRANSITION`; затем `verify_otp(purpose=CONSENTS)`;
+   - `party`: `BORROWER_SIGNATORY` = текущий пользователь; для `OOO` — `GUARANTOR` = пользователь-учредитель компании с `share_pct > 50` (если такого нет — без поручителя, в PR отметить);
+   - `consent` для `BORROWER_SIGNATORY`: `PDN`, `BKI` (`granted = true`), для `IP` — ещё `AUTO_DECISION` (`granted` = значение из запроса; для `OOO` не создаётся). `signed_at` = сейчас; `expires_at`: `BKI` и `PDN` — +1 год, `AUTO_DECISION` — `NULL`. `doc_hash` = SHA-256 от канонического JSON (`sort_keys=True`, `ensure_ascii=False`) `{type, application_id, number, company_inn, user_id, granted, signed_at}`;
+   - на каждое согласие — `signature(object_type=CONSENT, object_id=consent.id, doc_hash, otp_verified_at)` и событие `CONSENT_SIGNED` (`reason_code = NULL`, `payload = {type, granted}`);
+   - `transition(... SUBMITTED, actor_type=CLIENT)`, `submitted_at` = сейчас, `awaiting_signature = false`;
+   - `job(step=VALIDATION, status=PENDING, attempts=0, run_after=сейчас)`;
+   - ответ — `to_client` (лента показывает этап 1, `SUBMITTED`).
+5. **`POST /applications/{id}/request-signature`:** у пользователя есть `can_sign` → 403 `SIGN_NOT_ALLOWED`; не `DRAFT` → 409; уже `awaiting_signature` → 200 без нового события; иначе `awaiting_signature = true` + событие `SIGNATURE_REQUESTED`. Версия заявки растёт.
+
+**Приёмка:**
+- `cd backend && uv run pytest -q -rA` с `TEST_DATABASE_URL` — зелёный, 0 skipped; миграция: `alembic downgrade -1 && alembic upgrade head` проходит.
+- `test_otp.py`:
+  - `demo_code` из 6 цифр при `DEMO_MODE=true`, пустой при `false`;
+  - в таблице нет кода в открытом виде;
+  - истёкший (тест сдвигает `expires_at`), повторный, чужой, другой цели, другой заявки → 422 `OTP_INVALID`;
+  - 5 неверных попыток → 6-я с верным кодом тоже 422;
+  - `CONSENTS` от `ooo_load_accountant` → 403; `OFFER` в `DRAFT` → 409.
+- `test_submit.py`:
+  - `ip_good`: после подачи `SUBMITTED`, 3 согласия (с `AUTO_DECISION`), 3 подписи, 3 события `CONSENT_SIGNED` + 1 `STATE_CHANGED`, 1 `party`, 1 `job(VALIDATION, PENDING)`; `doc_hash` пересчитывается тестом из записанных полей;
+  - `ooo_load`: 2 согласия, 2 `party` (`BORROWER_SIGNATORY` и `GUARANTOR`, у обоих `user_id` директора);
+  - неверный код → 422, и в БД ничего не создано (ни согласий, ни `party`, ни `job`, состояние `DRAFT`);
+  - повторная подача → 409;
+  - `ooo_load_accountant`: `submit` → 403; `request-signature` → 200, `awaiting_signature = true`, одно событие; повтор — 200 без второго события; затем директор видит `awaiting_signature = true` в списке и подаёт заявку → флаг сброшен;
+  - `ooo_load` (`can_sign`) → `request-signature` → 403.
+- `ruff check` и `ruff format --check` — чисто; `openapi.json` и `schema.d.ts` после пересборки — без диффа.
+- Вручную на стенде: вход `ip_good` → создание → `otp` → `submit` → вывод `GET /applications/{id}` в PR. Если worker уже работает, заявка двинется дальше — это нормально.
+- CI зелёный.
+
+**Не делать:** не реализовывать worker, оферту, подпись `/sign` (B-09), согласия поручителя (они на шаге `SIGNING`, B-09); не менять `contracts/`.
+
 ### F-01 — Оболочка фронтенда · Лана · Облако: нет (ставит новые npm-пакеты, нужен скриншот) · ≤3 ч
 **Зачем.** Каркас всех экранов: вход тестовыми учётками, маршруты по ролям, единая обработка ошибок, работа без бэкенда на моках (MSW) до готовности API.
 **Файлы:** `frontend/src/**` (кроме `src/api/schema.d.ts` и `src/theme.ts`), `frontend/package.json`, `frontend/package-lock.json`, `frontend/public/mockServiceWorker.js`. Импорт из `../contracts` или `../../contracts` внутри `src/` **запрещён** (в Docker-сборке их нет). Данные персонажей для MSW копируются в `src/mocks/fixtures.ts`. Каталог продуктов в MSW (ответ на вопрос 23.10): `name`, `description`, `purposes`, `requires_guarantor_ooo` — из «Витрины продуктов» `contracts/codes.md`; границы — `EXPRESS` 300 000–5 000 000 ₽, 6–36 мес., `rate_from` 22.0; `WORKING_CAPITAL` 500 000–15 000 000 ₽, 3–24 мес., 21.0; `OVERDRAFT` 100 000–5 000 000 ₽, 12–12 мес., 24.0; `key_rate` 14.0, `key_rate_date` "2026-10-23". Пароль демо-учёток в MSW — `demo2026` (как `DEMO_PASSWORD` бэкенда).
@@ -666,12 +730,6 @@ uv run --no-project --python 3.12 --with pytest --with httpx --with jsonschema p
 
 ## Карточки [черновик] (тимлид уточнит перед стартом)
 
-- **B-06.**
-  - OTP: 6 цифр, 5 минут, `demo_code` в ответе только при `DEMO_MODE`.
-  - Согласия с `doc_hash` SHA-256.
-  - `submit`: только `can_sign`, у ИП обязателен `auto_decision`.
-  - `request-signature`: только без `can_sign`, только в DRAFT.
-  - Постановка задачи `job` для worker.
 - **B-07.**
   - Worker с `SELECT … FOR UPDATE SKIP LOCKED`, идемпотентные шаги.
   - Шаги: VALIDATION (через `decide()`) → ENRICHMENT (адаптеры `RegistryProvider` — уже есть из B-04, `BureauProvider`, `TaxProvider` — по его образцу в `app/integrations/`: HTTP к мокам и фейк для тестов; 3 повтора с паузой, затем `MANUAL_REVIEW` / `SOURCE_UNAVAILABLE`) → ASSESSMENT (`decide()`, запись `decision` с `inputs_snapshot`) → `OFFER_ISSUED` / `DECLINED` / `MANUAL_REVIEW` / `INFO_REQUESTED`.

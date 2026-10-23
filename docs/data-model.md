@@ -29,6 +29,7 @@
 | `objection` | application_id, text, created_at, resolved_at, outcome | Возражение ИП (152-ФЗ ст. 16) |
 | `application_event` | application_id, from_state, to_state, event_type, actor_type, actor_id, reason_code, payload, created_at | Журнал только на добавление: лента статуса, аудит, `BKI_REPORT` |
 | `job` | application_id, step, status, attempts, run_after, last_error | Очередь worker-а |
+| `otp` | application_id, user_id, party_id (nullable), purpose (`CONSENTS`/`OFFER`/`GUARANTEE`), code_hash, expires_at, attempts, used_at | Одноразовый код подписи (A5), 5 минут, ≤5 попыток; код только хэшем |
 
 Договор отдельной таблицей не хранится: договор = принятая оферта (`offer.status = ACCEPTED`) + подписи (`signature` с `doc_hash`). Ответы источников хранятся в `external_check.response` (в `process.md` они названы `bureau_report`, `registry_record`, `tax_check` — это `external_check` с `source` = `BKI` / `EGRUL` / `FNS`). Все перечисления — `contracts/codes.md`.
 
