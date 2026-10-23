@@ -902,7 +902,8 @@ uv run --no-project --python 3.12 --with pytest --with httpx --with jsonschema p
 - `frontend/src/screens/MyApplications.tsx`, `frontend/src/screens/NewApplication.tsx` (новые);
 - `frontend/src/ui/labels.ts` (новый) — русские названия целей и состояний для бейджей;
 - `frontend/src/mocks/handlers.ts`, `frontend/src/mocks/fixtures.ts` — **только** новые обработчики `POST /calculator` и `GET /companies/:id/profile` и проверки тела `POST /applications` по контракту (422 с `details.fields`);
-- тесты: `frontend/src/screens/MyApplications.test.tsx`, `frontend/src/screens/NewApplication.test.tsx`, дополнения в `frontend/src/mocks/handlers.test.ts`.
+- тесты: `frontend/src/screens/MyApplications.test.tsx`, `frontend/src/screens/NewApplication.test.tsx`, дополнения в `frontend/src/mocks/handlers.test.ts`;
+- `frontend/src/App.test.tsx` — **только** тесты маршрутов `/app` и `/app/applications/new`: ожидать новые экраны вместо заглушек (разрешение тимлида 23.10 по QUESTION F-03); остальные тесты не трогать.
 
 **Читать:** `docs/screens.md` §1–3 (строки 2–4 таблицы); `contracts/api-types.ts` (`Product`, `CalculatorRequest`, `CalculatorResponse`, `CompanyProfile`, `ApplicationCreate`, `ApplicationListItem`, `Stage`, `MeResponse`, `ApiError`); `contracts/api.md` (строки `/products`, `/calculator`, `/companies/{id}/profile`, `POST /applications`, `GET /applications`); `contracts/codes.md` («Продукты, цели», «Витрина продуктов», «Этапы ленты»); `frontend/src/ui/status.ts` (`formatMoney`, цвета).
 
