@@ -28,7 +28,7 @@
 | B-05 | Заявка: создание и правка, автомат состояний, журнал, лента | Аня | 24.10 15:00 | нет | B-04 | [готова] |
 | B-06 | OTP, согласия, подача, просьба подписать | Аня | 24.10 вечер | нет | B-05 | [черновик] |
 | B-07 | Worker: конвейер до решения, дозапрос | Аня | 24.10 вечер | нет | B-02, B-05, A-01 | [черновик] |
-| A-03 | Golden-тесты через API | Катя | 24.10 15:00 | нет | B-01 | [черновик] |
+| A-03 | Сквозные тесты персонажей через API | Катя | 23.10 вечер / 24.10 | **да** | B-01 ✔ | [готова] |
 | F-02 | Тема из токенов дизайна | Лана | 24.10 11:00 | да | F-01, токены | [черновик] |
 | F-03 | Главная клиента, калькулятор, форма заявки | Лана | 24.10 | да | F-01 | [черновик] |
 | F-04 | Карточка заявки с лентой (ключевой экран 1) | Лана | 24.10 вечер | да | F-03, макет | [черновик] |
@@ -532,6 +532,65 @@
 
 **Не делать:** не реализовывать submit, OTP, согласия, worker, оферту, отзыв (`withdraw` — B-09), возражение; не менять `conftest.py`, модели, миграции, `contracts/`; не отдавать внутренние поля.
 
+### A-03 — Сквозные тесты персонажей через API · Катя · Облако: да · ≤3 ч
+**Зачем.** Главное доказательство для жюри и для нас: на запущенном стенде каждый из 6 персонажей через настоящий HTTP получает ровно тот исход, что записан в `personas.json` (T12, T13), а клиент никогда не видит внутренних причин. Этими тестами тимлид проверяет вехи M1 и M2.
+
+**Особенность.** Стенд с полным процессом появится только после B-06…B-09, а Docker у Кати нет. Поэтому тесты пишутся строго по контракту, а в приёмке два уровня:
+- **офлайн-проверка** (`test_harness.py`) — всё, что можно проверить без стенда: тела запросов сверяются со схемами `openapi.json`, ожидания — с `personas.json`, логика ожидания — на подставном транспорте. Она запускается в CI;
+- **прогон на стенде** (`test_personas.py`) — делает тимлид на вехах M1 и M2.
+
+**Файлы:** `tests/e2e/api/conftest.py`, `tests/e2e/api/client.py`, `tests/e2e/api/flows.py`, `tests/e2e/api/test_personas.py`, `tests/e2e/api/test_harness.py`, `tests/e2e/api/README.md` (все новые). Больше ничего: ни `backend/`, ни `contracts/`, ни CI (CI добавит тимлид при слиянии).
+
+**Читать:** `contracts/api.md`, `contracts/api-types.ts` (заявка клиента, действия клиента, андеррайтер), `contracts/openapi.json` (схемы запросов), `contracts/personas.json` (`staff`, `personas[].users`, `personas[].demo`), `contracts/codes.md` (разделы «Этапы ленты», «Пункты дозапроса», «Коды причин»), `docs/state-machine.md` (таблица переходов), `docs/test-scenarios.md` (S-01…S-10, S-17, S-18).
+
+**Запуск** (без отдельного проекта, всё через `uv`):
+```
+uv run --no-project --python 3.12 --with pytest --with httpx --with jsonschema python -X utf8 -m pytest -q tests/e2e/api
+```
+Переменные: `E2E_BASE_URL` (по умолчанию `http://localhost:8080/api/v1`), `E2E_PASSWORD` (по умолчанию `demo2026`), `E2E_TIMEOUT` (секунды ожидания одного шага конвейера, по умолчанию 60).
+
+**Сделать:**
+1. **`client.py`** — тонкая обёртка над `httpx.Client` (`base_url`, `transport` можно подставить для офлайн-тестов): `login(login) -> token`, методы по путям `api.md`. Любой ответ не 2xx → `AssertionError` с текстом `Шаг <имя шага>: HTTP <код> <error.code> — <error.message>`. Так при прогоне на неготовом стенде сразу видно, на каком эндпоинте и с какой ошибкой (например `501 NOT_IMPLEMENTED`) всё остановилось.
+2. **`flows.py`** — **чистые** функции, которые строят тела запросов из `personas.json` (их и проверяет офлайн-тест):
+   - `create_body(persona, company_id)` — из `demo.app`: `product` → `product_code`, `term` → `term_months`;
+   - `submit_body(persona, otp_id, code)` — `consents` из `demo.consents`;
+   - `info_response_body(persona)` — из `demo.info_response`;
+   - `approve_body(recommendation)` — решение андеррайтера `APPROVE` с суммой и сроком из `recommendation.offer`, комментарий «Одобрено по рекомендации системы после проверки»;
+   - `expected_client(persona)` — что должен увидеть клиент: итоговое `state`, `offer` (`amount`, `term_months`, `rate`, `monthly_payment`) или `client_reason.code`;
+   - `expected_bank(persona)` — что должен увидеть банк: `grade`, `score`, баллы 12 признаков, `outcome` или `route_reason`.
+
+   Все ожидаемые числа берутся **только** из `demo.expected`, ничего не пересчитывать и не вписывать руками.
+3. **Ожидание** `wait_state(client, app_id, *, leave={SUBMITTED, VALIDATION, ENRICHMENT, ASSESSMENT})`: опрашивать `GET /applications/{id}` раз в 1 с, пока состояние в `leave`. Не дождались за `E2E_TIMEOUT` → `AssertionError` с последним `state` и `timeline`.
+4. **`test_personas.py`** — параметризация по `code` персонажа, вход под первым пользователем из `users` с `can_sign = true`. Общий путь: вход → `GET /me` (компания по `inn`) → `POST /applications` → `POST …/otp` (`purpose = CONSENTS`) → `POST …/submit` с `demo_code` → `wait_state`. Дальше:
+   - `ip_good`, `ooo_load`, `ip_bad`, `ooo_aml` — сравнить с `expected_client` и `expected_bank`;
+   - `ooo_gap` — сначала `INFO_REQUESTED`, в `info_request.items` есть `REVENUE_CONFIRM` → `POST …/info-response` → `wait_state` → сравнить с `demo.expected.after_info`;
+   - `ooo_border` — `MANUAL_REVIEW`; банк видит `route_reason = GRADE_C` и рекомендацию из `demo.expected.recommendation`; андеррайтер (`staff[0]`) отправляет `approve_body` → клиент видит `OFFER_ISSUED` с офертой рекомендации.
+
+   Сторона банка: вход `underwriter` → `GET /underwriting/applications/{id}` → последнее решение с `kind = AUTO`: `grade`, `score`, `{factor.code: factor.points}` = `points`. Для `ooo_aml` в `rules_fired` есть `SF_ADDITIONAL` с `effect = STOP`.
+
+   Утечки: для **каждого** персонажа во **всех** клиентских ответах (`GET /applications/{id}`, `GET /applications?company_id=`) ключи JSON на любой глубине не содержат `score`, `grade`, `points`, `factors`, `rules_fired`, `internal_reasons`, `risk_flags`, `route_reason`, а сырой текст ответа не содержит `SF_ADDITIONAL`.
+
+   Два полных пути до выдачи (S-08, S-18):
+   - `test_full_path_ip_good` — принять оферту (`offer_version`) → для каждой своей неподписанной `party`: OTP (`purpose = OFFER` для `BORROWER_SIGNATORY`, `GUARANTEE` для `GUARANTOR`, с `party_id`) → `sign` → `wait_state(leave={SIGNING, SIGNED})` → `DISBURSED`;
+   - `test_counter_signed_ooo_load` — то же для встречного `ooo_load`: директор подписывает и за компанию, и как поручитель.
+5. **`conftest.py`**: если `GET {E2E_BASE_URL}/ready` не отвечает 200 за 3 с, тесты `test_personas.py` пропускаются одним `pytest.skip` с текстом «Стенд недоступен: <url>». На `test_harness.py` это не распространяется.
+6. **`test_harness.py`** (офлайн, без сети):
+   - для каждого персонажа тела `create_body`, `submit_body`, `info_response_body` (где есть), `approve_body` (для `ooo_border`) проходят `jsonschema`-проверку по схемам из `contracts/openapi.json`: `ApplicationCreate`, `SubmitRequest`, `InfoResponseRequest`, `UnderwriterDecisionRequest`, со ссылками `$ref`;
+   - `expected_client` и `expected_bank` для каждого персонажа совпадают с полями `demo.expected` (`after_info` для `ooo_gap`, `recommendation` для `ooo_border`); покрыты все 6 персонажей;
+   - `wait_state` на `httpx.MockTransport`: последовательность `SUBMITTED → VALIDATION → OFFER_ISSUED` возвращает `OFFER_ISSUED`; бесконечный `VALIDATION` при `E2E_TIMEOUT = 2` падает с текстом, где есть `VALIDATION`;
+   - ошибка 501 с телом `ApiError` → `AssertionError`, в тексте имя шага, `501` и `NOT_IMPLEMENTED`;
+   - skip-логика `conftest.py`: недоступный `/ready` (MockTransport с `ConnectError`) → skip с текстом про стенд.
+7. **`README.md`** — 10–15 строк: что проверяют тесты, команда запуска, переменные, как читать падение («Шаг submit: HTTP 501…» = эндпоинт ещё не готов).
+
+**Приёмка:**
+- команда запуска выше, без стенда: `test_harness.py` — все прошли, 0 skipped; `test_personas.py` — 1 skip с текстом «Стенд недоступен». Вывод `-rA` вставить в PR;
+- в `tests/e2e/api/` нет чисел из `demo.expected`, вписанных руками (проверка: `grep -E "77817|149264|51878|53875|2850000"` по папке — пусто);
+- нет `skip`/`xfail`, кроме единственного skip в `conftest.py`; нет `noqa`;
+- `ruff check tests/e2e && ruff format --check tests/e2e` (через `uv run --no-project --with ruff`) — чисто;
+- в PR — таблица «персонаж → шаги → что проверяется», ссылки на сценарии S-xx из `docs/test-scenarios.md`.
+
+**Не делать:** не трогать `backend/`, `frontend/`, `contracts/`, CI; не пересчитывать ожидания; не добавлять пауз длиннее 1 с; не создавать проект `pyproject.toml` для тестов.
+
 ### F-01 — Оболочка фронтенда · Лана · Облако: нет (ставит новые npm-пакеты, нужен скриншот) · ≤3 ч
 **Зачем.** Каркас всех экранов: вход тестовыми учётками, маршруты по ролям, единая обработка ошибок, работа без бэкенда на моках (MSW) до готовности API.
 **Файлы:** `frontend/src/**` (кроме `src/api/schema.d.ts` и `src/theme.ts`), `frontend/package.json`, `frontend/package-lock.json`, `frontend/public/mockServiceWorker.js`. Импорт из `../contracts` или `../../contracts` внутри `src/` **запрещён** (в Docker-сборке их нет). Данные персонажей для MSW копируются в `src/mocks/fixtures.ts`. Каталог продуктов в MSW (ответ на вопрос 23.10): `name`, `description`, `purposes`, `requires_guarantor_ooo` — из «Витрины продуктов» `contracts/codes.md`; границы — `EXPRESS` 300 000–5 000 000 ₽, 6–36 мес., `rate_from` 22.0; `WORKING_CAPITAL` 500 000–15 000 000 ₽, 3–24 мес., 21.0; `OVERDRAFT` 100 000–5 000 000 ₽, 12–12 мес., 24.0; `key_rate` 14.0, `key_rate_date` "2026-10-23". Пароль демо-учёток в MSW — `demo2026` (как `DEMO_PASSWORD` бэкенда).
@@ -582,7 +641,6 @@
 - **B-08.** Очередь (`QueueItem`, сортировка по ожиданию), `ApplicationBank` со всем протоколом, `POST /underwriting/{id}/decision` со всеми исходами; событие `UNDERWRITER_OVERRIDE` при расхождении с рекомендацией. Клиентская схема не содержит внутренних полей — тест сериализации для `ooo_aml`.
 - **B-09.** Принять или отклонить оферту (`offer_version`), подпись участников (`party`), SIGNED → DISBURSED с графиком платежей, отзыв, возражение ИП (≤30 дней после авто-отказа).
 - **B-10.** Планировщик истечений (`due_at`, `expires_at`), `POST /demo/time-shift`, `GET /bank/applications` (`Page`), загрузка `data/background.json` через тот же конвейер до `target_state`.
-- **A-03.** `tests/e2e/api/test_personas.py`: для каждого персонажа через HTTP — вход, создание и подача заявки (`demo.app`, `demo.consents`), ожидание итогового состояния (до 60 с), проверка `demo.expected`. Для `ooo_gap` — ответ `demo.info_response`, для `ooo_border` — решение андеррайтера. Пока стенда нет, тест пропускается по `pytest.mark.skipif`, если `/api/v1/ready` недоступен.
 - **A-05.** Коллекция Bruno (`docs/api-collection/`): вход каждым персонажем и полный путь `ip_good` и `ooo_gap`. Проходит на запущенном стенде.
 - **A-06.** Репетиция на чистом ПК строго по README; отчёт `docs/demo/rehearsal-T20.md`: время каждого шага, ошибки, скриншоты.
 - **F-02…F-09** — по макетам человека (D6) и `screens.md`. Карточки уточняются после получения токенов (24.10 ~11:00).
