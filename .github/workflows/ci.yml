@@ -84,6 +84,16 @@ jobs:
           enable-cache: true
       - run: uv run --no-project --python 3.12 --with pytest python -X utf8 -m pytest -q data/
 
+  e2e-harness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: astral-sh/setup-uv@94527f2e458b27549849d47d273a16bec83a01e9 # v7
+        with:
+          version: "0.13.5"
+          enable-cache: true
+      - run: uv run --no-project --python 3.12 --with pytest --with httpx --with jsonschema python -X utf8 -m pytest -q tests/e2e/api/test_harness.py
+
   contracts:
     runs-on: ubuntu-latest
     steps:
