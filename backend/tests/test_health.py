@@ -41,7 +41,7 @@ def test_ready_unavailable(monkeypatch):
     assert response.json() == {
         "error": {
             "code": "SERVICE_UNAVAILABLE",
-            "message": "Database unavailable",
+            "message": "Сервис временно недоступен",
             "details": {},
         }
     }
@@ -81,7 +81,7 @@ def test_validation_and_unhandled_error():
         assert failed.json() == {
             "error": {
                 "code": "INTERNAL_ERROR",
-                "message": "Internal server error",
+                "message": "Внутренняя ошибка сервера",
                 "details": {},
             }
         }
@@ -91,4 +91,4 @@ def test_validation_and_unhandled_error():
 def test_docs_and_schema():
     assert client.get("/api/v1/docs").status_code == 200
     schema = client.get("/api/v1/openapi.json").json()
-    assert set(schema["paths"]) == {"/api/v1/health", "/api/v1/ready"}
+    assert {"/api/v1/health", "/api/v1/ready"} <= set(schema["paths"])

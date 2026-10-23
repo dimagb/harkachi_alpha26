@@ -81,6 +81,8 @@ def error_response(
     details: dict[str, Any] | None = None,
     headers: dict[str, str] | None = None,
 ) -> JSONResponse:
+    if code == ErrorCode.INTERNAL_ERROR:
+        message = "Внутренняя ошибка сервера"
     return JSONResponse(
         status_code=status,
         content=ApiError(
