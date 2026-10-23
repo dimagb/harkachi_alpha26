@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#E4E6EA;color:#1F2329;font-family:'Onest',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#1F2329;text-decoration:underline;text-underline-offset:3px;text-decoration-color:#8A919B}
+a:hover{text-decoration-color:#1F2329}
+*:focus-visible{outline:2px solid #1F2329;outline-offset:2px}
+input,select,textarea{font-family:'Onest',sans-serif}
+</style>
+</helmet>
+<div style="padding:48px;display:flex;justify-content:center">
+<div data-screen-label="Карточка заявки — андеррайтер" style="width:1440px;flex-shrink:0;background:#FFFFFF;border-radius:12px;overflow:hidden;font-size:14px;line-height:20px">
+
+  <div style="height:48px;padding:0 32px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #E4E6EA">
+    <div style="display:flex;align-items:center;gap:24px">
+      <span style="font-weight:600">Кредитный конвейер</span>
+      <nav style="display:flex;gap:4px">
+        <a href="#" style="height:32px;padding:0 10px;display:inline-flex;align-items:center;border-radius:6px;background:#F2F3F5;text-decoration:none;font-weight:500">Очередь · 7</a>
+        <a href="#" style="height:32px;padding:0 10px;display:inline-flex;align-items:center;border-radius:6px;text-decoration:none;color:#535C68" style-hover="background:#F2F3F5;color:#1F2329">Мои решения</a>
+      </nav>
+    </div>
+    <span style="color:#535C68">Андеррайтер · Петров И. С.</span>
+  </div>
+
+  <div style="padding:24px 32px 40px;display:flex;flex-direction:column;gap:24px">
+
+    <header style="display:flex;justify-content:space-between;align-items:flex-end;gap:24px">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:center;gap:12px;color:#535C68;font-variant-numeric:tabular-nums">
+          <span>Заявка № 1047</span>
+          <span style="width:3px;height:3px;border-radius:999px;background:#A9AFB7"></span>
+          <span style="display:inline-flex;align-items:center;gap:6px;color:#8B6001;font-weight:500"><span style="width:6px;height:6px;border-radius:999px;background:#F5AF20"></span>Ждёт 12 мин</span>
+          <span style="width:3px;height:3px;border-radius:999px;background:#A9AFB7"></span>
+          <span>Поступила 23.10 14:03</span>
+        </div>
+        <h1 style="margin:0;display:flex;align-items:baseline;flex-wrap:wrap;gap:0 10px;font-weight:600;font-variant-numeric:tabular-nums">
+          <span style="font-size:20px;line-height:28px;font-weight:500;color:#535C68">ООО «ТехноМонтаж» · Экспресс-кредит</span>
+          <span style="font-size:32px;line-height:40px;letter-spacing:-0.02em">1 000 000 ₽</span>
+          <span style="font-size:20px;line-height:28px;font-weight:500;color:#535C68">/ 24 мес.</span>
+        </h1>
+      </div>
+      <span style="display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 12px;box-sizing:border-box;border-radius:6px;background:#FEF5E8;border:1px solid #FFD79B;color:#8B6001;font-weight:500;white-space:nowrap">
+        <span style="width:16px;height:16px;border-radius:999px;background:#F5AF20;color:#1F2329;display:inline-flex;align-items:center;justify-content:center;font-size:11px;line-height:11px;font-weight:600">!</span>Пограничная оценка: C, 54 балла
+      </span>
+    </header>
+
+    <sc-if value="{{ showStages }}" hint-placeholder-val="{{ true }}">
+      <div style="border:1px solid #E4E6EA;border-radius:12px;padding:20px 24px;display:flex;flex-direction:column;gap:20px">
+        <div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr))">
+          <sc-for list="{{ stages }}" as="s" hint-placeholder-count="6">
+            <div style="display:flex;flex-direction:column;gap:8px;min-width:0">
+              <div style="display:flex;align-items:center;height:28px">
+                <sc-if value="{{ s.done }}"><span style="width:24px;height:24px;flex-shrink:0;border-radius:999px;background:#1E8E5A;display:inline-flex;align-items:center;justify-content:center"><span style="width:9px;height:5px;border-left:2px solid #FFFFFF;border-bottom:2px solid #FFFFFF;transform:translateY(-1px) rotate(-45deg)"></span></span></sc-if>
+                <sc-if value="{{ s.cur }}"><span style="width:28px;height:28px;flex-shrink:0;border-radius:999px;background:#1F2329;color:#FFFFFF;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:600">{{ s.n }}</span></sc-if>
+                <sc-if value="{{ s.wait }}"><span style="width:24px;height:24px;flex-shrink:0;box-sizing:border-box;border-radius:999px;border:1.5px solid #A9AFB7;color:#535C68;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:500">{{ s.n }}</span></sc-if>
+                <sc-if value="{{ s.hasLine }}"><span style="flex:1;height:2px;border-radius:1px;margin:0 10px;background:{{ s.line }}"></span></sc-if>
+              </div>
+              <div style="display:flex;flex-direction:column;padding-right:12px">
+                <span style="font-weight:{{ s.weight }};color:{{ s.color }}">{{ s.name }}</span>
+                <span style="font-size:12px;line-height:16px;color:#535C68;font-variant-numeric:tabular-nums">{{ s.meta }}</span>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="position:relative;background:{{ panel.bg }};box-shadow:inset 4px 0 0 {{ panel.tone }};border-radius:8px;padding:14px 20px 14px 24px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px">
+          <span style="position:absolute;top:-6px;left:calc(3 * 100% / 6 + 8px);width:12px;height:12px;background:{{ panel.bg }};border-radius:2px;transform:rotate(45deg)"></span>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <span style="font-size:12px;line-height:16px;font-weight:500;color:#535C68">Что происходит</span>
+            <span style="text-wrap:pretty">{{ panel.what }}</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <span style="font-size:12px;line-height:16px;font-weight:500;color:{{ panel.text }}">Что нужно</span>
+            <span style="font-weight:500;text-wrap:pretty">{{ panel.need }}</span>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) 440px;gap:24px;align-items:start">
+
+      <div style="display:flex;flex-direction:column;gap:24px;min-width:0">
+
+        <section style="border:1px solid #E4E6EA;border-radius:12px;padding:20px 24px;display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline">
+            <h2 style="margin:0;font-size:18px;line-height:24px;font-weight:600">Факторы оценки</h2>
+            <span style="color:#535C68">12 признаков · модель МСБ-Экспресс 3.2</span>
+          </div>
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) 200px 140px 64px;gap:0 16px;padding:0 0 6px;font-size:12px;line-height:16px;color:#6A7280;border-bottom:1px solid #E4E6EA">
+            <span>Признак</span><span>Значение</span><span>Баллы</span><span style="text-align:right">из макс.</span>
+          </div>
+          <sc-for list="{{ groups }}" as="g" hint-placeholder-count="5">
+            <div style="display:flex;flex-direction:column">
+              <div style="display:grid;grid-template-columns:minmax(0,1fr) 200px 140px 64px;gap:0 16px;align-items:center;padding:10px 0 6px;font-variant-numeric:tabular-nums">
+                <span style="font-weight:600">{{ g.name }}</span>
+                <span></span>
+                <span style="height:6px;border-radius:3px;background:#E4E6EA;overflow:hidden;display:flex"><span style="width:{{ g.pct }};background:#1F2329"></span></span>
+                <span style="text-align:right;font-weight:600">{{ g.score }}<span style="color:#6A7280;font-weight:400"> / {{ g.max }}</span></span>
+              </div>
+              <sc-for list="{{ g.items }}" as="f" hint-placeholder-count="2">
+                <div style="display:grid;grid-template-columns:minmax(0,1fr) 200px 140px 64px;gap:0 16px;align-items:center;padding:6px 0 6px 24px;border-top:1px solid #F2F3F5;font-variant-numeric:tabular-nums">
+                  <span style="display:flex;align-items:center;gap:8px;min-width:0">
+                    <sc-if value="{{ f.ok }}"><span style="width:16px;height:16px;flex-shrink:0;border-radius:999px;background:#1E8E5A;display:inline-flex;align-items:center;justify-content:center"><span style="width:6px;height:3px;border-left:1.5px solid #FFFFFF;border-bottom:1.5px solid #FFFFFF;transform:translateY(-1px) rotate(-45deg)"></span></span></sc-if>
+                    <sc-if value="{{ f.wait }}"><span style="width:16px;height:16px;flex-shrink:0;border-radius:999px;background:#F5AF20;color:#1F2329;display:inline-flex;align-items:center;justify-content:center;font-size:11px;line-height:11px;font-weight:600">!</span></sc-if>
+                    <sc-if value="{{ f.stop }}"><span style="position:relative;width:16px;height:16px;flex-shrink:0;border-radius:999px;background:#B42318;display:inline-flex;align-items:center;justify-content:center"><span style="position:absolute;width:8px;height:1.5px;background:#FFFFFF;transform:rotate(45deg)"></span><span style="position:absolute;width:8px;height:1.5px;background:#FFFFFF;transform:rotate(-45deg)"></span></span></sc-if>
+                    <span>{{ f.name }}</span>
+                  </span>
+                  <span style="color:#535C68">{{ f.value }}</span>
+                  <span style="height:6px;border-radius:3px;background:#F2F3F5;overflow:hidden;display:flex"><span style="width:{{ f.pct }};background:{{ f.color }}"></span></span>
+                  <span style="text-align:right">{{ f.score }}<span style="color:#6A7280"> / {{ f.max }}</span></span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-for>
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) 200px 140px 64px;gap:0 16px;align-items:center;padding:12px 0 0;border-top:1px solid #1F2329;font-variant-numeric:tabular-nums">
+            <span style="font-size:16px;line-height:24px;font-weight:600">Итого</span>
+            <span style="color:#8B6001;font-weight:500">Класс C · порог B — 65</span>
+            <span style="position:relative;height:6px;border-radius:3px;background:#E4E6EA;display:flex"><span style="width:54%;background:#1F2329;border-radius:3px"></span><span style="position:absolute;left:65%;top:-4px;width:2px;height:14px;background:#535C68"></span></span>
+            <span style="text-align:right;font-size:16px;line-height:24px;font-weight:600">54<span style="color:#6A7280;font-weight:400"> / 100</span></span>
+          </div>
+        </section>
+
+        <section style="border:1px solid #E4E6EA;border-radius:12px;padding:20px 24px;display:flex;flex-direction:column;gap:16px">
+          <h2 style="margin:0;font-size:18px;line-height:24px;font-weight:600">Сведения</h2>
+          <div style="display:flex;flex-direction:column">
+            <sc-for list="{{ sources }}" as="src" hint-placeholder-count="3">
+              <div style="border-top:1px solid #E4E6EA">
+                <button type="button" onClick="{{ src.toggle }}" aria-expanded="{{ src.open }}" style="width:100%;height:40px;padding:0 8px;margin:0;border:0;background:transparent;display:grid;grid-template-columns:16px 64px minmax(0,1fr) max-content 16px;white-space:nowrap;gap:12px;align-items:center;text-align:left;font:400 14px/20px 'Onest',sans-serif;color:#1F2329;cursor:pointer;border-radius:6px" style-hover="background:#F2F3F5">
+                  <span style="width:16px;height:16px;border-radius:999px;background:#1E8E5A;display:inline-flex;align-items:center;justify-content:center"><span style="width:6px;height:3px;border-left:1.5px solid #FFFFFF;border-bottom:1.5px solid #FFFFFF;transform:translateY(-1px) rotate(-45deg)"></span></span>
+                  <span style="font-weight:600">{{ src.name }}</span>
+                  <span style="color:#535C68">{{ src.summary }}</span>
+                  <span style="color:#17704A;font-variant-numeric:tabular-nums">Получено {{ src.time }}</span>
+                  <span style="width:7px;height:7px;border-right:1.5px solid #535C68;border-bottom:1.5px solid #535C68;transform:{{ src.chev }};justify-self:center"></span>
+                </button>
+                <sc-if value="{{ src.open }}">
+                  <dl style="margin:0 0 12px 36px;display:grid;grid-template-columns:240px minmax(0,1fr);font-variant-numeric:tabular-nums">
+                    <sc-for list="{{ src.rows }}" as="r">
+                      <dt style="padding:6px 0;color:#535C68;border-top:1px solid #F2F3F5">{{ r.k }}</dt>
+                      <dd style="margin:0;padding:6px 0;border-top:1px solid #F2F3F5">{{ r.v }}</dd>
+                    </sc-for>
+                  </dl>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:12px;padding-top:8px;border-top:1px solid #E4E6EA">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;padding-top:8px">
+              <h3 style="margin:0;font-size:14px;line-height:20px;font-weight:600">Поступления на счёт за 12 месяцев, тыс. ₽</h3>
+              <div style="display:flex;gap:16px;font-size:12px;line-height:16px;color:#535C68">
+                <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:2px;background:#8A919B"></span>Месяц</span>
+                <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:2px;background:#F5AF20"></span>Последние 3 мес., −13%</span>
+                <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:12px;border-top:1.5px dashed #1F2329"></span>Среднее 1 000</span>
+              </div>
+            </div>
+            <div style="position:relative;height:160px;display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:8px;align-items:end;border-bottom:1px solid #A9AFB7">
+              <span style="position:absolute;left:0;right:0;bottom:{{ avgLine }};border-top:1.5px dashed #1F2329"></span>
+              <sc-for list="{{ months }}" as="m" hint-placeholder-count="12">
+                <div style="display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;height:100%">
+                  <span style="font-size:11px;line-height:14px;color:#535C68;font-variant-numeric:tabular-nums">{{ m.v }}</span>
+                  <span style="width:100%;max-width:36px;height:{{ m.h }};border-radius:3px 3px 0 0;background:{{ m.c }}"></span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:8px;font-size:12px;line-height:16px;color:#535C68;text-align:center">
+              <sc-for list="{{ months }}" as="m" hint-placeholder-count="12"><span>{{ m.l }}</span></sc-for>
+            </div>
+          </div>
+        </section>
+
+        <section style="border:1px solid #E4E6EA;border-radius:12px;padding:20px 24px;display:flex;flex-direction:column;gap:16px">
+          <h2 style="margin:0;font-size:18px;line-height:24px;font-weight:600">Расчёт условий</h2>
+          <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;font-variant-numeric:tabular-nums">
+            <sc-for list="{{ calc }}" as="c" hint-placeholder-count="5">
+              <div style="background:#F2F3F5;border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:2px">
+                <span style="font-size:12px;line-height:16px;color:#535C68">{{ c.k }}</span>
+                <span style="font-size:20px;line-height:28px;font-weight:600;letter-spacing:-0.01em">{{ c.v }}</span>
+                <span style="font-size:12px;line-height:16px;color:#6A7280">{{ c.note }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+      </div>
+
+      <aside style="position:sticky;top:24px;display:flex;flex-direction:column;gap:16px">
+        <section style="border:1px solid #B9E8CB;background:#EFFAF3;border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="width:20px;height:20px;border-radius:999px;background:#1E8E5A;display:inline-flex;align-items:center;justify-content:center"><span style="width:8px;height:4px;border-left:2px solid #FFFFFF;border-bottom:2px solid #FFFFFF;transform:translateY(-1px) rotate(-45deg)"></span></span>
+            <span style="font-size:12px;line-height:16px;font-weight:500;color:#17704A">Рекомендация системы</span>
+          </div>
+          <div style="font-size:20px;line-height:28px;font-weight:600;font-variant-numeric:tabular-nums;text-wrap:pretty">Одобрить 1 000 000 ₽ на 24 мес. под 26%</div>
+          <div style="display:flex;justify-content:space-between;padding-top:10px;border-top:1px solid #B9E8CB;font-variant-numeric:tabular-nums">
+            <span style="color:#535C68">Платёж в месяц</span><span style="font-weight:600">53 875 ₽</span>
+          </div>
+        </section>
+
+        <section style="border:1px solid #E4E6EA;border-radius:12px;padding:16px 20px;display:flex;flex-direction:column;gap:4px">
+          <span style="font-size:12px;line-height:16px;font-weight:500;color:#535C68">Что изменило бы решение</span>
+          <span style="text-wrap:pretty"><b style="font-weight:600">Оценка B</b> — при долге к годовому обороту до 50% и без налогового долга</span>
+        </section>
+
+        <section style="border:1px solid #E4E6EA;border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:16px">
+          <h2 style="margin:0;font-size:18px;line-height:24px;font-weight:600">Решение</h2>
+          <div role="radiogroup" style="display:grid;grid-template-columns:repeat(4,auto);gap:2px;padding:2px;border-radius:8px;background:#F2F3F5">
+            <sc-for list="{{ options }}" as="o" hint-placeholder-count="4">
+              <button type="button" role="radio" aria-checked="{{ o.sel }}" onClick="{{ o.pick }}" style="height:36px;padding:0 8px;border:0;border-radius:6px;background:{{ o.bg }};box-shadow:{{ o.shadow }};color:{{ o.color }};font:{{ o.font }};cursor:pointer;white-space:nowrap">{{ o.label }}</button>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ isCounter }}">
+            <div style="display:grid;grid-template-columns:minmax(0,1fr) 120px;gap:8px">
+              <label style="display:flex;flex-direction:column;gap:4px"><span style="font-size:12px;line-height:16px;color:#535C68">Сумма, ₽</span>
+                <input value="{{ counterAmount }}" onChange="{{ setCounterAmount }}" inputmode="numeric" style="height:40px;padding:0 12px;box-sizing:border-box;border:1px solid #A9AFB7;border-radius:6px;font-size:14px;font-variant-numeric:tabular-nums;color:#1F2329" style-focus="border-color:#1F2329;outline:none"></label>
+              <label style="display:flex;flex-direction:column;gap:4px"><span style="font-size:12px;line-height:16px;color:#535C68">Срок, мес.</span>
+                <select value="{{ counterTerm }}" onChange="{{ setCounterTerm }}" style="height:40px;padding:0 8px;border:1px solid #A9AFB7;border-radius:6px;background:#FFFFFF;font-size:14px;color:#1F2329">
+                  <option value="6">6</option><option value="12">12</option><option value="18">18</option><option value="24">24</option><option value="36">36</option>
+                </select></label>
+              <span style="grid-column:1 / -1;font-size:12px;line-height:16px;color:#535C68;font-variant-numeric:tabular-nums">Платёж при 26%: {{ counterPayment }}</span>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isDecline }}">
+            <label style="display:flex;flex-direction:column;gap:4px"><span style="font-size:12px;line-height:16px;color:#535C68">Причина для клиента</span>
+              <select value="{{ reason }}" onChange="{{ setReason }}" style="height:40px;padding:0 8px;border:1px solid #A9AFB7;border-radius:6px;background:#FFFFFF;font-size:14px;color:#1F2329">
+                <option value="">Выберите категорию</option>
+                <option>Недостаточные обороты</option>
+                <option>Высокая долговая нагрузка</option>
+                <option>Кредитная история</option>
+                <option>Налоговая задолженность</option>
+                <option>Срок ведения бизнеса</option>
+                <option>Иное — по внутренней политике</option>
+              </select>
+              <span style="font-size:12px;line-height:16px;color:#6A7280">Клиент увидит только категорию, без баллов</span></label>
+          </sc-if>
+
+          <sc-if value="{{ isRequest }}">
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <span style="font-size:12px;line-height:16px;color:#535C68">Вопросы клиенту · {{ qCount }} из 5</span>
+              <sc-for list="{{ questions }}" as="q" hint-placeholder-count="1">
+                <div style="display:grid;grid-template-columns:20px minmax(0,1fr) 32px;gap:6px;align-items:center">
+                  <span style="color:#6A7280;font-variant-numeric:tabular-nums">{{ q.n }}.</span>
+                  <input value="{{ q.text }}" onChange="{{ q.set }}" placeholder="Например: выписка по счёту в другом банке" style="height:36px;padding:0 10px;box-sizing:border-box;border:1px solid #A9AFB7;border-radius:6px;font-size:14px;color:#1F2329;min-width:0" style-focus="border-color:#1F2329;outline:none">
+                  <button type="button" aria-label="Удалить вопрос" onClick="{{ q.remove }}" style="width:32px;height:32px;border:0;border-radius:6px;background:transparent;color:#535C68;font-size:18px;cursor:pointer" style-hover="background:#F2F3F5">×</button>
+                </div>
+              </sc-for>
+              <sc-if value="{{ canAddQ }}">
+                <button type="button" onClick="{{ addQ }}" style="align-self:flex-start;height:32px;padding:0 10px;border:1px solid #A9AFB7;border-radius:6px;background:#FFFFFF;font:500 14px/20px 'Onest',sans-serif;color:#1F2329;cursor:pointer" style-hover="background:#F2F3F5">+ Добавить вопрос</button>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <label style="display:flex;flex-direction:column;gap:4px"><span style="font-size:12px;line-height:16px;color:#535C68">Комментарий (обязательно)</span>
+            <textarea value="{{ comment }}" onChange="{{ setComment }}" rows="3" placeholder="Обоснование решения для протокола" style="padding:8px 12px;box-sizing:border-box;border:1px solid #A9AFB7;border-radius:6px;font-size:14px;line-height:20px;color:#1F2329;resize:vertical" style-focus="border-color:#1F2329;outline:none"></textarea></label>
+
+          <button type="button" onClick="{{ submit }}" aria-disabled="{{ cantSubmit }}" style="height:44px;border:0;border-radius:6px;background:{{ submitBg }};color:{{ submitColor }};font:500 16px/24px 'Onest',sans-serif;cursor:{{ submitCursor }};transition:background 120ms cubic-bezier(0.2,0,0,1)">{{ submitLabel }}</button>
+          <sc-if value="{{ hint }}"><span style="font-size:12px;line-height:16px;color:#535C68;margin-top:-8px">{{ hint }}</span></sc-if>
+
+          <sc-if value="{{ mismatch }}">
+            <div style="display:flex;gap:8px;align-items:flex-start;padding:10px 12px;border-radius:8px;background:#FEF5E8;border:1px solid #FFD79B;color:#8B6001">
+              <span style="width:16px;height:16px;margin-top:2px;flex-shrink:0;border-radius:999px;background:#F5AF20;color:#1F2329;display:inline-flex;align-items:center;justify-content:center;font-size:11px;line-height:11px;font-weight:600">!</span>
+              <span style="text-wrap:pretty">Решение не совпадает с рекомендацией — это будет отмечено в журнале</span>
+            </div>
+          </sc-if>
+        </section>
+      </aside>
+    </div>
+
+    <section style="border:1px solid #E4E6EA;border-radius:12px;overflow:hidden">
+      <div role="tablist" style="display:flex;gap:24px;padding:0 24px;border-bottom:1px solid #E4E6EA">
+        <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="2">
+          <button type="button" role="tab" aria-selected="{{ t.sel }}" onClick="{{ t.pick }}" style="height:44px;padding:0 12px;border:0;background:transparent;box-shadow:{{ t.line }};font:{{ t.font }};color:{{ t.color }};cursor:pointer">{{ t.label }}</button>
+        </sc-for>
+      </div>
+      <ol style="margin:0;padding:8px 24px 16px;list-style:none;display:flex;flex-direction:column">
+        <sc-for list="{{ log }}" as="e" hint-placeholder-count="5">
+          <li style="display:grid;grid-template-columns:56px 160px minmax(0,1fr);gap:16px;padding:8px 0;border-top:1px solid #F2F3F5;font-variant-numeric:tabular-nums">
+            <span style="color:#535C68">{{ e.t }}</span>
+            <span style="color:#535C68">{{ e.who }}</span>
+            <span style="font-weight:{{ e.w }};color:{{ e.c }};text-wrap:pretty">{{ e.e }}</span>
+          </li>
+        </sc-for>
+      </ol>
+    </section>
+  </div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;initialDecision&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;approve&quot;,&quot;counter&quot;,&quot;decline&quot;,&quot;request&quot;],&quot;default&quot;:&quot;approve&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;showStages&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  state = { decision: null, counterAmount: '800 000', counterTerm: '24', reason: '', questions: [''], comment: '', open: {}, tab: 'protocol', submitted: null, tried: false };
+
+  pmt(sum, n) { const r = 0.26 / 12; return Math.round(sum * r / (1 - Math.pow(1 + r, -n))); }
+  fmt(n) { return n.toLocaleString('ru-RU').replace(/,/g, ' ') + ' ₽'; }
+
+  renderVals() {
+    const S = this.state, set = (p) => this.setState(p);
+    const decision = S.decision ?? this.props.initialDecision ?? 'approve';
+    const done = !!S.submitted;
+
+    const stageNames = [['Заявка', '14:02'], ['Проверка данных', '14:02'], ['Автооценка', '14:03'], ['Решение андеррайтера', done ? 'Принято' : 'Идёт сейчас'], ['Подписание', 'Ожидает'], ['Выдача', 'Ожидает']];
+    const curIdx = done ? 4 : 3;
+    const stages = stageNames.map(([name, meta], i) => {
+      const t = i < curIdx ? 'done' : i === curIdx ? 'cur' : 'wait';
+      return { name, meta: i === 4 && done ? 'Идёт сейчас' : meta, n: i + 1, done: t === 'done', cur: t === 'cur', wait: t === 'wait', hasLine: i < 5,
+        line: t === 'done' ? '#1E8E5A' : '#E4E6EA', weight: t === 'cur' ? 600 : 400, color: t === 'wait' ? '#535C68' : '#1F2329' };
+    });
+    const panel = done
+      ? { bg: '#EFFAF3', tone: '#1E8E5A', text: '#17704A', what: 'Решение «' + S.submitted + '» принято и записано в протокол.', need: 'Ничего — заявка ушла клиенту.' }
+      : { bg: '#FEF5E8', tone: '#B78006', text: '#8B6001', what: 'Автооценка пограничная (C, 54) — система не решает сама.', need: 'Проверьте факторы и примите решение с комментарием.' };
+
+    const tone = (p) => p >= 0.7 ? 'ok' : p >= 0.4 ? 'wait' : 'stop';
+    const col = { ok: '#1E8E5A', wait: '#F5AF20', stop: '#B42318' };
+    const G = [
+      ['Бизнес', [['Срок бизнеса', '14 мес.', 5, 10], ['Отрасль', 'электромонтаж, средний риск', 3, 5], ['Массовый руководитель или адрес', 'нет', 5, 5]]],
+      ['Обороты', [['Стабильность', 'коэф. вариации 0,5', 5, 10], ['Тренд', 'последние 3 мес. ниже на 13%', 5, 10], ['Месяцы без поступлений', '0', 10, 10]]],
+      ['Нагрузка', [['Платежи к поступлениям', '22,3%', 4, 15], ['Долг к годовому обороту', '64%', 0, 10]]],
+      ['Кредитная история', [['Просрочки за 12 мес.', 'нет', 10, 10], ['Длина истории', '14 мес.', 3, 5], ['Запросы в БКИ за 30 дней', '2', 2, 5]]],
+      ['Дисциплина', [['Налоговый долг', '20 000 ₽', 2, 5]]],
+    ];
+    const groups = G.map(([name, items]) => {
+      const score = items.reduce((a, x) => a + x[2], 0), max = items.reduce((a, x) => a + x[3], 0);
+      return { name, score, max, pct: (score / max * 100) + '%', items: items.map(([n, v, s, m]) => {
+        const t = tone(s / m);
+        return { name: n, value: v, score: s, max: m, pct: (s / m * 100) + '%', color: col[t], ok: t === 'ok', wait: t === 'wait', stop: t === 'stop' };
+      }) };
+    });
+
+    const src = [
+      ['egrul', 'ЕГРЮЛ', 'Действующее, руководитель и адрес не массовые', '23.10 14:03', [['ИНН / ОГРН', '7714123456 / 1257700123456'], ['Дата регистрации', '12.08.2025 · 14 мес.'], ['Основной ОКВЭД', '43.21 Производство электромонтажных работ'], ['Руководитель', 'Кравцов Д. А. · не массовый'], ['Юридический адрес', 'Москва · не массовый']]],
+      ['bki', 'БКИ', 'Просрочек нет, 2 запроса за 30 дней', '14:03', [['Просрочки за 12 мес.', 'нет'], ['Длина истории', '14 мес.'], ['Действующие кредиты', '2'], ['Платежи по кредитам в месяц', '150 000 ₽'], ['Запросы за 30 дней', '2']]],
+      ['fns', 'ФНС', 'Налоговый долг 20 000 ₽', '14:03', [['Задолженность', '20 000 ₽ · с 01.10.2026'], ['Отчётность', 'сдана в срок'], ['Режим', 'УСН «доходы минус расходы»']]],
+    ];
+    const sources = src.map(([id, name, summary, time, rows]) => ({ name, summary, time, open: !!S.open[id], chev: S.open[id] ? 'translateY(-2px) rotate(45deg)' : 'rotate(-45deg)', rows: rows.map(([k, v]) => ({ k, v })),
+      toggle: () => set({ open: { ...S.open, [id]: !S.open[id] } }) }));
+
+    const MV = [[650, 'ноя'], [1500, 'дек'], [450, 'янв'], [1300, 'фев'], [700, 'мар'], [1200, 'апр'], [550, 'май'], [1250, 'июн'], [1600, 'июл'], [880, 'авг'], [890, 'сен'], [900, 'окт']];
+    const top = 1800, H = 136;
+    const months = MV.map(([v, l], i) => ({ v: v.toLocaleString('ru-RU'), l, h: Math.round(v / top * H) + 'px', c: i >= 9 ? '#F5AF20' : '#8A919B' }));
+
+    const calc = [
+      { k: 'Средний оборот', v: '1 000 000 ₽', note: 'в месяц, за 12 мес.' },
+      { k: 'Текущие платежи', v: '150 000 ₽', note: 'по данным БКИ' },
+      { k: 'Свободно для платежа', v: '150 000 ₽', note: 'в месяц' },
+      { k: 'Лимит по оборотам', v: '2 000 000 ₽', note: '2 средних оборота' },
+      { k: 'Ставка', v: '26%', note: 'класс C' },
+    ];
+
+    const opts = [['approve', 'Одобрить'], ['counter', 'Встречное'], ['decline', 'Отказать'], ['request', 'Запросить данные']];
+    const options = opts.map(([id, label]) => { const sel = decision === id; return { label, sel,
+      bg: sel ? '#FFFFFF' : 'transparent', shadow: sel ? '0 1px 2px rgba(31,35,41,0.16)' : 'none', color: sel ? '#1F2329' : '#535C68', font: (sel ? '600' : '500') + " 14px/20px 'Onest',sans-serif",
+      pick: () => !done && set({ decision: id, tried: false }) }; });
+
+    const amt = parseInt(String(S.counterAmount).replace(/\D/g, ''), 10) || 0;
+    const qs = S.questions;
+    const questions = qs.map((text, i) => ({ n: i + 1, text,
+      set: (e) => { const a = [...qs]; a[i] = e.target.value; set({ questions: a }); },
+      remove: () => set({ questions: qs.length > 1 ? qs.filter((_, j) => j !== i) : [''] }) }));
+
+    let missing = '';
+    if (!S.comment.trim()) missing = 'Заполните комментарий';
+    if (decision === 'counter' && !amt) missing = 'Укажите сумму';
+    if (decision === 'decline' && !S.reason) missing = 'Выберите причину для клиента';
+    if (decision === 'request' && !qs.some(q => q.trim())) missing = 'Добавьте хотя бы один вопрос';
+    const cant = !!missing || done;
+    const label = opts.find(o => o[0] === decision)[1];
+
+    const submit = () => {
+      if (done) return;
+      if (missing) return set({ tried: true });
+      set({ submitted: label, tab: 'protocol' });
+    };
+
+    const proto = [
+      ['14:03', 'Система', 'Сведения получены: ЕГРЮЛ, БКИ, ФНС'],
+      ['14:03', 'Система', 'Оценка 54 из 100, класс C — пограничная, направлено андеррайтеру'],
+      ['14:03', 'Система', 'Рекомендация: одобрить 1 000 000 ₽ на 24 мес. под 26%'],
+      ['14:05', 'Петров И. С.', 'Заявка взята в работу'],
+    ];
+    if (done) {
+      const detail = decision === 'counter' ? ' ' + this.fmt(amt) + ' на ' + S.counterTerm + ' мес.' : decision === 'decline' ? ' · ' + S.reason : decision === 'request' ? ' · вопросов: ' + qs.filter(q => q.trim()).length : ' 1 000 000 ₽ на 24 мес.';
+      proto.push(['14:15', 'Петров И. С.', 'Решение: ' + label + detail + ' — «' + S.comment.trim() + '»']);
+      if (decision !== 'approve') proto.push(['14:15', 'Система', 'Отмечено расхождение с рекомендацией']);
+    }
+    const hist = [
+      ['14:02', 'Клиент', 'Заявка подана: экспресс-кредит 1 000 000 ₽ на 24 мес.'],
+      ['14:02', 'Система', 'Данные заявки проверены'],
+      ['14:03', 'Система', 'Автооценка завершена: C, 54 балла'],
+      ['14:03', 'Система', 'Заявка поставлена в очередь андеррайтера'],
+      ['14:05', 'Петров И. С.', 'Открыл заявку'],
+    ];
+    if (done) hist.push(['14:15', 'Петров И. С.', 'Принято решение «' + label + '»']);
+    const rows = S.tab === 'protocol' ? proto : hist;
+    const log = rows.map(([t, who, e], i) => { const last = i === rows.length - 1; return { t, who, e, w: last ? 500 : 400, c: e.startsWith('Отмечено') ? '#8B6001' : '#1F2329' }; });
+    const tabs = [['protocol', 'Протокол решения'], ['history', 'История заявки']].map(([id, l]) => { const sel = S.tab === id; return { label: l, sel,
+      line: sel ? 'inset 0 -2px 0 #1F2329' : 'none', color: sel ? '#1F2329' : '#535C68', font: (sel ? '600' : '500') + " 14px/20px 'Onest',sans-serif", pick: () => set({ tab: id }) }; });
+
+    return {
+      showStages: this.props.showStages ?? true, stages, panel, groups, sources, months, avgLine: Math.round(1000 / top * H) + 'px', calc, options,
+      isCounter: decision === 'counter', isDecline: decision === 'decline', isRequest: decision === 'request',
+      counterAmount: S.counterAmount, counterTerm: S.counterTerm, counterPayment: amt ? this.fmt(this.pmt(amt, +S.counterTerm)) : '—',
+      setCounterAmount: (e) => set({ counterAmount: e.target.value }), setCounterTerm: (e) => set({ counterTerm: e.target.value }),
+      reason: S.reason, setReason: (e) => set({ reason: e.target.value }),
+      questions, qCount: qs.length, canAddQ: qs.length < 5, addQ: () => qs.length < 5 && set({ questions: [...qs, ''] }),
+      comment: S.comment, setComment: (e) => set({ comment: e.target.value }),
+      mismatch: decision !== 'approve', submit, cantSubmit: cant,
+      submitBg: done ? '#EFFAF3' : cant ? '#F2F3F5' : '#DC2C26', submitColor: done ? '#17704A' : cant ? '#6A7280' : '#FFFFFF', submitCursor: cant ? 'default' : 'pointer',
+      submitLabel: done ? 'Решение принято' : 'Принять решение',
+      hint: done ? '' : (missing && S.tried ? missing : missing ? missing : ''),
+      tabs, log,
+    };
+  }
+}
+</script>
+</body>
+</html>
