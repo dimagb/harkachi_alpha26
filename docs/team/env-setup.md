@@ -111,3 +111,22 @@ TG_CHAT_ID=<id группы>
 AGENT_ID=<backend | frontend | analytics>
 ```
 Проверка: `uv run --no-project python tools/notify.py START TEST "проверка связи"` — сообщение появилось в группе.
+
+## 9. Если Codex не может открыть PR (`gh`: «The token in GH_TOKEN is invalid»)
+Причина: в Windows задана переменная `GH_TOKEN` со старым или чужим токеном. `gh` берёт её вместо обычного входа, а Codex на ноутбуке видит только эту переменную.
+1. В PowerShell (не в Codex) проверить, где она задана:
+   ```powershell
+   [Environment]::GetEnvironmentVariable('GH_TOKEN','User')
+   [Environment]::GetEnvironmentVariable('GH_TOKEN','Machine')
+   ```
+2. Создать новый токен: github.com → Settings → Developer settings → Personal access tokens → **Fine-grained tokens** → Generate new token. Repository access: **Only select repositories** → `dimagb/harkachi_alpha26`. Permissions: **Contents — Read and write**, **Pull requests — Read and write**. Срок — 7 дней.
+3. Записать его в переменную пользователя (подставить свой токен), закрыть и заново открыть Codex:
+   ```powershell
+   [Environment]::SetEnvironmentVariable('GH_TOKEN','github_pat_…','User')
+   ```
+   Если на шаге 1 переменная нашлась в `Machine`, позвать человека: её нужно удалить от администратора.
+4. Проверка — попросить агента выполнить `gh auth status`: должно быть «Logged in to github.com account <логин> (GH_TOKEN)».
+
+Токен никому не пересылать и не вставлять в чаты. Если и после этого не работает — агент делает `git push`, а PR открывает оператор по ссылке из вывода `git push`.
+
+**Облако и ноутбук — не путать.** Задача в приложении Codex на ноутбуке (адрес `local/…`) — это ноутбук: промпт «На ноутбуке», PR делает агент. Codex Cloud — только сайт chatgpt.com/codex: там промпт «В Codex Cloud», PR — кнопкой «Create PR» на странице задачи.
