@@ -32,7 +32,7 @@ def test_validation_public_rule_closes_after_answer():
     )
 
 
-def test_eligible_date_clamps_end_of_month():
+def test_eligible_date_uses_first_day_of_eligible_month():
     assert decision.eligible_date(date(2025, 8, 31), decision.DEFAULT_CONFIG) == date(
-        2026, 2, 28
+        2026, 2, 1
     )
