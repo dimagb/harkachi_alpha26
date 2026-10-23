@@ -122,8 +122,14 @@ def company_profile(
     summary="Создать заявку",
     responses=errors(401, 403, 409, 422, 501),
 )
-def create_application(body: s.ApplicationCreate):
-    not_implemented()
+def create_application(
+    body: s.ApplicationCreate,
+    user: Annotated[User, Depends(client_user)],
+    session: Annotated[Session, Depends(get_session)],
+):
+    from app.applications import serializers, service
+
+    return serializers.to_client(session, service.create(session, body, user), user)
 
 
 @router.patch(
@@ -137,8 +143,14 @@ def patch_application(
     id: UUID,
     body: s.ApplicationPatch,
     if_match: Annotated[int, Header(alias="If-Match")],
+    user: Annotated[User, Depends(client_user)],
+    session: Annotated[Session, Depends(get_session)],
 ):
-    not_implemented()
+    from app.applications import serializers, service
+
+    return serializers.to_client(
+        session, service.patch(session, id, body, if_match, user), user
+    )
 
 
 @router.get(
@@ -148,8 +160,17 @@ def patch_application(
     summary="Получить заявки компании",
     responses=errors(401, 403, 422, 501),
 )
-def applications(company_id: UUID):
-    not_implemented()
+def applications(
+    company_id: UUID,
+    user: Annotated[User, Depends(client_user)],
+    session: Annotated[Session, Depends(get_session)],
+):
+    from app.applications import serializers, service
+
+    return [
+        serializers.to_list_item(session, item, user)
+        for item in service.list_applications(session, company_id, user)
+    ]
 
 
 @router.get(
@@ -159,8 +180,14 @@ def applications(company_id: UUID):
     summary="Получить заявку",
     responses=errors(401, 403, 404, 422, 501),
 )
-def application(id: UUID):
-    not_implemented()
+def application(
+    id: UUID,
+    user: Annotated[User, Depends(client_user)],
+    session: Annotated[Session, Depends(get_session)],
+):
+    from app.applications import serializers, service
+
+    return serializers.to_client(session, service.get(session, id, user), user)
 
 
 @router.post(

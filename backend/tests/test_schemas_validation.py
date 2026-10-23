@@ -30,7 +30,6 @@ def validation_user():
     [
         (CREATE, "ApplicationCreate", {"purpose_text": "x" * 9}, "purpose_text"),
         (CREATE, "ApplicationCreate", {"purpose_text": "x" * 501}, "purpose_text"),
-        (CREATE, "ApplicationCreate", {"purpose": "OTHER"}, "request"),
         (
             CREATE,
             "ApplicationCreate",

@@ -13,6 +13,11 @@ from app.schemas.api import (
 )
 from app.security import verify_password
 
+DUMMY_HASH = (
+    "$argon2id$v=19$m=65536,t=3,p=4$GxCqFYBHRaeenn+hB4rnKg$"
+    "WuLbMZZLvWbS0rIbRGGK0xVUkERl2w6AKbX1PfSgt94"
+)
+
 
 def _brief(user: User) -> UserBrief:
     return UserBrief(id=str(user.id), full_name=user.full_name, role=user.role)
@@ -20,7 +25,10 @@ def _brief(user: User) -> UserBrief:
 
 def login(session: Session, login: str, password: str) -> LoginResponse:
     user = session.scalar(select(User).where(User.login == login))
-    if user is None or not verify_password(password, user.password_hash):
+    verified = verify_password(
+        password, DUMMY_HASH if user is None else user.password_hash
+    )
+    if user is None or not verified:
         raise ApiErrorException(401, "UNAUTHORIZED", "Неверный логин или пароль")
     return LoginResponse(
         access_token=create_access_token(user),

@@ -43,7 +43,9 @@ def test_access_matrix(migrated_database, method, path, actor, expected):
             own = session.scalar(
                 select(Company).where(Company.inn == PERSONAS[0]["inn"])
             )
-            foreign = session.scalar(select(Company).where(Company.id != own.id))
+            foreign = session.scalar(
+                select(Company).where(Company.inn == PERSONAS[1]["inn"])
+            )
             path = path.format(own=own.id, foreign=foreign.id, missing=uuid4())
             if actor != "anonymous":
                 login = "ip_good" if actor == "client" else "underwriter"
@@ -77,6 +79,24 @@ def test_access_matrix(migrated_database, method, path, actor, expected):
                 )
                 assert re.search("[А-Яа-яЁё]", data["error"]["message"])
                 assert isinstance(data["error"]["details"], dict)
+
+
+def test_foreign_and_missing_company_have_identical_response(migrated_database):
+    engine, _ = migrated_database
+    with Session(engine) as session, api_client(session) as client:
+        token = client.post(
+            "/auth/login", json={"login": "ip_good", "password": "b03-test-password"}
+        ).json()["access_token"]
+        client.headers["Authorization"] = f"Bearer {token}"
+        foreign = session.scalar(
+            select(Company).where(Company.inn == PERSONAS[1]["inn"])
+        )
+        responses = [
+            client.get(f"/companies/{company_id}/profile")
+            for company_id in (foreign.id, uuid4())
+        ]
+        assert [response.status_code for response in responses] == [404, 404]
+        assert responses[0].json() == responses[1].json()
 
 
 PROTECTED = [

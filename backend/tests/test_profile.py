@@ -9,6 +9,15 @@ from test_auth import PERSONAS, api_client
 from app.models import AccountTurnover, Company
 
 
+@pytest.fixture(autouse=True)
+def clear_settings_cache():
+    from app.config import get_settings
+
+    get_settings.cache_clear()
+    yield
+    get_settings.cache_clear()
+
+
 @pytest.fixture
 def profile_context(migrated_database):
     from app.integrations.registry import FakeRegistryProvider
