@@ -1,11 +1,12 @@
 from typing import Literal
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.api.routes import auth_router, router
+from app.auth.deps import bind_current_user
 from app.config import get_settings
 from app.db import engine
 from app.errors import ApiError, register_error_handlers
@@ -31,7 +32,7 @@ app = FastAPI(
 register_error_handlers(app)
 app.add_middleware(CorrelationMiddleware)
 app.include_router(auth_router)
-app.include_router(router)
+app.include_router(router, dependencies=[Depends(bind_current_user)])
 
 
 @app.get("/api/v1/health", response_model=HealthResponse)

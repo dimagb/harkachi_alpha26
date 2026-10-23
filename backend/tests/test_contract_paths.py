@@ -2,12 +2,15 @@
 
 import re
 from pathlib import Path
+from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
 from fixtures_bodies import BODIES, ID
 
+from app.auth.deps import current_user
 from app.main import app
+from app.models import User
 
 
 def contract_rows():
@@ -29,6 +32,25 @@ def contract_rows():
 
 ROWS = contract_rows()
 STUBS = [row for row in ROWS if row[1] not in {"/api/v1/health", "/api/v1/ready"}]
+IMPLEMENTED = {
+    ("POST", "/api/v1/auth/login"),
+    ("GET", "/api/v1/me"),
+    ("GET", "/api/v1/products"),
+    ("POST", "/api/v1/calculator"),
+    ("GET", "/api/v1/companies/{id}/profile"),
+}
+assert len(IMPLEMENTED) == 5
+
+
+@pytest.fixture
+def stub_user():
+    app.dependency_overrides[current_user] = lambda: User(
+        id=uuid4(), role="CLIENT", login="t", full_name="t", password_hash=""
+    )
+    try:
+        yield
+    finally:
+        app.dependency_overrides.pop(current_user, None)
 
 
 def test_contract_paths_exact():
@@ -41,8 +63,13 @@ def test_contract_paths_exact():
     assert actual == expected
 
 
-@pytest.mark.parametrize("method,path,role,body_type,transition", STUBS)
-def test_valid_requests_reach_stub(method, path, role, body_type, transition):
+@pytest.mark.parametrize(
+    "method,path,role,body_type,transition",
+    [row for row in STUBS if (row[0].upper(), row[1]) not in IMPLEMENTED],
+)
+def test_valid_requests_reach_stub(
+    method, path, role, body_type, transition, stub_user
+):
     response = TestClient(app).request(
         method,
         path.replace("{id}", ID),

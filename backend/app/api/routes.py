@@ -3,15 +3,34 @@
 from typing import Annotated, NoReturn
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Header, Query
+from fastapi import APIRouter, Depends, Header, Query, Request
 from fastapi.security import HTTPBearer
+from sqlalchemy.orm import Session
 
+from app.auth import service as auth_service
+from app.catalog import calculator as calculator_service
+from app.catalog.products import list_products
+from app.companies import profile as profile_service
+from app.db import get_session
 from app.errors import ApiError, ApiErrorException, ErrorCode
+from app.integrations.registry import RegistryProvider, get_registry_provider
+from app.models import User
 from app.schemas import api as s
 
 bearer = HTTPBearer(auto_error=False, scheme_name="bearerAuth")
 router = APIRouter(prefix="/api/v1", dependencies=[Depends(bearer)])
 auth_router = APIRouter(prefix="/api/v1", tags=["Аутентификация"])
+
+
+def authenticated_user(request: Request) -> User:
+    # The common router dependency authenticates once, before any handler runs.
+    return request.state.user
+
+
+def client_user(user: Annotated[User, Depends(authenticated_user)]) -> User:
+    from app.auth.deps import require_roles
+
+    return require_roles("CLIENT")(user)
 
 
 def errors(*codes: int) -> dict:
@@ -30,8 +49,8 @@ def not_implemented() -> NoReturn:
     summary="Войти в кабинет",
     responses=errors(422, 501),
 )
-def login(body: s.LoginRequest):
-    not_implemented()
+def login(body: s.LoginRequest, session: Annotated[Session, Depends(get_session)]):
+    return auth_service.login(session, body.login, body.password)
 
 
 @router.get(
@@ -41,8 +60,11 @@ def login(body: s.LoginRequest):
     summary="Получить данные пользователя",
     responses=errors(401, 501),
 )
-def me():
-    not_implemented()
+def me(
+    user: Annotated[User, Depends(authenticated_user)],
+    session: Annotated[Session, Depends(get_session)],
+):
+    return auth_service.me(session, user)
 
 
 @router.get(
@@ -52,8 +74,11 @@ def me():
     summary="Получить кредитные продукты",
     responses=errors(401, 403, 501),
 )
-def products():
-    not_implemented()
+def products(
+    user: Annotated[User, Depends(client_user)],
+    session: Annotated[Session, Depends(get_session)],
+):
+    return list_products(session)
 
 
 @router.post(
@@ -63,8 +88,12 @@ def products():
     summary="Рассчитать условия кредита",
     responses=errors(401, 403, 422, 501),
 )
-def calculator(body: s.CalculatorRequest):
-    not_implemented()
+def calculator(
+    body: s.CalculatorRequest,
+    user: Annotated[User, Depends(client_user)],
+    session: Annotated[Session, Depends(get_session)],
+):
+    return calculator_service.calculate(session, body)
 
 
 @router.get(
@@ -74,8 +103,16 @@ def calculator(body: s.CalculatorRequest):
     summary="Получить профиль компании",
     responses=errors(401, 403, 404, 422, 501),
 )
-def company_profile(id: UUID):
-    not_implemented()
+def company_profile(
+    id: UUID,
+    user: Annotated[User, Depends(client_user)],
+    session: Annotated[Session, Depends(get_session)],
+    registry: Annotated[RegistryProvider, Depends(get_registry_provider)],
+):
+    from app.auth.deps import member_company
+
+    company, membership = member_company(id, user, session)
+    return profile_service.company_profile(session, company, registry)
 
 
 @router.post(

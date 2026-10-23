@@ -44,12 +44,14 @@ class ApiErrorException(Exception):
         code: ErrorCode,
         message: str,
         details: dict[str, object] | None = None,
+        headers: dict[str, str] | None = None,
     ) -> None:
         super().__init__(message)
         self.status = status
         self.code = code
         self.message = message
         self.details = details
+        self.headers = headers
 
 
 def validation_message(item: dict) -> str:
@@ -95,7 +97,9 @@ def error_response(
 def register_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(ApiErrorException)
     async def api_error(request: Request, exc: ApiErrorException) -> JSONResponse:
-        return error_response(exc.status, exc.code, exc.message, exc.details)
+        return error_response(
+            exc.status, exc.code, exc.message, exc.details, headers=exc.headers
+        )
 
     @app.exception_handler(HTTPException)
     async def http_error(request: Request, exc: HTTPException) -> JSONResponse:
