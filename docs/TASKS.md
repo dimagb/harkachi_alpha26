@@ -644,6 +644,7 @@ uv run --no-project --python 3.12 --with pytest --with httpx --with jsonschema p
 - `backend/alembic/versions/` — **одна новая** миграция (создана `autogenerate`, вычитана) только для таблицы `otp`;
 - `backend/app/api/routes.py` — **только** тела `POST /applications/{id}/otp`, `/submit`, `/request-signature` и `Depends(...)`;
 - `backend/tests/test_contract_paths.py` — **только** +3 пути в `IMPLEMENTED`, `len` = 12;
+- `backend/tests/test_models_seed.py` — **только** добавить `"otp"` в ожидаемый набор таблиц `TABLES` (ответ на блокер 23.10);
 - попутно, замечания ревью B-05: в `routes.py` добавить 404 в `errors(...)` у `POST /applications` и `GET /applications` и пересобрать `contracts/openapi.json` и `frontend/src/api/schema.d.ts` и 409 в `errors(...)` у `POST /applications/{id}/otp` (ответ на вопрос 23.10) — **это единственный разрешённый дифф контракта** (тимлид одобрил); `backend/app/applications/service.py` — явный список полей, которые правит PATCH (без `state`), и `created_at=datetime.now(UTC)` у события создания; тест в `test_applications_api.py`, что PATCH не может изменить `state`;
 - тесты: `backend/tests/test_otp.py`, `backend/tests/test_submit.py` (новые).
 
