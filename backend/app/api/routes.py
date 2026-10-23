@@ -213,7 +213,7 @@ def request_signature(
     response_model=s.OtpResponse,
     tags=["Действия клиента"],
     summary="Запросить код подтверждения",
-    responses=errors(401, 403, 404, 422, 501),
+    responses=errors(401, 403, 404, 409, 422, 501),
 )
 def otp(
     id: UUID,

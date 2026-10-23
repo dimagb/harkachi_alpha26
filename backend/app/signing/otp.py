@@ -65,8 +65,6 @@ def issue(
         require_signatory(session, application, user)
         require_state(application, "DRAFT")
     else:
-        # TODO(lead): добавить 409 INVALID_TRANSITION для /otp в OpenAPI;
-        # карточка B-06 разрешает в схемах только два ответа 404 у /applications.
         require_state(
             application,
             *(("OFFER_ISSUED", "SIGNING") if body.purpose == "OFFER" else ("SIGNING",)),
