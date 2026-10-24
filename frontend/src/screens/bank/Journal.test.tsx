@@ -25,6 +25,17 @@ function open() {
 async function ready() { open(); await screen.findByText('Показано 1–20 из 28'); }
 function filter(name: string) { fireEvent.click(screen.getByRole('combobox', { name: 'Этап' })); fireEvent.click(screen.getByRole('option', { name })); }
 
+it('при потере связи показывает русскую встроенную ошибку без уведомлений и даёт повторить', async () => {
+  server.use(http.get('*/api/v1/bank/applications', () => HttpResponse.error()));
+  open();
+  const alert = await screen.findByRole('alert', {}, { timeout: 5000 });
+  expect(alert.textContent).toContain('Нет связи с сервером. Проверьте соединение и попробуйте ещё раз.');
+  expect(document.querySelectorAll('.mantine-Notifications-root .mantine-Notification-root')).toHaveLength(0);
+  server.resetHandlers(...createJournalHandlers(), ...createBankHandlers());
+  fireEvent.click(within(alert).getByRole('button', { name: 'Повторить' }));
+  await screen.findByRole('table', { name: 'Заявки банка' });
+});
+
 it('показывает 20 строк, московское время, страницу 2 и сбрасывает страницу фильтром', async () => {
   const urls: URL[] = [];
   server.events.on('request:start', ({ request }) => { if (request.url.includes('/bank/applications')) urls.push(new URL(request.url)); });

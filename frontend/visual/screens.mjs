@@ -48,6 +48,9 @@ try {
       await page.waitForTimeout(300);
       const dimensions = await page.evaluate(() => ({ width: globalThis.document.documentElement.scrollWidth, viewport: globalThis.innerWidth }));
       assert(dimensions.width <= dimensions.viewport, `${name}: горизонтальный скролл на ${width} px (${dimensions.width})`);
+      if (['queue-error', 'journal-error', 'applications-error'].includes(name)) {
+        assert.equal(await page.locator('.mantine-Notifications-root .mantine-Notification-root').count(), 0, `${name}: 0 уведомлений`);
+      }
       if (!check) await page.screenshot({ path: `${out}/screens-${name}-${width}.png`, fullPage: true });
       console.log(`${name}: ${width} px, горизонтального скролла нет`);
     }

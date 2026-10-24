@@ -17,6 +17,11 @@ function errorMessage(body: unknown): string | undefined {
   if (typeof error === 'object' && error !== null && 'message' in error && typeof error.message === 'string') return error.message;
 }
 
+// Calculator uses POST, but only reads an estimate like the GET queries.
+function isAction(request: Request, schemaPath: string): boolean {
+  return request.method !== 'GET' && request.method !== 'HEAD' && schemaPath !== '/calculator';
+}
+
 // OpenAPI contains full paths; the client owns the /api/v1 prefix once.
 type RelativePaths = {
   [Path in keyof paths as Path extends `/api/v1${infer Relative}`
@@ -35,16 +40,19 @@ api.use({
     if (token && schemaPath !== '/auth/login') request.headers.set('Authorization', `Bearer ${token}`);
     return request;
   },
-  async onResponse({ response }) {
+  async onResponse({ request, schemaPath, response }) {
     if (response.status === 401) setToken(null);
-    if (!response.ok) {
+    if (!response.ok && isAction(request, schemaPath)) {
       const body: unknown = await response.clone().json().catch(() => null);
-      notifications.show({ color: 'red', title: 'Не удалось выполнить действие', message: errorMessage(body) ?? 'Не удалось выполнить запрос. Попробуйте ещё раз.' });
+      const message = errorMessage(body) ?? 'Не удалось выполнить запрос. Попробуйте ещё раз.';
+      notifications.show({ id: `api-error:${message}`, color: 'red', title: 'Не удалось выполнить действие', message });
     }
   },
-  onError({ error }) {
+  onError({ request, schemaPath, error }) {
     if (typeof error === 'object' && error !== null && 'name' in error && error.name === 'AbortError') return;
-    notifications.show({ color: 'red', message: 'Нет связи с сервером. Проверьте соединение и попробуйте ещё раз.' });
+    const message = 'Нет связи с сервером. Проверьте соединение и попробуйте ещё раз.';
+    if (!isAction(request, schemaPath)) return new Error(message);
+    notifications.show({ id: `api-error:${message}`, color: 'red', message });
   },
 });
 
