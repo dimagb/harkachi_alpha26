@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.models import Application, Company
 from app.schemas.api import ApplicationState, BankListItem, Page
-from app.underwriting.queue import latest_auto, latest_entry
+from app.underwriting.queue import entry_route, latest_auto, latest_entry
 
 
 def list_applications(
@@ -32,9 +32,7 @@ def list_applications(
             case(
                 (
                     manual,
-                    func.coalesce(
-                        entry.c.payload["route_reason"].astext, auto.c.route_reason
-                    ),
+                    entry_route(entry, auto),
                 ),
                 else_=auto.c.route_reason,
             ).label("route_reason"),

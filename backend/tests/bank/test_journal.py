@@ -122,6 +122,39 @@ def test_empty_journal(bank_context):
     assert response.json() == {"items": [], "total": 0, "page": 1, "size": 20}
 
 
+# TODO(lead): bank card event rendering returns 500 for an object route_reason;
+# B-10c covers queue/journal responses and current_route, not event rendering.
+@pytest.mark.parametrize(
+    "path",
+    [
+        "/api/v1/bank/applications",
+        "/api/v1/underwriting/queue",
+    ],
+)
+@pytest.mark.parametrize("route", ["FOO", "", None, 123, {"code": "GRADE_C"}])
+def test_invalid_manual_entry_route_falls_back_to_auto(
+    bank_context, pipeline_factory, run_persona, path, route
+):
+    client, _ = bank_context
+    identity = run_persona("ooo_border")
+    with pipeline_factory.begin() as session:
+        entry = session.scalar(
+            select(ApplicationEvent).where(
+                ApplicationEvent.application_id == identity,
+                ApplicationEvent.to_state == "MANUAL_REVIEW",
+            )
+        )
+        entry.payload = {"route_reason": route}
+    response = client.get(path)
+    assert response.status_code == 200, response.text
+    body = response.json()
+    if path == "/api/v1/bank/applications":
+        item = body["items"][0]
+    else:
+        item = body[0]
+    assert item["route_reason"] == "GRADE_C"
+
+
 def test_latest_auto_and_manual_entry_override(
     bank_context, pipeline_factory, run_persona
 ):

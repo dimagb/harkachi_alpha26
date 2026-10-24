@@ -17,9 +17,10 @@ def overdue_offer(factory, identity):
         ) - timedelta(days=1)
 
 
-def test_expiry_skips_locked_application(pipeline_factory, run_persona):
+def test_expiry_skips_locked_application(pipeline_factory, run_persona, caplog):
     from app.expiry.service import expire_due
 
+    caplog.set_level("DEBUG", logger="app.expiry.service")
     identity = run_persona("ip_good")
     overdue_offer(pipeline_factory, identity)
     with pipeline_factory.begin() as session:
@@ -28,7 +29,14 @@ def test_expiry_skips_locked_application(pipeline_factory, run_persona):
         )
         assert expire_due(pipeline_factory) == 0
         assert application.state == "OFFER_ISSUED"
+    assert [record.getMessage() for record in caplog.records] == [
+        "Expiry skipped locked applications: 1"
+    ]
+    caplog.clear()
     assert expire_due(pipeline_factory) == 1
+    assert [record.getMessage() for record in caplog.records] == [
+        "Expiry skipped locked applications: 0"
+    ]
 
 
 def test_failure_rolls_back_one_application_and_continues(
