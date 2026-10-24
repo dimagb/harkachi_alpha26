@@ -38,7 +38,7 @@
 | F-04b | Доводка карточки заявки и оболочки до макета | Лана | 24.10, слить до 12:00 | нет | F-04 ✔ | слит (PR #20) |
 | F-00a | Раскладка фронтенда под параллельную работу | — | — | — | — | влита в F-07 (свои файлы + общие строки последним шагом) |
 | A-05 | Коллекция HTTP-запросов (T9) | Катя | 24.10 вечер | да | B-01 | [черновик] |
-| B-08 | Андеррайтер: очередь, карточка банка, решение | Аня | 25.10 | нет | B-07 | [черновик] |
+| B-08 | Андеррайтер: очередь, карточка банка, ручное решение | Аня | 24.10 с 15:00 | нет | B-07c ✔ | [готова] |
 | B-09 | Оферта, подпись, выдача, отзыв, возражение | Аня | 25.10 | нет | B-07 | [черновик] |
 | B-10 | Истечения, `time-shift`, журнал банка, фоновые заявки | Аня | 25.10 | нет | B-09, A-02 | [черновик] |
 | F-05 | Решение и дозапрос в карточке заявки (ключевой экран 2) | Лана | 24.10 | нет | F-04b ✔ | [готова] |
@@ -1289,6 +1289,69 @@ uv run --no-project --python 3.12 --with pytest --with httpx --with jsonschema p
 - После слияния B-10a тимлид проверяет журнал и перемотку на стенде.
 
 **Не делать:** очередь и карточку андеррайтера (F-07), бэкенд (B-10a), контракты, `theme.ts`, `visual/*`, `package.json`; не менять файлы F-07, кроме одной ссылки в `UnderwriterCard.tsx`.
+
+### B-08 — Андеррайтер: очередь, карточка банка, ручное решение · Аня · Облако: нет · ≤5 ч
+**Зачем.** Сторона банка (D1): заявки, которые система не решает сама (`GRADE_C`, сумма выше порога, ИП без согласия, источник недоступен, ответ на вопрос, возражение), попадают в очередь; специалист видит весь протокол — баллы, правила, внутренние причины, сведения источников — и принимает решение с комментарием; расхождение с рекомендацией системы фиксируется (`UNDERWRITER_OVERRIDE`). На этом пути персонаж `ooo_border` доходит до оферты (сценарий A-03). Фронтенд (F-07) уже строится по этому контракту на моках — отдавать **ровно** контракт.
+
+**Соглашения (как раньше):** пользователь — через зависимости `app/api/routes.py`; состояние меняет только `transition()` (`actor_type = UNDERWRITER`); в `application_event.reason_code` — только коды `reason_catalog`, остальное — в `payload`; ошибки — `ApiErrorException`; контракт (`contracts/`, `openapi.json`, `schema.d.ts`) не меняется — после пересборки дифф пустой.
+
+**Файлы:**
+- `backend/app/underwriting/queue.py`, `card.py`, `decide.py` (новые);
+- `backend/app/api/routes.py` — **только** тела `GET /underwriting/queue`, `GET /underwriting/applications/{id}`, `POST /underwriting/{id}/decision` и `Depends(...)` (зависимость «только `UNDERWRITER`» — новая функция рядом с `client_user`);
+- `backend/app/applications/serializers.py` — **только**: (а) возможность собрать базовую часть `ApplicationClient` для сотрудника банка (`allowed_actions = []`, `is_me = false`, без требований членства в компании); (б) в `_client_reason` категория берётся из `decision.inputs_snapshot["client_category"]`, если в каталоге она `NULL` (`UNDERWRITER_DECLINE`); (в) `_offer_client` берёт `factors` для `explanation` из последнего решения `kind = AUTO` (у ручного решения `factors = []`);
+- `backend/app/schemas/api.py` — **только** удалить `model_validator` у `UnderwriterDecisionRequest` (поля и ограничения `Field` не трогать; OpenAPI от этого не меняется — проверить пустым диффом): его ошибки уходят в `details.fields.request`, а форма F-07 показывает ошибки под полями — эти проверки переезжают в `decide.py` с ключами полей;
+- `backend/tests/test_contract_paths.py` — **только** +3 пути в `IMPLEMENTED`, `len` = 16 (аргумент `responses=errors(..., 501)` в декораторах **не трогать** — его требует `test_operation_metadata`);
+- тесты: `backend/tests/underwriting/*.py` (новые).
+
+**Читать:** `contracts/api-types.ts` (раздел «Андеррайтер и банк» целиком, `ApplicationClient`, `ClientReason`, `InfoRequestClient`, `CompanyProfile`); `contracts/api.md` (строки `/underwriting/*`); `contracts/codes.md` («Причины маршрутизации», «Решения андеррайтера», «Коды причин» — строка `UNDERWRITER_DECLINE`, «Типы событий журнала», «Пункты дозапроса» — `UNDERWRITER_QUESTION`); `docs/state-machine.md` (строки `MANUAL_REVIEW → …`, `INFO_REQUESTED → MANUAL_REVIEW`); `docs/decision-model.md` §6–§8 (ставка, платёж, протокол, ручное решение); `backend/app/pipeline/persist.py`, `backend/app/pipeline/steps.py` (как ставится задача и пишется событие), `backend/app/applications/serializers.py`, `backend/app/decision/policy.py` (ставка), `backend/app/decision/scoring.py` (`annuity`), `backend/app/companies/profile.py`.
+
+**Сделать:**
+1. **Доступ:** все три эндпоинта — только роль `UNDERWRITER`; клиент или поручитель → 403 `FORBIDDEN`; без токена → 401; несуществующая заявка → 404.
+2. **`GET /underwriting/queue` → `QueueItem[]`:** заявки в `MANUAL_REVIEW`, по возрастанию `waiting_since`. Для каждой:
+   - `route_reason` и `waiting_since` — из **последнего** события `STATE_CHANGED` с `to_state = 'MANUAL_REVIEW'`: `payload.route_reason` и `created_at` (конвейер B-07a, ответ на вопрос B-07b и будущее возражение B-09 пишут причину туда);
+   - `grade` — из последнего решения `kind = AUTO` (может быть `null`);
+   - `company_name`, `company_kind`, `product_code`, `amount`, `number`, `id`.
+   Если у события нет `payload.route_reason` — запасной вариант: `route_reason` последнего решения `kind = AUTO` (поле в `QueueItem` обязательное). Без N+1: один запрос с подзапросами или `JOIN`; тест считает SQL-запросы **внутри функции очереди** (не весь HTTP-запрос с аутентификацией): не больше 3 при 1 и при 10 заявках.
+3. **`GET /underwriting/applications/{id}` → `ApplicationBank`:**
+   - базовая часть — та же сборка, что `to_client` (лента, `stage`, `offer`, `client_reason`, `info_request`, `parties`, `objection`), но `allowed_actions = []`;
+   - `company` (`CompanyProfile`) — **без HTTP-запросов**: поля компании из БД + `director_full_name`, `founders`, `status` из последнего `external_check` ЕГРЮЛ/ЕГРИП со статусом `OK`, `source_note` — «Данные из ЕГРЮЛ/ЕГРИП на ДД.ММ.ГГГГ» по `fetched_at` (по Москве, D12); такой записи нет — `status = "ACTIVE"`, `director_full_name = ""`, `founders = []`, `source_note` = «Данные из ЕГРЮЛ/ЕГРИП не получены» (колонки `status` у компании нет); `avg_monthly_turnover` — как в `profile.py`;
+   - `risk_flags` — из таблицы `risk_flag` по `company_id` (строки нет — оба `false`); на снимок решения не опираться (у `SOURCE_UNAVAILABLE` в нём нет ключа `risk`);
+   - `turnover_12m` — последние 12 месяцев `account_turnover`, по возрастанию месяца, `month = "YYYY-MM"`;
+   - `decisions` — все, новые первыми; `made_by` — `full_name` сотрудника или `null`; `config_version` — строкой, `key_rate` — из `decision_config` этой версии (одним `JOIN`, без N+1); остальные поля — из колонок как есть;
+   - `external_checks` — по одной последней записи на источник (`EGRUL`, `BKI`, `FNS`), с `response`;
+   - `events` — все события, по времени; `actor` — «Система», «Клиент: {full_name}», «Поручитель: {full_name}» или «Андеррайтер: {full_name}» (по `actor_type` и `actor_id`); `note` — `payload.comment`, иначе `payload.route_reason` / `payload.validation_rule`, иначе `null`;
+   - работает для заявки **в любом состоянии** (A-03 открывает карточку банка для всех 6 персонажей).
+4. **`POST /underwriting/{id}/decision`** (`UnderwriterDecisionRequest`), всё в одной транзакции, строка заявки `FOR UPDATE`:
+   - **проверки** (в `decide.py`; ошибки полей → 422 `VALIDATION_ERROR`, `details.fields` с ключами **`amount`, `term_months`, `client_reason_category`, `info_questions`, `comment`**): `state ≠ MANUAL_REVIEW` → 409 `INVALID_TRANSITION`; `comment` 5–2000; `APPROVE` — `amount` и `term_months` обязательны и **равны параметрам заявки** (иначе 422 `amount`: «Для другой суммы или срока выберите встречное предложение»); `COUNTER` — обязательны, в границах продукта (`validate_terms` из `catalog/calculator.py`; `term_months = 12` для `OVERDRAFT`) и **отличаются** от заявки (иначе 422 `amount`: «Это параметры заявки — выберите одобрение»); `DECLINE` — нужна `client_reason_category`; `REQUEST_INFO` — 1–5 вопросов, каждый 5–500 символов; `RETRY_ENRICHMENT` — только если `route_reason` **последнего решения `kind = AUTO`** = `SOURCE_UNAVAILABLE` (так работает и после цепочки «источник недоступен → вопрос клиенту → ответ»), иначе 409 `INVALID_TRANSITION`;
+   - **решение:** строка `decision(kind = MANUAL, outcome = <outcome>, made_by = user.id, comment, config_version, route_reason = текущий (п. 2), grade/score = из последнего AUTO, factors/rules_fired/internal_reasons/what_if = [], recommendation = null, inputs_snapshot = {"amount", "term_months", "client_category", "info_questions"})` — `inputs_snapshot` в БД обязательный; для `DECLINE` — `client_reason_code = UNDERWRITER_DECLINE`, категория — в `inputs_snapshot.client_category` (новой колонки и миграции нет);
+   - **`APPROVE` / `COUNTER`:** ставка = `policy.rate` последнего решения AUTO, если `policy` не `null`; иначе — консервативная: `cfg.key_rate + product.spreads["C"]` (как в `policy.py`; у авто-отказа `policy = null`, а у оценки D спреда нет); платёж — `annuity` из `scoring.py` с округлением `rub()` (для `OVERDRAFT` — `null`); новая `offer` (`version = 1` — в `MANUAL_REVIEW` действующей оферты нет; `kind` = `APPROVED` при `APPROVE`, `COUNTER` при `COUNTER`; `expires_at` = сейчас + `offer_valid_days`) → `current_offer_id`; для `COUNTER` клиентский `counter_reason` — нейтральный: «Специалист банка подобрал сумму и срок с учётом ваших оборотов и обязательств»; `transition(→ OFFER_ISSUED)`; событие `OFFER_ISSUED`;
+   - **`DECLINE`:** `transition(→ DECLINED)`; в событии `STATE_CHANGED` `reason_code = UNDERWRITER_DECLINE`; клиент видит текст и действие из каталога и выбранную категорию;
+   - **`REQUEST_INFO`:** `info_request(source = UNDERWRITER, items = [{item_code: "UNDERWRITER_QUESTION", question, requires_value: false}, …], due_at = сейчас + info_due_days)`; `transition(→ INFO_REQUESTED)`; ответ клиента уже обрабатывает B-07b (возврат в `MANUAL_REVIEW` с `route_reason = INFO_RESPONSE`);
+   - **`RETRY_ENRICHMENT`:** `transition(→ ENRICHMENT)` + строка `Job` на шаг сбора сведений напрямую (как в обработчике `info-response`; закрытый `_schedule` конвейера не вызывать); источники опрашиваются заново (исправление ревью B-07a);
+   - **события:** свой помощник в `underwriting/` с `actor_type = UNDERWRITER` и `actor_id = user.id` (`persist.event()` всегда пишет `SYSTEM` — не использовать); `DECISION_MADE` (`payload = {outcome, kind: "MANUAL", comment}` — клиенту события не отдаются); если есть рекомендация (последнее AUTO с `recommendation`) и решение с ней **расходится** — исход `APPROVE`/`COUNTER`/`DECLINE` ≠ `recommendation.outcome`, или сумма/срок ≠ рекомендованным — ещё `UNDERWRITER_OVERRIDE` (`payload = {recommended: {...}, chosen: {...}}`). Для `REQUEST_INFO`, `RETRY_ENRICHMENT` и без рекомендации — не пишется;
+   - версия заявки растёт; ответ — `ApplicationBank` после изменений.
+5. **Клиент после ручного решения** видит только своё: оферту; при отказе — `client_reason` с категорией андеррайтера, `text`/`action` из каталога; **никогда** — `comment`, `made_by`, `UNDERWRITER_OVERRIDE`, баллы.
+
+**Приёмка:**
+- `cd backend && uv run pytest -q -rA` с `TEST_DATABASE_URL` — зелёный, 0 skipped; миграция: `alembic downgrade -1 && alembic upgrade head`; `ruff check`, `ruff format --check` — чисто; `openapi.json` и `schema.d.ts` после пересборки — без диффа.
+- Тесты `tests/underwriting/` (через настоящий конвейер B-07a, как в `tests/pipeline`):
+  - доступ: клиент → 403, без токена → 401, чужой id → 404;
+  - карточка банка открывается для `ip_good` (`OFFER_ISSUED`) и `ip_bad` (`DECLINED`); у событий ручного решения `actor` = «Андеррайтер: {full_name}»;
+  - очередь: `ooo_border` в очереди с `GRADE_C`, `grade = C`; заявка из `SOURCE_UNAVAILABLE` — с этой причиной; после ответа клиента на вопрос андеррайтера — с `INFO_RESPONSE`; порядок по `waiting_since`; число SQL-запросов ≤ 3 при 1 и при 10 заявках;
+  - карточка `ooo_border`: `decisions[0].kind = AUTO`, `score = 54`, баллы 12 признаков, `recommendation` — **из `personas.json` `ooo_border.demo.expected`** (читать файл в тесте); `external_checks` — 3 источника с `response`; `turnover_12m` — 12 месяцев по возрастанию; `company.founders` из ЕГРЮЛ; `allowed_actions = []`;
+  - `ooo_aml`: в карточке банка `rules_fired` содержит `SF_ADDITIONAL` (`STOP`), `risk_flags.aml_flag = true`; в клиентском `GET` того же — нет `SF_ADDITIONAL` (регрессия);
+  - `APPROVE` по рекомендации (`ooo_border`): клиент видит `OFFER_ISSUED`, оферта 1 000 000 / 24 / 26 % / 53 875 — как в `demo.expected`; событий `UNDERWRITER_OVERRIDE` — 0;
+  - `COUNTER` 800 000 / 24: оферта `COUNTER`, платёж по аннуитету, событие `UNDERWRITER_OVERRIDE` с `recommended` и `chosen`;
+  - `DECLINE` с категорией «Финансовое положение»: клиент видит `client_reason.code = UNDERWRITER_DECLINE`, `category = «Финансовое положение»`; в сыром JSON клиента нет `comment`, текста комментария, `UNDERWRITER_OVERRIDE`, `score`;
+  - `REQUEST_INFO` с 2 вопросами: клиент видит `info_request` с 2 пунктами `UNDERWRITER_QUESTION`; ответ клиента → снова в очереди с `INFO_RESPONSE`; повторное `APPROVE` работает;
+  - `RETRY_ENRICHMENT`: при `GRADE_C` → 409; при `SOURCE_UNAVAILABLE` (в том числе после цепочки «вопрос клиенту → ответ») → `ENRICHMENT`, после «починки» фейкового источника конвейер доходит до решения;
+  - `ooo_border` после ручного `APPROVE`: клиентский `offer.explanation` — фразы из факторов авто-решения, а не запасная строка;
+  - валидация → 422 с ключом: без комментария или 4 символа → `comment`; `APPROVE` без суммы или с суммой ≠ заявке → `amount`; `COUNTER` с параметрами заявки → `amount`; сумма вне продукта → `amount`; `DECLINE` без категории → `client_reason_category`; 6 вопросов или вопрос из 3 символов → `info_questions`; решение по заявке не в `MANUAL_REVIEW` → 409;
+  - повторная отправка того же решения (последовательно) → 409, решение в БД одно.
+- **На стенде** (`docker compose up`): `uv run --no-project --python 3.12 --with pytest --with httpx --with jsonschema python -X utf8 -m pytest -q tests/e2e/api/test_personas.py -rA` — все 6 персонажей проходят свои шаги, включая `ooo_border` через андеррайтера (полные пути до выдачи `test_full_path_*` падают на `offer/accept` с 501 — это B-09, нормально). Вывод — в PR.
+- Самопроверка `/review` (AGENTS.md §3 п. 8а) — в PR.
+
+**Не делать:** `GET /bank/applications`, `time-shift`, истечения (B-10a); принятие оферты, подпись, выдачу, возражение (B-09); не менять движок решения, конвейер B-07a, контракты, фронтенд.
 
 ---
 
