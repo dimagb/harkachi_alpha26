@@ -394,6 +394,30 @@ def test_bank_event_identifies_client(signing):
     assert events[0]["actor"] == "Клиент: Иван Иванов"
 
 
+@pytest.mark.parametrize("role,status", [("GUARANTOR", 200), ("UNDERWRITER", 403)])
+def test_guarantor_role_can_sign_own_party_but_bank_role_cannot(signing, role, status):
+    client, session, _, user, company, member, application, _, party = signing
+    company.kind = "OOO"
+    party.role = "GUARANTOR"
+    member.can_sign = False
+    session.commit()
+    body = otp(client, application, party, "GUARANTEE")
+    user.role = role
+    session.commit()
+    response = sign(client, application, body)
+    assert response.status_code == status, response.text
+    if status == 200:
+        assert response.json()["state"] == "SIGNED"
+        assert response.json()["parties"][0]["signed"] is True
+    else:
+        session.refresh(party)
+        assert party.status == "PENDING"
+        assert (
+            session.scalar(select(Signature).where(Signature.party_id == party.id))
+            is None
+        )
+
+
 def test_overdraft_has_no_schedule(signing):
     client, session, factory, _, _, _, application, offer, borrower = signing
     offer.product_code = "OVERDRAFT"
