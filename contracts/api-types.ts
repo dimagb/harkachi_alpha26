@@ -191,9 +191,13 @@ export interface UnderwriterDecisionRequest { // POST /underwriting/{id}/decisio
   info_questions?: string[];                           // 1–5 вопросов, обязательно для REQUEST_INFO
   comment: string;                                     // 5–2000 символов, всегда
 }
-export interface BankListItem extends QueueItem { state: ApplicationState; updated_at: string } // GET /bank/applications?state=&page=&size=
+export interface BankListItem extends Omit<QueueItem, "route_reason" | "waiting_since"> { // GET /bank/applications?state=&page=&size=, новые первыми по updated_at
+  route_reason: RouteReason | null;  // причина маршрута к специалисту (последнее AUTO-решение или вход в MANUAL_REVIEW), иначе null
+  waiting_since: string | null;      // только для MANUAL_REVIEW, иначе null
+  state: ApplicationState; updated_at: string;
+}
 export interface Page<T> { items: T[]; total: number; page: number; size: number } // size ≤ 100; GET /bank/applications → Page<BankListItem>
 
 // ---------- Служебное (только DEMO_MODE=true) ----------
-export interface TimeShiftRequest { application_id: string; days: number } // POST /demo/time-shift, 1–400; сдвигает due_at, offer.expires_at, consent.expires_at назад
+export interface TimeShiftRequest { application_id: string; days: number } // POST /demo/time-shift, 1–400; сдвигает due_at, offer.expires_at, consent.expires_at назад; только INFO_REQUESTED/OFFER_ISSUED/SIGNING (иначе 409); DEMO_MODE=false или нет заявки → 404
 export interface TimeShiftResponse { application_id: string; expired_now: boolean; state: ApplicationState }
