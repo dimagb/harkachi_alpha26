@@ -1,6 +1,7 @@
 """Bank queue projected in one SQL query, independently of queue size."""
 
 from sqlalchemy import func, select
+from sqlalchemy.dialects.postgresql import distinct_on
 from sqlalchemy.orm import Session
 
 from app.models import Application, ApplicationEvent, Company, Decision
@@ -11,7 +12,7 @@ def latest_auto():
     return (
         select(Decision)
         .where(Decision.kind == "AUTO")
-        .distinct(Decision.application_id)
+        .ext(distinct_on(Decision.application_id))
         .order_by(
             Decision.application_id, Decision.created_at.desc(), Decision.id.desc()
         )
@@ -26,7 +27,7 @@ def latest_entry():
             ApplicationEvent.event_type == "STATE_CHANGED",
             ApplicationEvent.to_state == "MANUAL_REVIEW",
         )
-        .distinct(ApplicationEvent.application_id)
+        .ext(distinct_on(ApplicationEvent.application_id))
         .order_by(
             ApplicationEvent.application_id,
             ApplicationEvent.created_at.desc(),
@@ -82,10 +83,5 @@ def current_route(session: Session, application: Application, auto: Decision | N
         .order_by(ApplicationEvent.created_at.desc(), ApplicationEvent.id.desc())
         .limit(1)
     )
-    return (
-        (entry.payload or {}).get("route_reason")
-        if entry and (entry.payload or {}).get("route_reason")
-        else auto.route_reason
-        if auto
-        else None
-    )
+    route = (entry.payload or {}).get("route_reason") if entry else None
+    return route or (auto.route_reason if auto else None)

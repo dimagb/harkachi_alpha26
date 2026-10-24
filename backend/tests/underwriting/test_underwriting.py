@@ -234,8 +234,8 @@ def test_counter_and_override(bank_context, pipeline_factory, run_persona):
     assert offer["kind"] == "COUNTER" and offer["amount"] == 800_000
     assert offer["monthly_payment"] == 43100
     assert (
-        offer["counter_reason"]
-        == "Специалист банка подобрал сумму и срок с учётом ваших оборотов и обязательств"
+        offer["counter_reason"] == "Специалист банка подобрал сумму и срок "
+        "с учётом ваших оборотов и обязательств"
     )
     with pipeline_factory() as session:
         override = session.scalar(
@@ -311,8 +311,75 @@ def test_two_questions_and_answer_round_trip(
         i["item_code"] == "UNDERWRITER_QUESTION" and not i["requires_value"]
         for i in public["info_request"]["items"]
     )
-    # B-07b currently rejects multiple equal item_code values; the one-question
-    # round trip is exercised separately without weakening this two-question check.
+    with pipeline_factory() as session:
+        user = session.get(User, session.get(Application, application_id).created_by)
+    original = app.dependency_overrides[current_user]
+    app.dependency_overrides[current_user] = lambda: user
+    try:
+        response = client.post(
+            f"/api/v1/applications/{application_id}/info-response",
+            json={
+                "answers": [
+                    {
+                        "item_code": "UNDERWRITER_QUESTION",
+                        "comment": "Обязательств нет",
+                    },
+                    {
+                        "item_code": "UNDERWRITER_QUESTION",
+                        "comment": "На покупку оборудования",
+                    },
+                ]
+            },
+        )
+    finally:
+        app.dependency_overrides[current_user] = original
+    assert response.status_code == 200, response.text
+    assert (
+        client.get("/api/v1/underwriting/queue").json()[0]["route_reason"]
+        == "INFO_RESPONSE"
+    )
+    assert decide(client, application_id).status_code == 200
+
+
+@pytest.mark.parametrize(
+    "product,amount,term,rate,payment",
+    [
+        ("EXPRESS", 1_500_000, 24, 26, 80813),
+        ("OVERDRAFT", 500_000, 12, 28, None),
+    ],
+)
+def test_conservative_rate_without_policy(
+    bank_context, run_persona, product, amount, term, rate, payment
+):
+    application_id = run_persona(
+        "ip_good",
+        app_params={"product": product, "amount": amount, "term": term},
+        registry=FakeRegistryProvider({}),
+    )
+    client, _ = bank_context
+    response = decide(client, application_id, amount=amount, term_months=term)
+    assert response.status_code == 200, response.text
+    card = response.json()
+    assert card["offer"]["rate"] == rate
+    assert card["offer"]["monthly_payment"] == payment
+    assert card["company"]["status"] == "ACTIVE"
+    assert card["company"]["director_full_name"] == ""
+    assert card["company"]["founders"] == []
+    assert card["company"]["source_note"] == "Данные из ЕГРИП не получены"
+
+
+def test_overdraft_counter_term_must_be_twelve(bank_context, run_persona):
+    application_id = run_persona(
+        "ip_good",
+        app_params={"product": "OVERDRAFT", "amount": 500_000, "term": 12},
+        registry=FakeRegistryProvider({}),
+    )
+    client, _ = bank_context
+    response = decide(
+        client, application_id, outcome="COUNTER", amount=400_000, term_months=11
+    )
+    assert response.status_code == 422, response.text
+    assert "term_months" in response.json()["error"]["details"]["fields"]
 
 
 @pytest.mark.parametrize("unavailable", [False, True])

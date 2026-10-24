@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 import pytest
 from fastapi.testclient import TestClient
 from pipeline.conftest import persona_data as persona_data
@@ -31,7 +33,7 @@ def bank_context(pipeline_factory, persona_data):
                 "max": cfg.max_amount,
                 "tmin": cfg.min_term,
                 "tmax": cfg.max_term,
-                "spreads": dict(cfg.spreads),
+                "spread": dict(cfg.spreads),
             }
         reason = session.scalar(
             select(ReasonCatalog).where(ReasonCatalog.code == "UNDERWRITER_DECLINE")
@@ -58,8 +60,12 @@ def bank_context(pipeline_factory, persona_data):
 
 @pytest.fixture
 def run_persona(pipeline_factory, persona_data):
-    def run(code="ooo_border", **providers):
-        persona = next(p for p in persona_data["personas"] if p["code"] == code)
+    def run(code="ooo_border", app_params=None, **providers):
+        persona = deepcopy(
+            next(p for p in persona_data["personas"] if p["code"] == code)
+        )
+        if app_params:
+            persona["demo"]["app"].update(app_params)
         application_id = submit_persona(pipeline_factory, persona)
         drain(pipeline_factory, providers_for(persona_data, **providers), persona_data)
         return application_id

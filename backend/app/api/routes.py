@@ -33,6 +33,12 @@ def client_user(user: Annotated[User, Depends(authenticated_user)]) -> User:
     return require_roles("CLIENT")(user)
 
 
+def underwriter_user(user: Annotated[User, Depends(authenticated_user)]) -> User:
+    from app.auth.deps import require_roles
+
+    return require_roles("UNDERWRITER")(user)
+
+
 def errors(*codes: int) -> dict:
     return {code: {"model": ApiError} for code in codes}
 
@@ -389,8 +395,13 @@ def objection(id: UUID, body: s.ObjectionRequest):
     summary="Получить очередь заявок",
     responses=errors(401, 403, 501),
 )
-def underwriting_queue():
-    not_implemented()
+def underwriting_queue(
+    user: Annotated[User, Depends(underwriter_user)],
+    session: Annotated[Session, Depends(get_session)],
+):
+    from app.underwriting.queue import get_queue
+
+    return get_queue(session)
 
 
 @router.get(
@@ -400,8 +411,14 @@ def underwriting_queue():
     summary="Получить данные заявки для банка",
     responses=errors(401, 403, 404, 422, 501),
 )
-def underwriting_application(id: UUID):
-    not_implemented()
+def underwriting_application(
+    id: UUID,
+    user: Annotated[User, Depends(underwriter_user)],
+    session: Annotated[Session, Depends(get_session)],
+):
+    from app.underwriting.card import get_application, to_bank
+
+    return to_bank(session, get_application(session, id), user)
 
 
 @router.post(
@@ -411,8 +428,15 @@ def underwriting_application(id: UUID):
     summary="Принять решение по заявке",
     responses=errors(401, 403, 404, 409, 422, 501),
 )
-def underwriting_decision(id: UUID, body: s.UnderwriterDecisionRequest):
-    not_implemented()
+def underwriting_decision(
+    id: UUID,
+    body: s.UnderwriterDecisionRequest,
+    user: Annotated[User, Depends(underwriter_user)],
+    session: Annotated[Session, Depends(get_session)],
+):
+    from app.underwriting.decide import make_decision
+
+    return make_decision(session, id, body, user)
 
 
 @router.get(

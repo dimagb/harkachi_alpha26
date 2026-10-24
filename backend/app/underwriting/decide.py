@@ -166,7 +166,7 @@ def make_decision(
                 Decimal(str(auto.policy["rate"]))
                 if auto and auto.policy is not None
                 else Decimal(str(cfg.key_rate))
-                + Decimal(str(product.params["spreads"]["C"]))
+                + Decimal(str(product.params["spread"]["C"]))
             )
             offer = Offer(
                 application_id=application.id,
