@@ -31,7 +31,8 @@ function serve(application: Application) { server.use(http.get('*/api/v1/applica
 it.each([[22, '22\u00a0%'], [21.5, '21,5\u00a0%']])('ставка %s без лишних нулей', async (rate, expected) => {
   const application = { ...applications[0]!, offer: { ...applications[0]!.offer!, rate: Number(rate) } };
   serve(application); open(application);
-  expect(await screen.findByText(String(expected).replace(/\s/g, ' '))).toBeTruthy();
+  const figures = await screen.findByRole('region', { name: 'Ключевые цифры' });
+  expect(within(figures).getByText(String(expected).replace(/\s/g, ' '))).toBeTruthy();
 });
 
 it('светлый бейдж действия и источник сведений о компании', async () => {
@@ -97,19 +98,19 @@ it.each([['APPROVED', 'ok'], ['COUNTER', 'wait']] as const)('панель пре
   expect((await screen.findByRole('region', { name: 'Что происходит с заявкой' })).getAttribute('data-tone')).toBe(tone);
 });
 
-it('INFO_REQUESTED: второму этапу нужно действие, ссылка ведёт на пустой якорь', async () => {
+it('INFO_REQUESTED: второму этапу нужно действие, ссылка ведёт к вопросам банка', async () => {
   const application = fixture('INFO_REQUESTED'); serve(application); open(application);
   const link = await screen.findByRole('link', { name: 'Ответить на вопросы банка' });
   const stages = within(screen.getByRole('list', { name: 'Этапы заявки' })).getAllByRole('listitem');
   expect(stages[1]!.textContent).toContain('Нужно ваше действие');
   fireEvent.click(link);
   expect(screen.getByLabelText('Маршрут').textContent).toBe(`/app/applications/${application.id}#info-request`);
-  expect(document.getElementById('info-request')?.childElementCount).toBe(0);
+  expect(within(screen.getByRole('region', { name: 'Вопросы банка' })).getByRole('button', { name: 'Отправить ответ' })).toBeTruthy();
 });
 
 it('COUNTER: сумма и срок в шапке и цифрах из offer, точные ставка и платёж', async () => {
   const application = applications[1]!; serve(application); open(application, 'ooo_load');
-  const headline = await screen.findByRole('heading', { name: /Оборотный кредит/ });
+  const headline = await screen.findByRole('heading', { name: /Банк готов выдать/ });
   expect(headline.textContent?.replace(/\s/g, ' ')).toContain('2 850 000 ₽');
   expect(headline.textContent).toContain('24 мес.');
   const figures = screen.getByRole('region', { name: 'Ключевые цифры' });
@@ -120,7 +121,8 @@ it('COUNTER: сумма и срок в шапке и цифрах из offer, т
 
 it('DECLINED: отказ на четвёртом этапе и только публичная причина', async () => {
   const application = fixture('DECLINED'); serve(application); open(application);
-  expect(await screen.findByRole('link', { name: 'Подать новую заявку' })).toBeTruthy();
+  const decision = await screen.findByRole('region', { name: 'Что происходит с заявкой' });
+  expect(within(decision).getByRole('link', { name: 'Подать новую заявку' })).toBeTruthy();
   const stages = within(screen.getByRole('list', { name: 'Этапы заявки' })).getAllByRole('listitem');
   expect(stages[3]!.textContent).toContain('Отказ');
   expect(screen.getByText(application.client_reason!.text)).toBeTruthy();
@@ -195,7 +197,8 @@ it('овердрафт показывает проценты за использ
   const base = applications[0]!;
   const application: Application = { ...base, product_code: 'OVERDRAFT', term_months: 12, offer: { ...base.offer!, product_code: 'OVERDRAFT', term_months: 12, monthly_payment: null } };
   serve(application); open(application);
-  expect(await screen.findByText('Проценты — только за использованные дни')).toBeTruthy();
+  const figures = await screen.findByRole('region', { name: 'Ключевые цифры' });
+  expect(within(figures).getByText('Проценты — только за использованные дни')).toBeTruthy();
 });
 
 it('ошибка загрузки позволяет повторить запрос', async () => {

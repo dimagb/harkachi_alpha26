@@ -1,0 +1,5 @@
+.block { background:var(--cc-surface); border-radius:var(--cc-radius-md); padding:var(--cc-space-24) var(--cc-space-32); display:flex; align-items:center; justify-content:space-between; gap:var(--cc-space-32); }
+.copy { display:flex; flex-direction:column; gap:var(--cc-space-4); }
+.copy strong { font-weight:600; } .copy span { color:var(--cc-ink-2); }
+.block[data-status=PENDING] { background:var(--mantine-color-wait-0); color:var(--mantine-color-wait-7); }
+@media(max-width:47.999em) { .block { flex-direction:column; align-items:stretch; padding:var(--cc-space-24) var(--cc-space-16); gap:var(--cc-space-16); } }

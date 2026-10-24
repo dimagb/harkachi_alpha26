@@ -77,11 +77,13 @@ export const applications: Schema['ApplicationClient'][] = [
   offeredApplication(
     { company_id: '20000000-0000-4000-8000-000000000001', product_code: 'EXPRESS', amount: 1500000, term_months: 24, purpose: 'WORKING_CAPITAL', declared_revenue_year: 14000000 },
     '30000000-0000-4000-8000-000000000001', 1001,
-    { id: '40000000-0000-4000-8000-000000000001', version: 1, kind: 'APPROVED', status: 'ACTIVE', product_code: 'EXPRESS', amount: 1500000, term_months: 24, rate: 22.00, monthly_payment: 77817, expires_at: '2026-10-30T09:00:00Z', explanation: ['Предложение на запрошенную сумму.'], requested: null, counter_reason: null },
+    // contracts/personas.json: ip_good.demo.expected.offer (checked from node:fs in DecisionSection.test.tsx).
+    { id: '40000000-0000-4000-8000-000000000001', version: 1, kind: 'APPROVED', status: 'ACTIVE', product_code: 'EXPRESS', amount: 1500000, term_months: 24, rate: 22.00, monthly_payment: 77817, expires_at: '2026-10-30T09:00:00Z', explanation: ['Стабильные поступления на счёт', 'Нет просрочек по кредитам', 'Бизнес работает больше 4 лет'], requested: null, counter_reason: null },
   ),
   offeredApplication(
     { company_id: '20000000-0000-4000-8000-000000000002', product_code: 'WORKING_CAPITAL', amount: 4000000, term_months: 12, purpose: 'WORKING_CAPITAL', declared_revenue_year: 24000000 },
     '30000000-0000-4000-8000-000000000002', 1002,
+    // contracts/personas.json: ooo_load.demo.expected.offer (checked from node:fs in DecisionSection.test.tsx).
     { id: '40000000-0000-4000-8000-000000000002', version: 1, kind: 'COUNTER', status: 'ACTIVE', product_code: 'WORKING_CAPITAL', amount: 2850000, term_months: 24, rate: 23.00, monthly_payment: 149264, expires_at: '2026-10-30T09:00:00Z', explanation: ['Подобраны сумма и срок с учётом текущих обязательств.'], requested: { amount: 4000000, term_months: 12 }, counter_reason: 'Предлагаем меньшую сумму на более длительный срок, чтобы снизить платёж.' },
   ),
 ];
@@ -124,6 +126,23 @@ applicationScenarios.push({
   timeline: visualInfo.timeline.map((step, index) => ({ ...step, at: index < 2 ? '2026-10-23T11:02:00Z' : null })),
   info_request: { ...visualInfo.info_request!, due_at: '2026-10-30T20:59:59Z' },
 });
+
+// F-05: isolated public decline scenarios, client wording from contracts/codes.md.
+for (const [login, id, companyId, name, kind] of [
+  ['ip_bad', '30000000-0000-4000-8000-000000000201', '20000000-0000-4000-8000-000000000201', 'ИП — демо просрочки', 'IP'],
+  ['ooo_aml', '30000000-0000-4000-8000-000000000202', '20000000-0000-4000-8000-000000000202', 'ООО — демо дополнительных проверок', 'OOO'],
+] as const) {
+  const base = accounts[kind === 'IP' ? 'ip_good' : 'ooo_load']!;
+  accounts[login] = { user: { ...base.user, id: companyId.replace('20000000', '10000000') }, companies: base.companies.map((membership) => ({ ...membership, company: { ...membership.company, id: companyId, name } })) };
+  companyProfiles[companyId] = { ...companyProfiles[base.companies[0]!.company.id]!, ...accounts[login]!.companies[0]!.company };
+  const declined = applicationScenarios.find((item) => item.state === 'DECLINED')!;
+  applications.push({ ...declined, id, company_id: companyId, number: kind === 'IP' ? 1201 : 1202,
+    client_reason: kind === 'IP'
+      ? { code: 'SF_OVERDUE', category: 'Кредитная история', text: 'Есть просроченная задолженность по кредитам', action: 'Погасите просрочку и подайте заявку повторно через 30 дней', retry_after: '2026-11-23' }
+      : { code: 'ADDITIONAL_CHECKS', category: 'Дополнительные проверки', text: 'Заявка не прошла дополнительные проверки банка', action: null, retry_after: null },
+    allowed_actions: kind === 'IP' ? ['OBJECT', 'NEW_APPLICATION'] : ['NEW_APPLICATION'],
+  });
+}
 
 // Catalog: docs/TASKS.md F-01 and the product showcase in contracts/codes.md.
 export const products: Schema['Product'][] = [
