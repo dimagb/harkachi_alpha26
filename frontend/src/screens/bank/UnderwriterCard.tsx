@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { api } from '../../api/client';
 import { formatMoney } from '../../ui/status';
+import { plural } from '../../ui/plural';
 import Timeline from '../application/Timeline';
 import { useBankQueue } from './BankLayout';
 import { formatAt, outcomeLabels, productLabels, routeLabels, waitingTime } from './labels';
@@ -31,7 +32,7 @@ export default function UnderwriterCard() {
   const manual = application.decisions.find(d => d.kind === 'MANUAL');
   const route = decision?.route_reason;
   const queued = queue.data?.find(item => item.id === application.id);
-  const evaluation = decision?.grade ? `${decision.grade}, ${decision.score ?? '—'} балла(ов)` : '';
+  const evaluation = decision?.grade ? `${decision.grade}, ${decision.score === null ? '—' : plural(decision.score, ['балл', 'балла', 'баллов'])}` : '';
   return <div className={css.card}>
     <header className={css.header}><div className={css.headerCopy}><div className={css.headerMeta}><span>Заявка № {application.number}</span>{queued && <span className={css.waiting}>Ждёт {waitingTime(queued.waiting_since, queue.dataUpdatedAt)}</span>}<span>Поступила {formatAt(application.created_at)}</span></div><h1><span>{application.company.name} · {productLabels[application.product_code]}</span><span className={css.headerAmount}>{formatMoney(application.amount)}</span><span>/ {application.term_months} мес.</span></h1></div><div className={css.badges}>{route && <span className={css.badge} data-tone="wait">{routeLabels[route]}{evaluation ? route === 'GRADE_C' ? `: ${evaluation}` : ` · оценка ${evaluation}` : ''}</span>}{application.risk_flags.aml_flag && <span className={css.badge} data-tone="stop">Признаки AML</span>}{application.risk_flags.fraud_flag && <span className={css.badge} data-tone="stop">Признаки мошенничества</span>}</div></header>
     {conflict && <div role="alert" className={css.warning}>Заявка уже не на рассмотрении</div>}

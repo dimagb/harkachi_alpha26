@@ -17,7 +17,7 @@ it('показывает выдачу, дату из ленты и 24 плате
   const rows = within(table).getAllByRole('row'); expect(rows).toHaveLength(25);
   expect(within(rows[1]!).getAllByRole('cell')[1]!.textContent).toBe('24.11.2026');
   expect(within(rows.at(-1)!).getAllByRole('cell').at(-1)!.textContent?.replace(/\s/g, ' ')).toBe('0 ₽');
-  expect(screen.getByRole('link', { name: 'Подать новую заявку' }).getAttribute('href')).toBe('/app/applications/new');
+  expect(screen.queryByRole('link', { name: 'Подать новую заявку' })).toBeNull();
 });
 it('овердрафт показывает лимит вместо графика', () => {
   open(true); expect(screen.queryByRole('table')).toBeNull();
