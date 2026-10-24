@@ -49,9 +49,9 @@ api.use({
     }
   },
   onError({ request, schemaPath, error }) {
-    if (!isAction(request, schemaPath)) return;
     if (typeof error === 'object' && error !== null && 'name' in error && error.name === 'AbortError') return;
     const message = 'Нет связи с сервером. Проверьте соединение и попробуйте ещё раз.';
+    if (!isAction(request, schemaPath)) return new Error(message);
     notifications.show({ id: `api-error:${message}`, color: 'red', message });
   },
 });

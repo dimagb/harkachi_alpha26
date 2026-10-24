@@ -42,8 +42,8 @@ it('ошибка связи при чтении не даёт уведомлен
   server.use(http.get('*/api/v1/products', () => HttpResponse.error()), http.post('*/api/v1/calculator', () => HttpResponse.error()), http.post('*/api/v1/applications/:id/offer/accept', () => HttpResponse.error()));
   openNotifications();
   await act(async () => {
-    await expect(api.GET('/products')).rejects.toThrow();
-    await expect(api.POST('/calculator', { body: { product_code: 'EXPRESS', amount: 500000, term_months: 12 } })).rejects.toThrow();
+    await expect(api.GET('/products')).rejects.toThrow('Нет связи с сервером. Проверьте соединение и попробуйте ещё раз.');
+    await expect(api.POST('/calculator', { body: { product_code: 'EXPRESS', amount: 500000, term_months: 12 } })).rejects.toThrow('Нет связи с сервером. Проверьте соединение и попробуйте ещё раз.');
   });
   expect(document.querySelectorAll('.mantine-Notification-root')).toHaveLength(0);
   await act(async () => {
