@@ -225,7 +225,10 @@ it('при смене пользователя не показывает кэш 
   await screen.findByRole('link', { name: 'Посмотреть предложение' });
   act(() => setToken('demo:ooo_load'));
   try {
+    fireEvent.click(await screen.findByRole('button', { name: 'Открыть меню' }));
     await screen.findByText('Петров Илья Игоревич');
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Закрыть меню' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     expect(await screen.findByText('Загружаем заявку…')).toBeTruthy();
     expect(screen.queryByRole('link', { name: 'Посмотреть предложение' })).toBeNull();
   } finally { finish(); }

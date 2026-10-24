@@ -59,6 +59,7 @@ it('смена компании в шапке загружает её заявк
   );
   open('ooo_load');
   expect(await screen.findByRole('link', { name: /№ 1002/ })).toBeTruthy();
+  fireEvent.click(screen.getByRole('button', { name: 'Открыть меню' }));
   fireEvent.click(screen.getByRole('combobox', { name: 'Компания' }));
   fireEvent.click(await screen.findByRole('option', { name: 'ИП Смирнова Анна Викторовна' }));
   expect(await screen.findByRole('link', { name: /№ 1001/ })).toBeTruthy();

@@ -31,7 +31,13 @@ function projectSigning(application: Application, userId: string | undefined, ca
   };
 }
 function projectDraft(application: Application, canSign: boolean): Application {
-  return { ...application, allowed_actions: ['EDIT_DRAFT', ...(canSign ? ['SUBMIT' as const] : application.awaiting_signature ? [] : ['REQUEST_SIGNATURE' as const]), 'WITHDRAW'] };
+  if (canSign) return { ...application, allowed_actions: ['EDIT_DRAFT', 'SUBMIT', 'WITHDRAW'] };
+  const needsAction = !application.awaiting_signature;
+  return { ...application,
+    stage: { ...application.stage, what_to_do: needsAction ? 'Отправьте заявку на подпись руководителю или сотруднику с правом подписи' : 'Ждём решения подписанта компании' },
+    timeline: application.timeline.map((step) => step.stage_code === 'APPLICATION' ? { ...step, status: needsAction ? 'action_required' : 'current' } : step),
+    allowed_actions: ['EDIT_DRAFT', ...(canSign ? ['SUBMIT' as const] : application.awaiting_signature ? [] : ['REQUEST_SIGNATURE' as const]), 'WITHDRAW'],
+  };
 }
 export function signingView(request: Request, application: Application): Application {
   const token = request.headers.get('Authorization') ?? '';

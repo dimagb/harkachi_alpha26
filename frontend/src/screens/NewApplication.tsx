@@ -7,6 +7,8 @@ import type { components } from '../api/schema';
 import { useCompany } from '../company/CompanyContext';
 import { purposeLabels } from '../ui/labels';
 import { formatMoney, stageStatusColor } from '../ui/status';
+import card from './application/Card.module.css';
+import css from './NewApplication.module.css';
 
 type Schema = components['schemas'];
 type Product = Schema['Product'];
@@ -32,15 +34,16 @@ function ApplicationSelection() {
 
   if (!companyId) return <Text>Для вашей учётной записи пока нет компании.</Text>;
   if (product && purpose) return <ApplicationForm product={product} initialPurpose={purpose} onBack={() => setProduct(null)} />;
-  return <Stack gap="xl">
-    <Stack gap="xs"><Text size="sm" c="dimmed">Получить финансирование · Шаг 1 из 2</Text><Title order={1}>Зачем нужны деньги?</Title><Text c="dimmed">Выберите цель — покажем подходящие продукты и условия.</Text></Stack>
-    <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+  return <div className={card.page}>
+    <header className={card.header}><Text size="sm" c="dimmed">Получить финансирование · Шаг 1 из 2</Text><h1 className={css.heading}>Зачем нужны деньги?</h1><Text c="dimmed">Выберите цель — покажем подходящие продукты и условия.</Text></header>
+    <SimpleGrid className={card.card} cols={{ base: 1, sm: 2 }} spacing="sm" style={{ display: 'grid' }}>
       {purposes.map((value) => <Button key={value} variant={purpose === value ? 'light' : 'default'} aria-pressed={purpose === value} onClick={() => setPurpose(value)} h="auto" py="lg" styles={{ label: { whiteSpace: 'normal' } }}>{purposeLabels[value]}</Button>)}
     </SimpleGrid>
-    {products.isPending && <Group role="status"><Loader size="sm" /><Text>Загружаем продукты…</Text></Group>}
-    {products.isError && <Stack align="flex-start"><Text role="alert">Не удалось загрузить продукты. Попробуйте ещё раз.</Text><Button variant="default" onClick={() => void products.refetch()}>Повторить</Button></Stack>}
+    {products.isPending && <div className={card.card}><Group role="status"><Loader size="sm" /><Text>Загружаем продукты…</Text></Group></div>}
+    {products.isError && <div className={card.card}><Text role="alert">Не удалось загрузить продукты. Попробуйте ещё раз.</Text><Button w="fit-content" variant="default" onClick={() => void products.refetch()}>Повторить</Button></div>}
+    {purpose && products.data && !products.data.some((item) => item.purposes.includes(purpose)) && <div className={card.card}><Text>Для этой цели пока нет продуктов. Выберите другую цель.</Text><Button variant="default" w="fit-content" onClick={() => setPurpose(null)}>Изменить цель</Button></div>}
     {purpose && products.data && <SimpleGrid cols={{ base: 1, md: 3 }} spacing="md">
-      {products.data.filter((item) => item.purposes.includes(purpose)).map((item) => <Paper component="section" aria-label={item.name} key={item.code} withBorder p="lg">
+      {products.data.filter((item) => item.purposes.includes(purpose)).map((item) => <Paper className={card.card} component="section" aria-label={item.name} key={item.code}>
         <Stack h="100%" gap="md">
           <Title order={2} size="h3">{item.name}</Title><Text c="dimmed">{item.description}</Text><Divider />
           <Text fw={600}>от {formatMoney(item.min_amount)} до {formatMoney(item.max_amount)}</Text>
@@ -48,11 +51,11 @@ function ApplicationSelection() {
           <Text>ставка от {rate(item.rate_from)}%</Text>
           <Text size="xs" c="dimmed">ключевая ставка ЦБ {rate(item.key_rate)}% на {date(item.key_rate_date)}</Text>
           {membership?.company.kind === 'OOO' && item.requires_guarantor_ooo && <Text size="sm">Нужно поручительство владельца</Text>}
-          <Button variant="default" mt="auto" onClick={() => setProduct(item)}>Выбрать</Button>
+          <Button className={card.cta} mt="auto" onClick={() => setProduct(item)}>Выбрать</Button>
         </Stack>
       </Paper>)}
     </SimpleGrid>}
-  </Stack>;
+  </div>;
 }
 
 function ApplicationForm({ product, initialPurpose, onBack }: { product: Product; initialPurpose: Purpose; onBack: () => void }) {
@@ -118,10 +121,10 @@ function ApplicationForm({ product, initialPurpose, onBack }: { product: Product
     create.mutate({ company_id: companyId!, product_code: product.code, amount: Number(amount), term_months: Number(term), purpose, ...(purpose === 'OTHER' ? { purpose_text: purposeText.trim() } : {}), declared_revenue_year: Number(revenue) });
   }
 
-  return <Stack gap="xl">
-    <Stack gap="xs"><Text size="sm" c="dimmed">Получить финансирование · Шаг 2 из 2</Text><Title order={1}>Заявка на финансирование</Title><Text c="dimmed">{product.name} · Укажите сумму и оцените платёж.</Text></Stack>
+  return <div className={card.page}>
+    <header className={card.header}><Text size="sm" c="dimmed">Получить финансирование · Шаг 2 из 2</Text><h1 className={css.heading}>Заявка на финансирование</h1><Text c="dimmed">{product.name} · Укажите сумму и оцените платёж.</Text></header>
     <SimpleGrid cols={{ base: 1, md: 2 }} spacing="xl" style={{ alignItems: 'start' }}>
-      <Paper component="section" aria-label="Профиль компании" withBorder p="lg"><Stack>
+      <Paper className={card.card} component="section" aria-label="Профиль компании"><Stack>
         <Title order={2} size="h3">Профиль компании</Title>
         {profile.isPending && <Group role="status"><Loader size="sm" /><Text>Загружаем сведения…</Text></Group>}
         {profile.isError && <><Text role="alert">Реестр временно недоступен, попробуйте позже</Text><Button variant="default" loading={profile.isFetching} onClick={() => void profile.refetch()}>Повторить</Button></>}
@@ -134,7 +137,7 @@ function ApplicationForm({ product, initialPurpose, onBack }: { product: Product
           <Text size="xs" c="dimmed">{profile.data.source_note}</Text>
         </>}
       </Stack></Paper>
-      <Paper component="form" aria-label="Параметры заявки" onSubmit={submit} noValidate withBorder p="lg"><Stack>
+      <Paper className={card.card} component="form" aria-label="Параметры заявки" onSubmit={submit} noValidate><Stack>
         <Title order={2} size="h3">Параметры заявки</Title>
         <Fieldset variant="unstyled" disabled={!ready || create.isPending}><Stack>
           <NumberInput label="Сумма, ₽" value={amount} onChange={setAmount} min={product.min_amount} max={product.max_amount} step={10000} thousandSeparator=" " allowDecimal={false} clampBehavior="none" error={fields.amount} />
@@ -154,9 +157,9 @@ function ApplicationForm({ product, initialPurpose, onBack }: { product: Product
           <Text size="xs" c="dimmed">Предварительный расчёт. Точные условия — после проверки заявки</Text>
         </Stack>
         {message && <Notification role="alert" color={stageStatusColor('failed')} withCloseButton={false}>{message}</Notification>}
-        <Button type="submit" disabled={!ready} loading={create.isPending}>Создать заявку</Button>
+        <Button className={card.cta} type="submit" disabled={!ready} loading={create.isPending}>Создать заявку</Button>
         <Button variant="default" onClick={onBack} disabled={create.isPending} styles={{ label: { whiteSpace: 'normal' } }} h="auto" py="sm">Назад к выбору продукта</Button>
       </Stack></Paper>
     </SimpleGrid>
-  </Stack>;
+  </div>;
 }

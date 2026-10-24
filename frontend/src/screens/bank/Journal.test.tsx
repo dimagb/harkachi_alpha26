@@ -97,11 +97,15 @@ it.each([403, 404])('объясняет отключённый демо-режи
 });
 
 it('показывает пустой результат и повторяет загрузку после ошибки', async () => {
+  let requests = 0;
+  server.events.on('request:start', ({ request }) => { if (request.url.includes('/bank/applications')) requests++; });
   server.use(http.get('*/api/v1/bank/applications', () => HttpResponse.json({ error: { code: 'INTERNAL_ERROR', message: 'Не удалось загрузить журнал', details: {} } }, { status: 500 })));
-  open(); await screen.findByRole('button', { name: 'Повторить' });
+  open(); await screen.findByRole('button', { name: 'Повторить' }, { timeout: 3000 });
+  expect(requests).toBe(2);
   server.use(http.get('*/api/v1/bank/applications', () => HttpResponse.json({ items: [], page: 1, size: 20, total: 0 })));
   fireEvent.click(screen.getByRole('button', { name: 'Повторить' }));
   expect(await screen.findByText('Заявок с таким состоянием нет')).toBeTruthy();
+  expect(requests).toBe(3);
 });
 
 it('возвращается на существующую страницу, если последняя оферта на странице истекла', async () => {

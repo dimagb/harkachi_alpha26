@@ -1,0 +1,4 @@
+.mobileHeader { height: 56px; padding: 0 var(--cc-space-16); display: flex; align-items: center; justify-content: space-between; gap: var(--cc-space-8); border-bottom: 1px solid var(--cc-line); }
+.brand { color: var(--cc-ink); font: 600 16px/24px var(--cc-font); text-decoration: none; }
+.menu { display: flex; flex-direction: column; gap: var(--cc-space-24); min-width: 0; }
+.identity { display: flex; flex-direction: column; align-items: flex-start; gap: var(--cc-space-12); padding-top: var(--cc-space-16); border-top: 1px solid var(--cc-line); }

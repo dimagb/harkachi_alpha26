@@ -81,11 +81,13 @@ it('серия вводов вызывает один расчёт через 40
   fireEvent.change(input, { target: { value: '400000' } });
   await act(() => vi.advanceTimersByTimeAsync(200));
   fireEvent.change(input, { target: { value: '500000' } });
+  await act(() => vi.advanceTimersByTimeAsync(200));
+  fireEvent.change(input, { target: { value: '600000' } });
   await act(() => vi.advanceTimersByTimeAsync(399));
   expect(bodies).toHaveLength(0);
   await act(() => vi.advanceTimersByTimeAsync(1));
   vi.useRealTimers();
-  await waitFor(() => expect(bodies).toEqual([{ product_code: 'EXPRESS', amount: 500000, term_months: 6 }]));
+  await waitFor(() => expect(bodies).toEqual([{ product_code: 'EXPRESS', amount: 600000, term_months: 6 }]));
 });
 
 it('сумма за границами не отправляет ни расчёт, ни заявку и показывает ошибку', async () => {

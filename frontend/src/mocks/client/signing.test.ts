@@ -2,7 +2,7 @@ import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, beforeEach, expect, it, vi } from 'vitest';
 import type { components } from '../../api/schema';
 import { applications, accounts, draftApplication } from '../fixtures';
-import { createSigningHandlers } from './signing';
+import { createSigningHandlers, signingView } from './signing';
 
 type Schema = components['schemas'];
 type Application = Schema['ApplicationClient'];
@@ -26,6 +26,18 @@ function request(id: string, path = '', body?: unknown, login = 'ip_good') {
 async function otp(id: string, purpose = 'CONSENTS', login = 'ip_good', party_id?: string) {
   return (await (await request(id, '/otp', { purpose, ...(party_id ? { party_id } : {}) }, login)).json()) as Schema['OtpResponse'];
 }
+it('черновик бухгалтера требует отправки на подпись, затем ожидает подписанта', async () => {
+  const req = new Request('http://localhost/api/v1/applications', { headers: { Authorization: 'Bearer demo:ooo_load_accountant' } });
+  const draft = signingView(req, stored.get(oooId)!);
+  expect(draft.allowed_actions).toContain('REQUEST_SIGNATURE');
+  expect(draft.stage.what_to_do).toBe('Отправьте заявку на подпись руководителю или сотруднику с правом подписи');
+  expect(draft.timeline[0]!.status).toBe('action_required');
+  const sent = await (await request(oooId, '/request-signature', undefined, 'ooo_load_accountant')).json() as Application;
+  expect(sent.stage.what_to_do).toBe('Ждём решения подписанта компании');
+  expect(sent.timeline[0]!.status).toBe('current');
+  expect(sent.allowed_actions).not.toContain('REQUEST_SIGNATURE');
+  expect(signingView(req, sent)).toMatchObject({ stage: sent.stage, timeline: sent.timeline });
+});
 it('выдаёт шестизначный код на 5 минут и подаёт заявку единожды', async () => {
   const started = Date.now(); const code = await otp(ipId);
   expect(code.demo_code).toMatch(/^\d{6}$/);
@@ -107,15 +119,16 @@ it('общие обработчики после принятия оферты �
 });
 
 it.each([
-  ['ooo_load', false, ['EDIT_DRAFT', 'SUBMIT', 'WITHDRAW']],
-  ['ooo_load', true, ['EDIT_DRAFT', 'SUBMIT', 'WITHDRAW']],
-  ['ooo_load_accountant', false, ['EDIT_DRAFT', 'REQUEST_SIGNATURE', 'WITHDRAW']],
-  ['ooo_load_accountant', true, ['EDIT_DRAFT', 'WITHDRAW']],
-] as const)('DRAFT: %s, awaiting=%s меняет только действия текущего пользователя', async (login, awaiting, actions) => {
+  ['ooo_load', false, ['EDIT_DRAFT', 'SUBMIT', 'WITHDRAW'], 'Заполните и отправьте заявку.', 'current'],
+  ['ooo_load', true, ['EDIT_DRAFT', 'SUBMIT', 'WITHDRAW'], 'Заполните и отправьте заявку.', 'current'],
+  ['ooo_load_accountant', false, ['EDIT_DRAFT', 'REQUEST_SIGNATURE', 'WITHDRAW'], 'Отправьте заявку на подпись руководителю или сотруднику с правом подписи', 'action_required'],
+  ['ooo_load_accountant', true, ['EDIT_DRAFT', 'WITHDRAW'], 'Ждём решения подписанта компании', 'current'],
+] as const)('DRAFT: %s, awaiting=%s проецирует действия и этап текущего пользователя', async (login, awaiting, actions, whatToDo, status) => {
   const { createDecisionHandlers } = await import('./decision');
   const before = { ...structuredClone(stored.get(oooId)!), awaiting_signature: awaiting };
   stored.set(oooId, before);
   server.resetHandlers(...createDecisionHandlers(stored), ...createSigningHandlers(stored));
   const actual = await (await request(oooId, '', undefined, login)).json() as Application;
-  expect(actual).toEqual({ ...before, allowed_actions: [...actions] });
+  expect(actual).toEqual({ ...before, allowed_actions: [...actions], stage: { ...before.stage, what_to_do: whatToDo }, timeline: [{ ...before.timeline[0], status }, ...before.timeline.slice(1)] });
+  expect(stored.get(oooId)).toEqual(before);
 });

@@ -2,7 +2,9 @@ export type PaymentRow = { number: number; date: string; payment: number; intere
 
 // Money remains integer rubles. The final payment pays the remaining principal.
 export function calculateSchedule(amount: number, rate: number, months: number, issuedAt: string): PaymentRow[] {
-  const issued = new Date(issuedAt);
+  const parts = new Intl.DateTimeFormat('en-US', { timeZone: 'Europe/Moscow', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date(issuedAt));
+  const part = (type: string) => Number(parts.find((item) => item.type === type)!.value);
+  const issued = new Date(Date.UTC(part('year'), part('month') - 1, part('day')));
   const monthlyRate = rate / 1200;
   const payment = Math.round(monthlyRate === 0 ? amount / months : amount * monthlyRate / (1 - (1 + monthlyRate) ** -months));
   const rateUnits = BigInt(Math.round(rate * 100));
