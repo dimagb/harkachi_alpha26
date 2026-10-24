@@ -1,6 +1,22 @@
 """S-10: предприниматель оспаривает автоотказ и получает предложение."""
 
+import httpx
+import pytest
+from client import ApiClient
 from test_personas import find_persona, start_application
+
+
+@pytest.fixture(scope="module", autouse=True)
+def stand_ready():
+    with ApiClient() as api:
+        try:
+            ready = api.http.get("ready")
+        except httpx.RequestError:
+            ready = None
+        if ready is None or ready.status_code != 200:
+            # TODO(lead): объединить проверку с StandModule в общем conftest.py
+            # после B-09a; общий conftest не входит в разрешённые файлы карточки.
+            pytest.skip(f"Стенд недоступен: {api.http.base_url}")
 
 
 def test_ip_objection_reviewed(client, bank, persona_data):
