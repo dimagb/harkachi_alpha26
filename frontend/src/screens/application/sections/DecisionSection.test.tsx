@@ -117,6 +117,17 @@ it('дополнительные проверки: только публична
   expect(screen.queryByRole('button', { name: 'Попросить пересмотр' })).toBeNull();
   expect(document.body.textContent).not.toMatch(/SF_ADDITIONAL|risk_flag|internal_reasons/);
 });
+it.each([501, 'network'] as const)('ошибка пересмотра %s видна внутри диалога и сохраняет текст обращения', async (status) => {
+  server.use(http.post('*/api/v1/applications/:id/objection', () => status === 501 ? error(501, 'NOT_IMPLEMENTED') : HttpResponse.error()));
+  open({ ...applications[0]!, id: badId }, 'ip_bad');
+  fireEvent.click(await screen.findByRole('button', { name: 'Попросить пересмотр' }));
+  const dialog = await screen.findByRole('dialog');
+  const input = within(dialog).getByLabelText<HTMLTextAreaElement>('Почему вы не согласны');
+  fireEvent.change(input, { target: { value: 'Просрочка уже погашена' } });
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Отправить обращение' }));
+  expect(await within(dialog).findByText(status === 501 ? 'Действие пока недоступно, попробуйте позже' : 'Не удалось отправить обращение. Проверьте соединение и попробуйте ещё раз.')).toBeTruthy();
+  expect(input.value).toBe('Просрочка уже погашена');
+});
 it('фикстура отказа загружает сведения о своей компании без уведомления об ошибке', async () => {
   open({ ...applications[0]!, id: badId }, 'ip_bad');
   expect(await screen.findByText('Данные из ЕГРИП на 23.10.2026')).toBeTruthy();

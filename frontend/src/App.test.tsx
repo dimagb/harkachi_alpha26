@@ -79,7 +79,7 @@ it.each([['ip_good', '/bank/journal', '/app', 'Мои заявки'], ['underwri
 
 it.each([
   ['ip_good', '/app/applications/new', 'Зачем нужны деньги?'],
-  ['ip_good', '/app/applications/123', /Экспресс-кредит/],
+  ['ip_good', '/app/applications/123', /Банк одобрил 1\s500\s000\s₽/],
   ['underwriter', '/bank/applications/123', 'Карточка андеррайтера'],
   ['underwriter', '/bank/journal', 'Журнал банка'],
 ])('восстанавливает сессию %s и открывает %s', async (token, path, title) => {

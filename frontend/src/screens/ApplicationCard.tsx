@@ -73,7 +73,6 @@ function CardContent({ id, companies, userId }: CardProps & { id: string }) {
   const current = data.timeline.find((step) => step.stage_code === data.stage.code);
   const status = current?.status ?? 'pending';
   const offered = data.state === 'OFFER_ISSUED' && data.offer;
-  // TODO(lead): обновить старое ожидание заголовка в App.test.tsx — файл вне карточки F-05.
   const decisionHeading = offered ? data.offer!.kind === 'APPROVED' ? `Банк одобрил ${formatMoney(data.offer!.amount)}` : `Банк готов выдать ${formatMoney(data.offer!.amount)} на ${data.offer!.term_months} мес.` : data.state === 'DECLINED' ? 'Банк не может выдать кредит сейчас' : null;
   const product = products.data?.find((product) => product.code === data.product_code);
   const color = offered ? data.offer!.kind === 'APPROVED' ? 'ok' : 'wait' : data.state === 'DECLINED' ? 'stop' : stageStatusColor(status);
