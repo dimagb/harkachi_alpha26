@@ -41,6 +41,23 @@ export const companyProfiles: Record<string, Schema['CompanyProfile']> = {
   },
 };
 
+// F-01b: public company identifiers and directors from contracts/personas.json.
+for (const [login, suffix, name, inn, ogrn, fullName] of [
+  ['ooo_gap', '203', 'ООО «Ремонт-Сервис»', '7703123457', '1247700023456', 'Гусев Артём Павлович'],
+  ['ooo_border', '204', 'ООО «ТехноМонтаж»', '7705123452', '1257700034567', 'Захаров Роман Олегович'],
+] as const) {
+  const companyId = `20000000-0000-4000-8000-000000000${suffix}`;
+  const company = { id: companyId, name, inn, kind: 'OOO' as const };
+  accounts[login] = {
+    user: { id: companyId.replace('20000000', '10000000'), full_name: fullName, role: 'CLIENT' },
+    companies: [{ company, position: 'Генеральный директор', can_sign: true, is_founder: true }],
+  };
+  companyProfiles[companyId] = {
+    ...companyProfiles[accounts.ooo_load!.companies[0]!.company.id]!, ...company, ogrn,
+    director_full_name: fullName, founders: [{ full_name: fullName, share_pct: 100 }],
+  };
+}
+
 const at = '2026-10-23T09:00:00Z';
 const draftStage: Schema['Stage'] = { index: 1, code: 'APPLICATION', title: 'Заявка', what_happens: 'Заявка сохранена как черновик.', what_to_do: 'Заполните и отправьте заявку.' };
 
@@ -131,7 +148,7 @@ applicationScenarios.push({
 // ip_bad name/inn/ogrn: contracts/personas.json, personas[code="ip_bad"].
 for (const [login, id, companyId, name, kind] of [
   ['ip_bad', '30000000-0000-4000-8000-000000000201', '20000000-0000-4000-8000-000000000201', 'ИП Козлов Дмитрий Сергеевич', 'IP'],
-  ['ooo_aml', '30000000-0000-4000-8000-000000000202', '20000000-0000-4000-8000-000000000202', 'ООО — демо дополнительных проверок', 'OOO'],
+  ['ooo_aml', '30000000-0000-4000-8000-000000000202', '20000000-0000-4000-8000-000000000202', 'ООО «Альфа-Трейд»', 'OOO'],
 ] as const) {
   const base = accounts[kind === 'IP' ? 'ip_good' : 'ooo_load']!;
   accounts[login] = { user: { ...base.user, id: companyId.replace('20000000', '10000000') }, companies: base.companies.map((membership) => ({ ...membership, company: { ...membership.company, id: companyId, name, ...(login === 'ip_bad' ? { inn: '770412345664' } : {}) } })) };

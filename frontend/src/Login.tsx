@@ -2,6 +2,7 @@ import { Button, Container, Paper, PasswordInput, Stack, Text, TextInput, Title 
 import { useState, type FormEvent } from 'react';
 import { api, fieldErrors } from './api/client';
 import { setToken } from './auth/session';
+import { demoAccounts } from './demoAccounts';
 
 export default function Login() {
   const [login, setLogin] = useState('');
@@ -41,10 +42,27 @@ export default function Login() {
         </Paper>
         <Stack gap="xs">
           <Title order={2} size="h4">Демо-учётки</Title>
-          <Text size="sm">ip_good — индивидуальный предприниматель</Text>
-          <Text size="sm">ooo_load — руководитель компании</Text>
-          <Text size="sm">underwriter — сотрудник банка</Text>
-          {import.meta.env.DEV && import.meta.env.VITE_USE_MSW === 'true' && <Text size="sm" c="dimmed">Работа без сервера. Пароль для демо-учёток: demo2026.</Text>}
+          <Text size="sm">Пароль для всех учёток: demo2026</Text>
+          <Stack component="ul" aria-label="Демо-учётки" gap="xs" m={0} p={0} style={{ listStyle: 'none', minWidth: 0 }}>
+            {demoAccounts.map((account) => (
+              <li key={account.login} style={{ minWidth: 0 }}>
+                <Paper
+                  component="button" type="button" withBorder p="md" radius="md" w="100%"
+                  style={{ textAlign: 'left', cursor: 'pointer', color: 'var(--cc-ink)', font: 'inherit' }}
+                  onClick={() => {
+                    setLogin(account.login);
+                    setPassword('demo2026');
+                    document.getElementById('login')?.closest('form')?.querySelector<HTMLButtonElement>('button[type="submit"]')?.focus();
+                  }}
+                >
+                  <Text component="code" display="block" size="sm" fw={600} style={{ fontFamily: 'var(--mantine-font-family-monospace)', whiteSpace: 'nowrap' }}>{account.login}</Text>
+                  <Text component="span" display="block" size="xs" c="var(--cc-ink-2)">{account.name}</Text>
+                  <Text component="span" display="block" size="xs" c="var(--cc-ink-2)">{account.description}</Text>
+                </Paper>
+              </li>
+            ))}
+          </Stack>
+          {import.meta.env.DEV && import.meta.env.VITE_USE_MSW === 'true' && <Text size="sm" c="dimmed">Работа без сервера.</Text>}
         </Stack>
       </Stack>
     </Container>
