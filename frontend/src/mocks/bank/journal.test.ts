@@ -71,3 +71,11 @@ it('проверяет роль, неизвестный id и лишние по�
   expect((await request('/demo/time-shift', { application_id: 'missing', days: 31 })).status).toBe(404);
   expect((await request('/demo/time-shift', { application_id: 'journal-1', days: 31, extra: true })).status).toBe(422);
 });
+
+it('все заявки на рассмотрении специалиста принимают решение через F-07', async () => {
+  const manual = await list('?state=MANUAL_REVIEW');
+  for (const app of manual.items) {
+    const response = await request(`/underwriting/${app.id}/decision`, { outcome: 'APPROVE', amount: app.amount, term_months: 24, comment: 'Данные проверены специалистом' });
+    expect(response.status, app.id).toBe(200);
+  }
+});

@@ -8,6 +8,7 @@ import { MemoryRouter } from 'react-router';
 import { afterAll, afterEach, beforeAll, beforeEach, expect, it, vi } from 'vitest';
 import { createBankHandlers } from '../../mocks/bank/handlers';
 import { createJournalHandlers } from '../../mocks/bank/journal';
+import { bankApplications } from '../../mocks/bank/fixtures';
 import { theme } from '../../theme';
 import Journal from './Journal';
 
@@ -34,7 +35,7 @@ it('показывает 20 строк, московское время, стр�
   await screen.findByText('Показано 21–28 из 28');
   expect(urls.at(-1)?.searchParams.get('page')).toBe('2');
   filter('Рассмотрение специалистом');
-  await screen.findByText('Показано 1–7 из 7');
+  await screen.findByText('Показано 1–6 из 6');
   expect(urls.at(-1)?.searchParams.get('state')).toBe('MANUAL_REVIEW');
   expect(urls.at(-1)?.searchParams.get('page')).toBe('1');
   const rows = within(screen.getByRole('table', { name: 'Заявки банка' })).getAllByRole('row').slice(1);
@@ -101,4 +102,24 @@ it('показывает пустой результат и повторяет �
   server.use(http.get('*/api/v1/bank/applications', () => HttpResponse.json({ items: [], page: 1, size: 20, total: 0 })));
   fireEvent.click(screen.getByRole('button', { name: 'Повторить' }));
   expect(await screen.findByText('Заявок с таким состоянием нет')).toBeTruthy();
+});
+
+it('возвращается на существующую страницу, если последняя оферта на странице истекла', async () => {
+  let total = 21;
+  server.use(
+    http.get('*/api/v1/bank/applications', ({ request }) => {
+      const page = Number(new URL(request.url).searchParams.get('page') ?? 1);
+      const source = bankApplications[0]!;
+      const all = Array.from({ length: total }, (_, i) => ({ id: `last-${i}`, number: 2000 + i, company_name: `Компания ${i}`, company_kind: 'OOO', product_code: 'EXPRESS', amount: 1000000, grade: 'A', route_reason: 'GRADE_C', waiting_since: source.updated_at, updated_at: source.updated_at, state: 'OFFER_ISSUED' }));
+      return HttpResponse.json({ items: all.slice((page - 1) * 20, page * 20), total, page, size: 20 });
+    }),
+    http.post('*/api/v1/demo/time-shift', () => { total = 20; return HttpResponse.json({ application_id: 'last-20', expired_now: true, state: 'EXPIRED' }); }),
+  );
+  open(); await screen.findByText('Показано 1–20 из 21');
+  fireEvent.click(screen.getByRole('button', { name: 'Страница 2' }));
+  await screen.findByText('Показано 21–21 из 21');
+  fireEvent.click(screen.getByRole('button', { name: /Перемотать время/ }));
+  fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Перемотать' }));
+  expect(await screen.findByText('Показано 1–20 из 20')).toBeTruthy();
+  expect(screen.queryByText('Заявок с таким состоянием нет')).toBeNull();
 });

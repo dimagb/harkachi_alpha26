@@ -18,7 +18,9 @@ const stages: { code: App['stage']['code']; title: string; states: State[] }[] =
 const names = ['ООО «Маяк»', 'ИП Смирнова Анна', 'ООО «Мастерская»', 'ООО «Горизонт»', 'ИП Орлов Павел', 'ООО «Пекарня у дома»', 'ООО «Логистика Плюс»'];
 function background(index: number): App {
   const base = structuredClone(bankApplications[0]!);
-  const state = states[index % states.length]!;
+  // Ручные заявки берём из F-07: его обработчик решения владеет только своими id.
+  const backgroundStates = states.filter(value => value !== 'MANUAL_REVIEW');
+  const state = backgroundStates[index % backgroundStates.length]!;
   const id = `journal-${index + 1}`;
   const kind = index % 7 === 1 || index % 7 === 4 ? 'IP' : 'OOO';
   const stageIndex = stages.findIndex(stage => stage.states.includes(state));
@@ -31,7 +33,7 @@ function background(index: number): App {
     company: { ...base.company, id: `company-${id}`, name: names[index % names.length]!, kind, inn: kind === 'IP' ? `5001000000${String(index).padStart(2, '0')}` : `77050000${String(index).padStart(2, '0')}`, ogrn: kind === 'IP' ? `3265001000000${String(index).padStart(2, '0')}` : `12677000000${String(index).padStart(2, '0')}` },
     stage: { index: (stageIndex + 1) as App['stage']['index'], code: stage.code, title: stage.title, what_happens: 'Демонстрационная заявка', what_to_do: null },
     timeline: stages.map((s, i) => ({ stage_code: s.code, title: s.title, status: i < stageIndex ? 'done' : i === stageIndex ? 'current' : 'pending', at: i <= stageIndex ? base.updated_at : null })),
-    decisions: early ? [] : base.decisions.map(d => ({ ...d, id: `auto-${id}`, outcome: offered ? 'APPROVE' : state === 'DECLINED' ? 'DECLINE' : d.outcome, route_reason: state === 'MANUAL_REVIEW' ? 'GRADE_C' : null })),
+    decisions: early ? [] : base.decisions.map(d => ({ ...d, id: `auto-${id}`, outcome: offered ? 'APPROVE' : state === 'DECLINED' ? 'DECLINE' : d.outcome, route_reason: null })),
     offer: offered ? { id: `offer-${id}`, version: 1, kind: 'APPROVED', status: state === 'OFFER_ISSUED' ? 'ACTIVE' : 'ACCEPTED', product_code: base.product_code, amount: base.amount, term_months: base.term_months, rate: 26, monthly_payment: 53875, expires_at: expires(30), explanation: ['Компания прошла проверку'], requested: null, counter_reason: null } : null,
     info_request: state === 'INFO_REQUESTED' ? { id: `info-${id}`, items: [{ item_code: 'REVENUE_CONFIRM', question: 'Подтвердите поступления', requires_value: true }], due_at: expires(5) } : null,
     client_reason: null, allowed_actions: [],
@@ -48,6 +50,7 @@ function access(request: Request) {
   return me.user.role === 'UNDERWRITER' ? null : error(403, 'FORBIDDEN', 'Экран доступен специалисту банка.');
 }
 export function createJournalHandlers() {
+  // TODO(lead): общий store с F-07 нужен для отражения ручных решений; его приватный store в bank/handlers.ts вне F-08.
   const reused = structuredClone(bankApplications);
   const own = new Map(Array.from({ length: 21 }, (_, i) => background(i)).map(app => [app.id, app]));
   const shifted = new Map<string, number>();
