@@ -1,0 +1,52 @@
+meta {
+  name: ООО: ожидание оферты после ответа
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/applications/{{app_ooo_gap}}
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token_ooo_gap}}
+}
+
+script:pre-request {
+  const remaining = bru.getVar("ooo_gap_after_info_deadline") - Date.now();
+  req.setTimeout(Math.max(1, Math.min(5000, remaining)));
+}
+
+script:post-response {
+  const pending = ["SUBMITTED","VALIDATION","ENRICHMENT","ASSESSMENT"];
+  const remaining = bru.getVar("ooo_gap_after_info_deadline") - Date.now();
+  const repeat = res.getStatus() === 200 && pending.includes(res.getBody().state) && remaining > 1000;
+  bru.setVar("ooo_gap_after_info_deadline_repeat", repeat);
+  if (repeat) {
+    await bru.sleep(1000);
+    bru.runner.setNextRequest(req.getName());
+  }
+}
+
+tests {
+  test("HTTP 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  if (!bru.getVar("ooo_gap_after_info_deadline_repeat")) {
+    test("Конечное состояние: OFFER_ISSUED", function () {
+    expect(res.getBody().state).to.equal("OFFER_ISSUED");
+    expect(Date.now()).to.be.at.most(bru.getVar("ooo_gap_after_info_deadline"));
+  });
+  test("Условия оферты совпадают с эталоном", function () {
+    const offer = res.getBody().offer;
+    expect(offer).to.be.an("object");
+    expect(offer.amount).to.equal(1000000);
+    expect(offer.term_months).to.equal(24);
+    expect(offer.rate).to.equal(22);
+    expect(offer.monthly_payment).to.equal(51878);
+  });
+  }
+}

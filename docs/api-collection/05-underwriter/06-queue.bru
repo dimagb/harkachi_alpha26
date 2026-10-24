@@ -1,0 +1,27 @@
+meta {
+  name: Андеррайтер: очередь
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/underwriting/queue
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token_underwriter}}
+}
+
+tests {
+  test("HTTP 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Новая заявка в очереди с причиной GRADE_C", function () {
+    const item = res.getBody().find(a => a.id === bru.getVar("app_ooo_border"));
+    expect(item).to.be.an("object");
+    expect(item.route_reason).to.equal("GRADE_C");
+  });
+}

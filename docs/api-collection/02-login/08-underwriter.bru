@@ -1,0 +1,41 @@
+meta {
+  name: Вход: underwriter
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/auth/login
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "login": "underwriter",
+    "password": "{{password}}"
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+    bru.setVar("token_underwriter", res.getBody().access_token);
+  }
+}
+
+tests {
+  test("HTTP 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Получен токен и правильная роль", function () {
+    const data = res.getBody();
+    expect(data.access_token).to.be.a("string").and.not.empty;
+    expect(data.token_type).to.equal("bearer");
+    expect(data.user.role).to.equal("UNDERWRITER");
+  });
+}

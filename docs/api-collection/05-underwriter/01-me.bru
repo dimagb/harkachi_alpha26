@@ -1,0 +1,37 @@
+meta {
+  name: Компания: ooo_border
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/me
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token_ooo_border}}
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+    const membership = res.getBody().companies.find(m => m.company.inn === "7705123452");
+    if (membership) bru.setVar("company_ooo_border", membership.company.id);
+  }
+}
+
+tests {
+  test("HTTP 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Клиент и его компания", function () {
+    const data = res.getBody();
+    expect(data.user.role).to.equal("CLIENT");
+    const membership = data.companies.find(m => m.company.inn === "7705123452");
+    expect(membership).to.be.an("object");
+    expect(membership.company.name).to.equal("ООО «ТехноМонтаж»");
+    expect(membership.can_sign).to.equal(true);
+  });
+}

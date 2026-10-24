@@ -1,0 +1,32 @@
+meta {
+  name: Ошибка: старая версия оферты
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/applications/{{app_ooo_border}}/offer/accept
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token_ooo_border}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "offer_version": {{old_offer_ooo_border}}
+  }
+}
+
+tests {
+  test("HTTP 409", function () {
+    expect(res.getStatus()).to.equal(409);
+  });
+
+  test("Ошибка CONFLICT_VERSION", function () {
+    expect(res.getBody().error.code).to.equal("CONFLICT_VERSION");
+  });
+}

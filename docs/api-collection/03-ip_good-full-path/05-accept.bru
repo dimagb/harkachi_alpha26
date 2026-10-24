@@ -1,0 +1,40 @@
+meta {
+  name: ИП: принять оферту
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/applications/{{app_ip_good}}/offer/accept
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token_ip_good}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "offer_version": {{offer_ip_good}}
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+    const party = res.getBody().parties.find(p => p.is_me && !p.signed && p.role === "BORROWER_SIGNATORY");
+    if (party) bru.setVar("party_ip_good", party.id);
+  }
+}
+
+tests {
+  test("HTTP 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Переход к подписи, найдена своя сторона", function () {
+    expect(res.getBody().state).to.equal("SIGNING");
+    expect(res.getBody().parties.filter(p => p.is_me && !p.signed && p.role === "BORROWER_SIGNATORY")).to.have.lengthOf(1);
+  });
+}

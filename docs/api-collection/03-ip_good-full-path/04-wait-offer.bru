@@ -1,0 +1,55 @@
+meta {
+  name: ИП: ожидание оферты
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/applications/{{app_ip_good}}
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token_ip_good}}
+}
+
+script:pre-request {
+  const remaining = bru.getVar("ip_good_decision_deadline") - Date.now();
+  req.setTimeout(Math.max(1, Math.min(5000, remaining)));
+}
+
+script:post-response {
+  const pending = ["SUBMITTED","VALIDATION","ENRICHMENT","ASSESSMENT"];
+  const remaining = bru.getVar("ip_good_decision_deadline") - Date.now();
+  const repeat = res.getStatus() === 200 && pending.includes(res.getBody().state) && remaining > 1000;
+  bru.setVar("ip_good_decision_deadline_repeat", repeat);
+  if (repeat) {
+    await bru.sleep(1000);
+    bru.runner.setNextRequest(req.getName());
+  }
+  if (res.getStatus() === 200 && res.getBody().state === "OFFER_ISSUED") {
+    bru.setVar("offer_ip_good", res.getBody().offer.version);
+  }
+}
+
+tests {
+  test("HTTP 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  if (!bru.getVar("ip_good_decision_deadline_repeat")) {
+    test("Конечное состояние: OFFER_ISSUED", function () {
+    expect(res.getBody().state).to.equal("OFFER_ISSUED");
+    expect(Date.now()).to.be.at.most(bru.getVar("ip_good_decision_deadline"));
+  });
+  test("Условия оферты совпадают с эталоном", function () {
+    const offer = res.getBody().offer;
+    expect(offer).to.be.an("object");
+    expect(offer.amount).to.equal(1500000);
+    expect(offer.term_months).to.equal(24);
+    expect(offer.rate).to.equal(22);
+    expect(offer.monthly_payment).to.equal(77817);
+  });
+  }
+}

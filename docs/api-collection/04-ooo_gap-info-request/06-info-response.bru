@@ -1,0 +1,42 @@
+meta {
+  name: ООО: ответ на дозапрос
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/applications/{{app_ooo_gap}}/info-response
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token_ooo_gap}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "answers": [
+      {
+        "item_code": "REVENUE_CONFIRM",
+        "value": 48000000,
+        "comment": "Часть выручки поступает на расчётный счёт в другом банке"
+      }
+    ]
+  }
+}
+
+script:post-response {
+  bru.setVar("ooo_gap_after_info_deadline", Date.now() + 60000);
+}
+
+tests {
+  test("HTTP 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Повторная проверка запущена", function () {
+    expect(res.getBody().state).to.equal("VALIDATION");
+  });
+}

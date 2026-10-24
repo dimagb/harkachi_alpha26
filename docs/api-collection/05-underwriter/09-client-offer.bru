@@ -1,0 +1,39 @@
+meta {
+  name: Клиент: оферта после ручного решения
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{baseUrl}}/applications/{{app_ooo_border}}
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token_ooo_border}}
+}
+
+script:post-response {
+  if (res.getStatus() === 200 && res.getBody().offer) {
+    bru.setVar("old_offer_ooo_border", res.getBody().offer.version - 1);
+  }
+}
+
+tests {
+  test("HTTP 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Клиент получил оферту", function () {
+    expect(res.getBody().state).to.equal("OFFER_ISSUED");
+  });
+  test("Условия оферты совпадают с эталоном", function () {
+    const offer = res.getBody().offer;
+    expect(offer).to.be.an("object");
+    expect(offer.amount).to.equal(1000000);
+    expect(offer.term_months).to.equal(24);
+    expect(offer.rate).to.equal(26);
+    expect(offer.monthly_payment).to.equal(53875);
+  });
+}

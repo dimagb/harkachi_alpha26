@@ -1,0 +1,37 @@
+meta {
+  name: Компания: ip_good
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{baseUrl}}/me
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token_ip_good}}
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+    const membership = res.getBody().companies.find(m => m.company.inn === "770112345695");
+    if (membership) bru.setVar("company_ip_good", membership.company.id);
+  }
+}
+
+tests {
+  test("HTTP 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Клиент и его компания", function () {
+    const data = res.getBody();
+    expect(data.user.role).to.equal("CLIENT");
+    const membership = data.companies.find(m => m.company.inn === "770112345695");
+    expect(membership).to.be.an("object");
+    expect(membership.company.name).to.equal("ИП Смирнова Анна Викторовна");
+    expect(membership.can_sign).to.equal(true);
+  });
+}

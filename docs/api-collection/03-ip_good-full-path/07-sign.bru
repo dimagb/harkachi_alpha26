@@ -1,0 +1,39 @@
+meta {
+  name: ИП: подписать
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/applications/{{app_ip_good}}/sign
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token_ip_good}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "otp_id": "{{otp_offer_ip_good}}",
+    "code": "{{code_offer_ip_good}}",
+    "party_id": "{{party_ip_good}}"
+  }
+}
+
+script:post-response {
+  bru.setVar("ip_good_disbursement_deadline", Date.now() + 30000);
+}
+
+tests {
+  test("HTTP 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Подписано своей стороной", function () {
+    expect(res.getBody().state).to.equal("SIGNED");
+    expect(res.getBody().parties.find(p => p.id === bru.getVar("party_ip_good")).signed).to.equal(true);
+  });
+}

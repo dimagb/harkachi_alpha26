@@ -1,0 +1,38 @@
+meta {
+  name: Ошибка: сумма вне продукта
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/applications
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token_ip_good}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "company_id": "{{company_ip_good}}",
+    "product_code": "EXPRESS",
+    "amount": 1,
+    "term_months": 24,
+    "purpose": "WORKING_CAPITAL",
+    "declared_revenue_year": 14000000
+  }
+}
+
+tests {
+  test("HTTP 422", function () {
+    expect(res.getStatus()).to.equal(422);
+  });
+
+  test("Ошибка в поле суммы", function () {
+    expect(res.getBody().error.code).to.equal("VALIDATION_ERROR");
+    expect(res.getBody().error.details.fields.amount).to.be.a("string").and.not.empty;
+  });
+}

@@ -1,0 +1,29 @@
+meta {
+  name: Андеррайтер: карточка
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/underwriting/applications/{{app_ooo_border}}
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token_underwriter}}
+}
+
+tests {
+  test("HTTP 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("54 балла и 12 факторов", function () {
+    expect(res.getBody().state).to.equal("MANUAL_REVIEW");
+    const auto = res.getBody().decisions.find(d => d.kind === "AUTO");
+    expect(auto).to.be.an("object");
+    expect(auto.score).to.equal(54);
+    expect(auto.factors).to.have.lengthOf(12);
+  });
+}

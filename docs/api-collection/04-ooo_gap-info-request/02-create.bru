@@ -1,0 +1,42 @@
+meta {
+  name: Создать заявку: ooo_gap
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/applications
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token_ooo_gap}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "company_id": "{{company_ooo_gap}}",
+    "product_code": "EXPRESS",
+    "amount": 1000000,
+    "term_months": 24,
+    "purpose": "EQUIPMENT",
+    "declared_revenue_year": 48000000
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 200) bru.setVar("app_ooo_gap", res.getBody().id);
+}
+
+tests {
+  test("HTTP 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Создан новый черновик", function () {
+    expect(res.getBody().state).to.equal("DRAFT");
+    expect(res.getBody().id).to.be.a("string").and.not.empty;
+  });
+}

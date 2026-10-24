@@ -1,0 +1,47 @@
+meta {
+  name: ООО: ожидание дозапроса
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/applications/{{app_ooo_gap}}
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token_ooo_gap}}
+}
+
+script:pre-request {
+  const remaining = bru.getVar("ooo_gap_decision_deadline") - Date.now();
+  req.setTimeout(Math.max(1, Math.min(5000, remaining)));
+}
+
+script:post-response {
+  const pending = ["SUBMITTED","VALIDATION","ENRICHMENT","ASSESSMENT"];
+  const remaining = bru.getVar("ooo_gap_decision_deadline") - Date.now();
+  const repeat = res.getStatus() === 200 && pending.includes(res.getBody().state) && remaining > 1000;
+  bru.setVar("ooo_gap_decision_deadline_repeat", repeat);
+  if (repeat) {
+    await bru.sleep(1000);
+    bru.runner.setNextRequest(req.getName());
+  }
+}
+
+tests {
+  test("HTTP 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  if (!bru.getVar("ooo_gap_decision_deadline_repeat")) {
+    test("Конечное состояние: INFO_REQUESTED", function () {
+    expect(res.getBody().state).to.equal("INFO_REQUESTED");
+    expect(Date.now()).to.be.at.most(bru.getVar("ooo_gap_decision_deadline"));
+  });
+  test("Запрошено подтверждение выручки", function () {
+    expect(res.getBody().info_request.items.map(i => i.item_code)).to.include("REVENUE_CONFIRM");
+  });
+  }
+}
