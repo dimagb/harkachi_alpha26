@@ -41,7 +41,7 @@ export function createDecisionHandlers(stored = new Map<string, Application>()) 
   return [
     http.get<Params>('*/api/v1/applications/:id', ({ request, params }) => {
       const application = access(request, params.id);
-      return application ? HttpResponse.json(['SIGNING', 'SIGNED', 'DISBURSED'].includes(application.state) ? signingView(request, application) : view(request, application)) : undefined;
+      return application ? HttpResponse.json(['DRAFT', 'SIGNING', 'SIGNED', 'DISBURSED'].includes(application.state) ? signingView(request, application) : view(request, application)) : undefined;
     }),
     http.post<Params, Schema['AcceptOfferRequest']>('*/api/v1/applications/:id/offer/accept', async ({ request, params }) => {
       const application = access(request, params.id);

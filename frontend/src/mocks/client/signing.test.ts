@@ -105,3 +105,17 @@ it('общие обработчики после принятия оферты �
   expect(accountant.allowed_actions).toEqual([]);
   expect(accountant.parties.every((party) => !party.is_me)).toBe(true);
 });
+
+it.each([
+  ['ooo_load', false, ['EDIT_DRAFT', 'SUBMIT', 'WITHDRAW']],
+  ['ooo_load', true, ['EDIT_DRAFT', 'SUBMIT', 'WITHDRAW']],
+  ['ooo_load_accountant', false, ['EDIT_DRAFT', 'REQUEST_SIGNATURE', 'WITHDRAW']],
+  ['ooo_load_accountant', true, ['EDIT_DRAFT', 'WITHDRAW']],
+] as const)('DRAFT: %s, awaiting=%s меняет только действия текущего пользователя', async (login, awaiting, actions) => {
+  const { createDecisionHandlers } = await import('./decision');
+  const before = { ...structuredClone(stored.get(oooId)!), awaiting_signature: awaiting };
+  stored.set(oooId, before);
+  server.resetHandlers(...createDecisionHandlers(stored), ...createSigningHandlers(stored));
+  const actual = await (await request(oooId, '', undefined, login)).json() as Application;
+  expect(actual).toEqual({ ...before, allowed_actions: [...actions] });
+});

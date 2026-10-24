@@ -30,11 +30,14 @@ function projectSigning(application: Application, userId: string | undefined, ca
     timeline: application.timeline.map((step) => step.stage_code === 'SIGNING' ? { ...step, status: ownPending ? 'action_required' : 'current' } : step),
   };
 }
+function projectDraft(application: Application, canSign: boolean): Application {
+  return { ...application, allowed_actions: ['EDIT_DRAFT', ...(canSign ? ['SUBMIT' as const] : application.awaiting_signature ? [] : ['REQUEST_SIGNATURE' as const]), 'WITHDRAW'] };
+}
 export function signingView(request: Request, application: Application): Application {
-  // TODO(lead): разрешить проекцию DRAFT в GET F-05: бухгалтер пока получает SUBMIT.
   const token = request.headers.get('Authorization') ?? '';
   const me = token.startsWith('Bearer demo:') ? accounts[token.slice('Bearer demo:'.length)] : undefined;
   const member = me?.companies.find(({ company }) => company.id === application.company_id);
+  if (application.state === 'DRAFT') return projectDraft(application, member?.can_sign ?? false);
   return projectSigning(application, me?.user.id, member?.can_sign ?? false);
 }
 export function enterSigning(application: Application): Application {
@@ -69,12 +72,8 @@ export function createSigningHandlers(stored = new Map<string, Application>()) {
   }
   function view(application: Application, userId: string, canSign: boolean): Application {
     if (['SIGNING', 'SIGNED', 'DISBURSED'].includes(application.state)) return projectSigning(application, userId, canSign);
+    if (application.state === 'DRAFT') return projectDraft(application, canSign);
     const parties = application.parties.map((party) => ({ ...party, is_me: owners.get(party.id) === userId }));
-    if (application.state === 'DRAFT') return { ...application, parties,
-      allowed_actions: ['EDIT_DRAFT', ...(canSign ? ['SUBMIT' as const] : application.awaiting_signature ? [] : ['REQUEST_SIGNATURE' as const]), 'WITHDRAW'],
-      stage: { ...application.stage, what_happens: 'Заявка ещё не отправлена в банк', what_to_do: canSign ? 'Проверьте параметры заявки, подпишите согласия и отправьте её' : 'Ждём решения подписанта компании' },
-      timeline: application.timeline.map((step, i) => i === 0 ? { ...step, status: canSign ? 'action_required' : 'current', at: step.at ?? application.created_at } : step),
-    };
     return { ...application, parties, allowed_actions: !canSign && application.state === 'SUBMITTED' ? [] : application.allowed_actions };
   }
   function validCode(otpId: string, code: string, applicationId: string, userId: string, purpose: Code['purpose'], partyId?: string) {
