@@ -8,6 +8,7 @@ __pycache__/
 .venv/
 dist/
 .pytest_cache/
+.pytest-review-*/
 .ruff_cache/
 coverage/
 .notify.env
