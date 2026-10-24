@@ -234,3 +234,43 @@ def test_wrong_state_and_access(pipeline_factory, persona_data):
             ).status_code
             == 404
         )
+
+
+@pytest.mark.parametrize("invalid", ["reordered", "duplicate"])
+def test_two_distinct_items_require_matching_order(
+    pipeline_factory, persona_data, invalid
+):
+    application_id, persona = completed(pipeline_factory, persona_data, "ooo_gap")
+    with pipeline_factory.begin() as session:
+        request = session.scalar(
+            select(InfoRequest).where(InfoRequest.application_id == application_id)
+        )
+        request.items = [
+            *request.items,
+            {
+                "item_code": "PURPOSE_DETAILS",
+                "question": "На что пойдут деньги?",
+                "requires_value": False,
+            },
+        ]
+    answers = [
+        *deepcopy(persona["demo"]["info_response"]),
+        {"item_code": "PURPOSE_DETAILS", "comment": "На закупку товара"},
+    ]
+    if invalid == "reordered":
+        answers.reverse()
+    else:
+        answers[1] = deepcopy(answers[0])
+    with client_for(pipeline_factory, "ooo_gap") as client:
+        response = client.post(
+            f"/api/v1/applications/{application_id}/info-response",
+            json={"answers": answers},
+        )
+    assert response.status_code == 422, response.text
+    assert "answers" in response.json()["error"]["details"]["fields"]
+    with pipeline_factory() as session:
+        assert session.get(Application, application_id).state == "INFO_REQUESTED"
+        request = session.scalar(
+            select(InfoRequest).where(InfoRequest.application_id == application_id)
+        )
+        assert request.responded_at is None and request.response is None

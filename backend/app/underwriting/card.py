@@ -139,7 +139,8 @@ def _events(session: Session, application: Application) -> list[EventBank]:
         actor = (
             "Система"
             if entry.actor_type == "SYSTEM"
-            else f"{ACTOR_LABELS[entry.actor_type]}: {full_name or ''}"
+            else ACTOR_LABELS[entry.actor_type]
+            + (f": {full_name}" if full_name else "")
         )
         result.append(
             EventBank(
