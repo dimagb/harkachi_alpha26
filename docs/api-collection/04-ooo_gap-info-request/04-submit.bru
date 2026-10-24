@@ -1,0 +1,42 @@
+meta {
+  name: Подать заявку: ooo_gap
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/applications/{{app_ooo_gap}}/submit
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token_ooo_gap}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "otp_id": "{{otp_ooo_gap}}",
+    "code": "{{code_ooo_gap}}",
+    "consents": {
+      "pdn": true,
+      "bki": true,
+      "auto_decision": false
+    }
+  }
+}
+
+script:post-response {
+  bru.setVar("ooo_gap_decision_deadline", Date.now() + 60000);
+}
+
+tests {
+  test("HTTP 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Заявка подана", function () {
+    expect(res.getBody().state).to.equal("SUBMITTED");
+  });
+}

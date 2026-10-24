@@ -1,0 +1,40 @@
+meta {
+  name: ИП: код подписи
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/applications/{{app_ip_good}}/otp
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token_ip_good}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "purpose": "OFFER",
+    "party_id": "{{party_ip_good}}"
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+    bru.setVar("otp_offer_ip_good", res.getBody().otp_id);
+    bru.setVar("code_offer_ip_good", res.getBody().demo_code);
+  }
+}
+
+tests {
+  test("HTTP 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Код подписи получен", function () {
+    expect(res.getBody().demo_code).to.match(/^\d{6}$/);
+  });
+}

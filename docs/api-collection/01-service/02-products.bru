@@ -1,0 +1,26 @@
+meta {
+  name: Сервис: три продукта
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/products
+  body: none
+  auth: none
+}
+
+script:pre-request {
+  await bru.runRequest("02-login/01-ip_good");
+  req.setHeader("Authorization", "Bearer " + bru.getVar("token_ip_good"));
+}
+
+tests {
+  test("HTTP 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Доступны три продукта", function () {
+    expect(res.getBody().map(p => p.code).sort()).to.deep.equal(["EXPRESS", "OVERDRAFT", "WORKING_CAPITAL"]);
+  });
+}

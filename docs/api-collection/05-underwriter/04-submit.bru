@@ -1,0 +1,42 @@
+meta {
+  name: Подать заявку: ooo_border
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/applications/{{app_ooo_border}}/submit
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token_ooo_border}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "otp_id": "{{otp_ooo_border}}",
+    "code": "{{code_ooo_border}}",
+    "consents": {
+      "pdn": true,
+      "bki": true,
+      "auto_decision": false
+    }
+  }
+}
+
+script:post-response {
+  bru.setVar("ooo_border_decision_deadline", Date.now() + 60000);
+}
+
+tests {
+  test("HTTP 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Заявка подана", function () {
+    expect(res.getBody().state).to.equal("SUBMITTED");
+  });
+}

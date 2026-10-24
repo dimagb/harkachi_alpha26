@@ -1,0 +1,40 @@
+meta {
+  name: Код согласий: ooo_border
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/applications/{{app_ooo_border}}/otp
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token_ooo_border}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "purpose": "CONSENTS"
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+    bru.setVar("otp_ooo_border", res.getBody().otp_id);
+    bru.setVar("code_ooo_border", res.getBody().demo_code);
+  }
+}
+
+tests {
+  test("HTTP 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Получен демо-код", function () {
+    expect(res.getBody().otp_id).to.be.a("string").and.not.empty;
+    expect(res.getBody().demo_code).to.match(/^\d{6}$/);
+  });
+}

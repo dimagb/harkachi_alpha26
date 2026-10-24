@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "Кредитный кабинет — A-05",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

@@ -1,0 +1,35 @@
+meta {
+  name: Андеррайтер: одобрить
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/underwriting/{{app_ooo_border}}/decision
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token_underwriter}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "outcome": "APPROVE",
+    "amount": 1000000,
+    "term_months": 24,
+    "comment": "Одобрено по рекомендации системы после проверки"
+  }
+}
+
+tests {
+  test("HTTP 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Ручное одобрение выполнено", function () {
+    expect(res.getBody().state).to.equal("OFFER_ISSUED");
+  });
+}

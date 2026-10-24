@@ -1,0 +1,42 @@
+meta {
+  name: Подать заявку: ip_good
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/applications/{{app_ip_good}}/submit
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token_ip_good}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "otp_id": "{{otp_ip_good}}",
+    "code": "{{code_ip_good}}",
+    "consents": {
+      "pdn": true,
+      "bki": true,
+      "auto_decision": true
+    }
+  }
+}
+
+script:post-response {
+  bru.setVar("ip_good_decision_deadline", Date.now() + 60000);
+}
+
+tests {
+  test("HTTP 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Заявка подана", function () {
+    expect(res.getBody().state).to.equal("SUBMITTED");
+  });
+}

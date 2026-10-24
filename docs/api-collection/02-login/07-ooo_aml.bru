@@ -1,0 +1,41 @@
+meta {
+  name: Вход: ooo_aml
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/auth/login
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "login": "ooo_aml",
+    "password": "{{password}}"
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+    bru.setVar("token_ooo_aml", res.getBody().access_token);
+  }
+}
+
+tests {
+  test("HTTP 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Получен токен и правильная роль", function () {
+    const data = res.getBody();
+    expect(data.access_token).to.be.a("string").and.not.empty;
+    expect(data.token_type).to.equal("bearer");
+    expect(data.user.role).to.equal("CLIENT");
+  });
+}
