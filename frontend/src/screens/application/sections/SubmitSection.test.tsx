@@ -49,7 +49,7 @@ it.each(['ip_good', 'ooo_load'])('%s: обязательные согласия,
   }));
   await consentAndCode();
   expect(screen.getByText('Демо-режим: код 123456')).toBeTruthy();
-  expect(document.activeElement).toBe(screen.getByLabelText('Код из SMS'));
+  await waitFor(() => expect(document.activeElement).toBe(screen.getByLabelText('Код из SMS')));
   fireEvent.change(screen.getByLabelText('Код из SMS'), { target: { value: '1a2345678' } });
   expect((screen.getByLabelText('Код из SMS') as HTMLInputElement).value).toBe('123456');
   fireEvent.click(screen.getByRole('button', { name: 'Подставить' }));
@@ -78,7 +78,7 @@ it('ведёт к получению кода после отправки и п�
   scroll.mockClear();
   fireEvent.click(request);
   const input = await screen.findByLabelText('Код из SMS');
-  expect(document.activeElement).toBe(input);
+  await waitFor(() => expect(document.activeElement).toBe(input));
   expect(scroll).toHaveBeenLastCalledWith({ block: 'center' });
   expect(scroll.mock.instances.at(-1)).toBe(input);
 });

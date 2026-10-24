@@ -37,7 +37,7 @@ async function sign(name: string) {
   expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Получить код' }));
   fireEvent.click(screen.getByRole('button', { name: 'Получить код' }));
   await screen.findByText('Демо-режим: код 123456');
-  expect(document.activeElement).toBe(screen.getByLabelText('Код из SMS'));
+  await waitFor(() => expect(document.activeElement).toBe(screen.getByLabelText('Код из SMS')));
   fireEvent.click(screen.getByRole('button', { name: 'Подставить' }));
   fireEvent.click(screen.getByRole('button', { name: 'Подтвердить подпись' }));
 }
