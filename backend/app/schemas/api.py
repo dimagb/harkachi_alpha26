@@ -1,8 +1,8 @@
 """Pydantic representation of contracts/api-types.ts."""
 
-from typing import Literal, Self
+from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.errors import ApiError, ErrorCode
 
@@ -453,18 +453,6 @@ class UnderwriterDecisionRequest(Schema):
     client_reason_category: ClientReasonCategory | None = None
     info_questions: list[str] | None = Field(default=None, min_length=1, max_length=5)
     comment: str = Field(min_length=5, max_length=2000)
-
-    @model_validator(mode="after")
-    def require_outcome_fields(self) -> Self:
-        if self.outcome in {"APPROVE", "COUNTER"} and (
-            self.amount is None or self.term_months is None
-        ):
-            raise ValueError("Укажите сумму и срок кредита")
-        if self.outcome == "DECLINE" and self.client_reason_category is None:
-            raise ValueError("Укажите причину отказа")
-        if self.outcome == "REQUEST_INFO" and self.info_questions is None:
-            raise ValueError("Укажите вопросы для клиента")
-        return self
 
 
 class BankListItem(QueueItem):

@@ -117,8 +117,12 @@ STATE_VIEWS = {
 }
 
 
-def _presentation(session: Session, application: Application, user: User):
-    _, membership = member_company(application.company_id, user, session)
+def _presentation(
+    session: Session, application: Application, user: User, *, for_bank: bool = False
+):
+    membership = None
+    if not for_bank:
+        _, membership = member_company(application.company_id, user, session)
     parties = list(
         session.scalars(
             select(Party)
@@ -141,7 +145,7 @@ def _presentation(session: Session, application: Application, user: User):
     if index is None:
         index = STATE_VIEWS[last.from_state][0] if last is not None else 1
     actions = []
-    for action in candidates:
+    for action in () if for_bank else candidates:
         if (
             action in {"SUBMIT", "ACCEPT_OFFER", "REJECT_OFFER"}
             and not membership.can_sign
@@ -162,7 +166,11 @@ def _presentation(session: Session, application: Application, user: User):
         ):
             continue
         actions.append(action)
-    if application.state in {"DRAFT", "OFFER_ISSUED"} and not membership.can_sign:
+    if (
+        not for_bank
+        and application.state in {"DRAFT", "OFFER_ISSUED"}
+        and not membership.can_sign
+    ):
         status, todo = "current", "Ждём решения подписанта компании"
     if application.state == "SIGNING" and "SIGN" not in actions:
         status, todo = "current", "Ждём подписи остальных участников"
@@ -221,9 +229,15 @@ def _offer_client(
     )
     if offer is None:
         return None
+    auto = session.scalar(
+        select(Decision)
+        .where(Decision.application_id == application.id, Decision.kind == "AUTO")
+        .order_by(Decision.created_at.desc(), Decision.id.desc())
+        .limit(1)
+    )
     explanation = [
         OFFER_EXPLANATIONS[factor["code"]]
-        for factor in (decision.factors if decision else [])
+        for factor in (auto.factors if auto else [])
         if factor["points"] == factor["max_points"]
         and factor["code"] in OFFER_EXPLANATIONS
     ][:3]
@@ -237,7 +251,10 @@ def _offer_client(
             "term_months": application.term_months,
         }
         counter_reason = (
-            "Лимит овердрафта ограничен 40% среднемесячных поступлений на счёт"
+            "Специалист банка подобрал сумму и срок "
+            "с учётом ваших оборотов и обязательств"
+            if decision is not None and decision.kind == "MANUAL"
+            else "Лимит овердрафта ограничен 40% среднемесячных поступлений на счёт"
             if offer.product_code == "OVERDRAFT"
             else "Платёж по запрошенным условиям был бы слишком большим для текущих "
             "оборотов. Предлагаем условия, при которых платёж не превышает 30% "
@@ -288,7 +305,9 @@ def _client_reason(
             )
     return ClientReason(
         code=reason.code,
-        category=reason.client_category,
+        category=reason.client_category
+        if reason.client_category is not None
+        else decision.inputs_snapshot.get("client_category"),
         text=reason.client_text,
         action=action,
         retry_after=retry_after.isoformat() if retry_after else None,
@@ -317,9 +336,11 @@ def _info_request_client(
 
 
 def to_client(
-    session: Session, application: Application, user: User
+    session: Session, application: Application, user: User, *, for_bank: bool = False
 ) -> ApplicationClient:
-    stage, timeline, actions, parties = _presentation(session, application, user)
+    stage, timeline, actions, parties = _presentation(
+        session, application, user, for_bank=for_bank
+    )
     decision = session.scalar(
         select(Decision)
         .where(Decision.application_id == application.id)
@@ -351,7 +372,7 @@ def to_client(
                 role=party.role,
                 full_name=party.full_name,
                 signed=party.status == "SIGNED",
-                is_me=party.user_id == user.id,
+                is_me=not for_bank and party.user_id == user.id,
             )
             for party in parties
         ],
