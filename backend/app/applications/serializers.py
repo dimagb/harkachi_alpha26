@@ -14,6 +14,7 @@ from app.models import (
     Company,
     Decision,
     InfoRequest,
+    Objection,
     Offer,
     Party,
     ReasonCatalog,
@@ -280,6 +281,33 @@ def _offer_client(
 def _client_reason(
     session: Session, application: Application, decision: Decision | None
 ) -> ClientReason | None:
+    if application.state in {"WITHDRAWN", "EXPIRED"}:
+        last = session.scalar(
+            select(ApplicationEvent)
+            .where(
+                ApplicationEvent.application_id == application.id,
+                ApplicationEvent.event_type == "STATE_CHANGED",
+            )
+            .order_by(ApplicationEvent.created_at.desc(), ApplicationEvent.id.desc())
+            .limit(1)
+        )
+        reason = None
+        if last is not None:
+            reason = session.scalar(
+                select(ReasonCatalog).where(
+                    ReasonCatalog.code == last.reason_code,
+                    ReasonCatalog.client_visible.is_(True),
+                )
+            )
+        if reason is None:
+            return None
+        return ClientReason(
+            code=reason.code,
+            category=None,
+            text=reason.client_text,
+            action=reason.client_action,
+            retry_after=None,
+        )
     if application.state != "DECLINED" or decision is None:
         return None
     reason = session.scalar(
@@ -347,7 +375,36 @@ def to_client(
         .order_by(Decision.created_at.desc(), Decision.id.desc())
         .limit(1)
     )
-    # TODO(lead): заполнить objection и OBJECT в B-09.
+    if not for_bank and application.state == "DECLINED":
+        from app.objections.service import eligible
+
+        _, membership = member_company(application.company_id, user, session)
+        if membership.can_sign and eligible(session, application):
+            actions.insert(0, "OBJECT")
+    objection = session.scalar(
+        select(Objection)
+        .where(Objection.application_id == application.id)
+        .order_by(Objection.created_at.desc(), Objection.id.desc())
+        .limit(1)
+    )
+    objection_view = None
+    if objection is not None and not (
+        application.state in {"WITHDRAWN", "EXPIRED"} and objection.resolved_at is None
+    ):
+        objection_view = {
+            "status": "RESOLVED" if objection.resolved_at is not None else "PENDING",
+            "created_at": objection.created_at.isoformat(),
+            "outcome_text": {
+                "UPHELD": (
+                    "Специалист банка пересмотрел решение — смотрите предложение ниже"
+                ),
+                "REJECTED": (
+                    "Специалист банка повторно проверил заявку и подтвердил отказ"
+                ),
+            }.get(objection.outcome)
+            if objection.resolved_at is not None
+            else None,
+        }
     return ApplicationClient(
         id=str(application.id),
         number=application.number,
@@ -365,7 +422,7 @@ def to_client(
         offer=_offer_client(session, application, decision),
         client_reason=_client_reason(session, application, decision),
         info_request=_info_request_client(session, application),
-        objection=None,
+        objection=objection_view,
         parties=[
             PartyClient(
                 id=str(party.id),

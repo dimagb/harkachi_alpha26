@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from app.applications.state_machine import transition
 from app.catalog.calculator import validate_terms
 from app.config import get_settings
+from app.decision import DEFAULT_CONFIG
 from app.decision.scoring import annuity, rub
 from app.errors import ApiErrorException
 from app.models import (
@@ -22,6 +23,7 @@ from app.models import (
     Offer,
     User,
 )
+from app.objections import service as objections
 from app.pipeline.persist import config_version
 from app.schemas.api import ApplicationBank, UnderwriterDecisionRequest
 from app.underwriting.card import get_application, to_bank
@@ -121,7 +123,7 @@ def make_decision(
             .order_by(Decision.created_at.desc(), Decision.id.desc())
             .limit(1)
         )
-        product = _validate(session, application, body, auto)
+        _validate(session, application, body, auto)
         version = auto.config_version if auto else config_version(session)
         now = datetime.now(UTC)
         decision = Decision(
@@ -167,7 +169,16 @@ def make_decision(
                 Decimal(str(auto.policy["rate"]))
                 if auto and auto.policy is not None
                 else Decimal(str(cfg.key_rate))
-                + Decimal(str(product.params["spread"]["C"]))
+                + Decimal(
+                    str(
+                        cfg.params.get("products", {})
+                        .get(application.product_code, {})
+                        .get(
+                            "spread",
+                            DEFAULT_CONFIG.products[application.product_code].spreads,
+                        )["C"]
+                    )
+                )
             )
             offer = Offer(
                 application_id=application.id,
@@ -247,6 +258,8 @@ def make_decision(
             actor_id=user.id,
             reason_code=decision.client_reason_code if target == "DECLINED" else None,
         )
+        if body.outcome in {"APPROVE", "COUNTER", "DECLINE"}:
+            objections.resolve(session, application, body.outcome)
         session.flush()
         result = to_bank(session, application, user)
         session.commit()

@@ -339,8 +339,16 @@ def info_response(
     summary="Принять предложение",
     responses=errors(401, 403, 404, 409, 422, 501),
 )
-def accept_offer(id: UUID, body: s.AcceptOfferRequest):
-    not_implemented()
+def accept_offer(
+    id: UUID,
+    body: s.AcceptOfferRequest,
+    user: Annotated[User, Depends(client_user)],
+    session: Annotated[Session, Depends(get_session)],
+):
+    from app.applications.serializers import to_client
+    from app.offers.actions import accept
+
+    return to_client(session, accept(session, id, body, user), user)
 
 
 @router.post(
@@ -350,8 +358,15 @@ def accept_offer(id: UUID, body: s.AcceptOfferRequest):
     summary="Отклонить предложение",
     responses=errors(401, 403, 404, 409, 422, 501),
 )
-def reject_offer(id: UUID):
-    not_implemented()
+def reject_offer(
+    id: UUID,
+    user: Annotated[User, Depends(client_user)],
+    session: Annotated[Session, Depends(get_session)],
+):
+    from app.applications.serializers import to_client
+    from app.offers.actions import reject
+
+    return to_client(session, reject(session, id, user), user)
 
 
 @router.post(
@@ -382,8 +397,15 @@ def sign(
     summary="Отозвать заявку",
     responses=errors(401, 403, 404, 409, 422, 501),
 )
-def withdraw(id: UUID):
-    not_implemented()
+def withdraw(
+    id: UUID,
+    user: Annotated[User, Depends(client_user)],
+    session: Annotated[Session, Depends(get_session)],
+):
+    from app.applications.serializers import to_client
+    from app.offers.actions import withdraw
+
+    return to_client(session, withdraw(session, id, user), user)
 
 
 @router.post(
@@ -393,8 +415,16 @@ def withdraw(id: UUID):
     summary="Подать возражение",
     responses=errors(401, 403, 404, 409, 422, 501),
 )
-def objection(id: UUID, body: s.ObjectionRequest):
-    not_implemented()
+def objection(
+    id: UUID,
+    body: s.ObjectionRequest,
+    user: Annotated[User, Depends(client_user)],
+    session: Annotated[Session, Depends(get_session)],
+):
+    from app.applications.serializers import to_client
+    from app.objections.service import file
+
+    return to_client(session, file(session, id, body, user), user)
 
 
 @router.get(

@@ -139,6 +139,15 @@ class ApiClient:
             client_view=True,
         )
 
+    def objection(self, app_id, text):
+        return self.request(
+            "objection",
+            "POST",
+            f"applications/{app_id}/objection",
+            json={"text": text},
+            client_view=True,
+        )
+
     def sign(self, app_id, body):
         return self.request(
             "sign", "POST", f"applications/{app_id}/sign", json=body, client_view=True
