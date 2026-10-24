@@ -46,11 +46,12 @@ IMPLEMENTED = {
     ("POST", "/api/v1/applications/{id}/submit"),
     ("POST", "/api/v1/applications/{id}/request-signature"),
     ("POST", "/api/v1/applications/{id}/info-response"),
+    ("POST", "/api/v1/applications/{id}/sign"),
     ("GET", "/api/v1/underwriting/queue"),
     ("GET", "/api/v1/underwriting/applications/{id}"),
     ("POST", "/api/v1/underwriting/{id}/decision"),
 }
-assert len(IMPLEMENTED) == 16
+assert len(IMPLEMENTED) == 17
 
 
 @pytest.fixture

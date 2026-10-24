@@ -287,5 +287,9 @@ def process_step(
         enrichment(factory, application_id, providers)
     elif step == "ASSESSMENT":
         assessment(factory, application_id, today)
+    elif step == "DISBURSEMENT":
+        from app.disbursement.service import disburse
+
+        disburse(factory, application_id)
     else:
         raise ValueError("Шаг ещё не поддерживается")
