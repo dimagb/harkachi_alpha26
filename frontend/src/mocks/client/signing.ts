@@ -18,6 +18,39 @@ function move(application: Application, state: 'SUBMITTED' | 'SIGNED' | 'DISBURS
     allowed_actions: state === 'SUBMITTED' ? ['WITHDRAW'] : state === 'DISBURSED' ? ['NEW_APPLICATION'] : [],
   };
 }
+function partyOwner(application: Application, party: Application['parties'][number]) {
+  return party.is_me ? Object.values(accounts).find((account) => account.user.full_name === party.full_name && account.companies.some((member) => member.company.id === application.company_id && member.can_sign))?.user.id : undefined;
+}
+function projectSigning(application: Application, userId: string | undefined, canSign: boolean): Application {
+  const parties = application.parties.map((party) => ({ ...party, is_me: !!userId && partyOwner(application, party) === userId }));
+  if (application.state !== 'SIGNING') return { ...application, parties };
+  const ownPending = parties.some((party) => party.is_me && !party.signed);
+  return { ...application, parties, allowed_actions: [...(ownPending ? ['SIGN' as const] : []), ...(canSign ? ['WITHDRAW' as const] : [])],
+    stage: { ...application.stage, what_to_do: ownPending ? 'Подпишите договор кодом подтверждения' : 'Ждём подписи остальных участников' },
+    timeline: application.timeline.map((step) => step.stage_code === 'SIGNING' ? { ...step, status: ownPending ? 'action_required' : 'current' } : step),
+  };
+}
+export function signingView(request: Request, application: Application): Application {
+  // TODO(lead): разрешить проекцию DRAFT в GET F-05: бухгалтер пока получает SUBMIT.
+  const token = request.headers.get('Authorization') ?? '';
+  const me = token.startsWith('Bearer demo:') ? accounts[token.slice('Bearer demo:'.length)] : undefined;
+  const member = me?.companies.find(({ company }) => company.id === application.company_id);
+  return projectSigning(application, me?.user.id, member?.can_sign ?? false);
+}
+export function enterSigning(application: Application): Application {
+  const signer = Object.values(accounts).find((account) => account.companies.some((member) => member.company.id === application.company_id && member.can_sign));
+  if (!signer) throw new Error('Демо-подписант не найден.');
+  const company = signer.companies.find((member) => member.company.id === application.company_id)!.company;
+  const roles = company.kind === 'OOO' ? ['BORROWER_SIGNATORY', 'GUARANTOR'] as const : ['BORROWER_SIGNATORY'] as const;
+  const now = new Date().toISOString();
+  return { ...application, state: 'SIGNING', version: application.version + 1, updated_at: now,
+    offer: application.offer ? { ...application.offer, status: 'ACCEPTED' } : null,
+    parties: application.parties.length ? application.parties : roles.map((role) => ({ id: crypto.randomUUID(), role, full_name: signer.user.full_name, signed: false, is_me: true })),
+    stage: { index: 5, code: 'SIGNING', title: 'Подписание', what_happens: 'Готовим договор к подписанию', what_to_do: 'Подпишите договор кодом подтверждения' },
+    timeline: application.timeline.map((step, index) => ({ ...step, status: index < 4 ? 'done' : index === 4 ? 'action_required' : 'pending', at: index < 5 ? step.at ?? now : null })),
+    allowed_actions: ['SIGN', 'WITHDRAW'],
+  };
+}
 export function createSigningHandlers(stored = new Map<string, Application>()) {
   const codes = new Map<string, Code>();
   const owners = new Map<string, string>();
@@ -35,19 +68,13 @@ export function createSigningHandlers(stored = new Map<string, Application>()) {
     return { application, user, member };
   }
   function view(application: Application, userId: string, canSign: boolean): Application {
+    if (['SIGNING', 'SIGNED', 'DISBURSED'].includes(application.state)) return projectSigning(application, userId, canSign);
     const parties = application.parties.map((party) => ({ ...party, is_me: owners.get(party.id) === userId }));
     if (application.state === 'DRAFT') return { ...application, parties,
       allowed_actions: ['EDIT_DRAFT', ...(canSign ? ['SUBMIT' as const] : application.awaiting_signature ? [] : ['REQUEST_SIGNATURE' as const]), 'WITHDRAW'],
       stage: { ...application.stage, what_happens: 'Заявка ещё не отправлена в банк', what_to_do: canSign ? 'Проверьте параметры заявки, подпишите согласия и отправьте её' : 'Ждём решения подписанта компании' },
       timeline: application.timeline.map((step, i) => i === 0 ? { ...step, status: canSign ? 'action_required' : 'current', at: step.at ?? application.created_at } : step),
     };
-    if (application.state === 'SIGNING') {
-      const ownPending = parties.some((party) => party.is_me && !party.signed);
-      return { ...application, parties, allowed_actions: [...(ownPending ? ['SIGN' as const] : []), ...(canSign ? ['WITHDRAW' as const] : [])],
-        stage: { ...application.stage, what_to_do: ownPending ? 'Подпишите договор кодом подтверждения' : 'Ждём подписи остальных участников' },
-        timeline: application.timeline.map((step) => step.stage_code === 'SIGNING' ? { ...step, status: ownPending ? 'action_required' : 'current' } : step),
-      };
-    }
     return { ...application, parties, allowed_actions: !canSign && application.state === 'SUBMITTED' ? [] : application.allowed_actions };
   }
   function validCode(otpId: string, code: string, applicationId: string, userId: string, purpose: Code['purpose'], partyId?: string) {
@@ -56,7 +83,7 @@ export function createSigningHandlers(stored = new Map<string, Application>()) {
   }
   return [
     http.get<Params>('*/api/v1/applications/:id', ({ request, params }) => {
-      const ctx = context(request, params.id); if (ctx.response) return ctx.response;
+      const ctx = context(request, params.id); if (ctx.response) return undefined;
       return HttpResponse.json(view(ctx.application!, ctx.user!.user.id, ctx.member!.can_sign));
     }),
     http.post<Params, Schema['OtpRequest']>('*/api/v1/applications/:id/otp', async ({ request, params }) => {
@@ -124,7 +151,3 @@ export function createSigningHandlers(stored = new Map<string, Application>()) {
     }),
   ];
 }
-
-// TODO(lead): подключить createSigningHandlers в handlers.ts (импорт + строка после F-05).
-// TODO(lead): GET состояний F-06 в decision.ts должен передаваться этому модулю;
-// после accept нужны parties и SIGN. Точечное расширение области запрошено у оператора.

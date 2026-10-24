@@ -31,8 +31,8 @@ it('MSW не отдаёт чужую заявку и не меняет её де
 });
 it('принятие сохраняет SIGNING; отзыв после принятия не возвращает устаревшее состояние', async () => {
   const accepted = await (await request(offerId, '/offer/accept', { offer_version: 1 })).json() as Application;
-  expect(accepted).toMatchObject({ state: 'SIGNING', offer: { status: 'ACCEPTED' }, allowed_actions: ['WITHDRAW'] });
-  expect(accepted.timeline.map((step) => step.status)).toEqual(['done', 'done', 'done', 'done', 'current', 'pending']);
+  expect(accepted).toMatchObject({ state: 'SIGNING', offer: { status: 'ACCEPTED' }, allowed_actions: ['SIGN', 'WITHDRAW'] });
+  expect(accepted.timeline.map((step) => step.status)).toEqual(['done', 'done', 'done', 'done', 'action_required', 'pending']);
   expect(await (await request(offerId)).json()).toEqual(accepted);
   expect((await request(offerId, '/withdraw')).status).toBe(200);
   expect(await (await request(offerId)).json()).toMatchObject({ state: 'WITHDRAWN' });

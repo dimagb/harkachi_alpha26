@@ -90,3 +90,18 @@ it('цель, состояние, владелец и party проверяютс
   expect((await request(oooId, '/otp', { purpose: 'GUARANTEE', party_id: 'other' }, 'ooo_load')).status).toBe(403);
   expect((await request(oooId, '/otp', { purpose: 'OFFER' }, 'ooo_load')).status).toBe(422);
 });
+
+it('общие обработчики после принятия оферты дают SIGN и сохраняют участника при GET', async () => {
+  const { createHandlers } = await import('../handlers');
+  server.resetHandlers(...createHandlers());
+  const id = applications[1]!.id;
+  const response = await request(id, '/offer/accept', { offer_version: 1 }, 'ooo_load');
+  const accepted = await response.json() as Application;
+  expect(accepted).toMatchObject({ state: 'SIGNING', offer: { status: 'ACCEPTED' }, allowed_actions: ['SIGN', 'WITHDRAW'] });
+  expect(accepted.parties.map((party) => [party.role, party.is_me])).toEqual([['BORROWER_SIGNATORY', true], ['GUARANTOR', true]]);
+  const fetched = await (await request(id, '', undefined, 'ooo_load')).json() as Application;
+  expect(fetched).toEqual(accepted);
+  const accountant = await (await request(id, '', undefined, 'ooo_load_accountant')).json() as Application;
+  expect(accountant.allowed_actions).toEqual([]);
+  expect(accountant.parties.every((party) => !party.is_me)).toBe(true);
+});
