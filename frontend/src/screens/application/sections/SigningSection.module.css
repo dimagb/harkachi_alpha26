@@ -1,0 +1,23 @@
+.section { scroll-margin-top:var(--cc-space-24); display:flex; flex-direction:column; gap:var(--cc-space-24); min-width:0; }
+.document { border-top:1px solid var(--cc-line); padding-top:var(--cc-space-24); display:flex; flex-direction:column; gap:var(--cc-space-12); }
+.section p { margin:0; text-wrap:pretty; }
+.title { margin:0; font:var(--cc-text-h3); }
+.muted { color:var(--cc-ink-2); }
+.actions { display:flex; flex-wrap:wrap; align-items:center; gap:var(--cc-space-12); }
+.otp { display:flex; flex-direction:column; align-items:flex-start; gap:var(--cc-space-12); }
+.input { display:flex; flex-direction:column; gap:var(--cc-space-8); max-width:100%; }
+.input input { width:12ch; max-width:100%; box-sizing:border-box; padding:var(--cc-space-12); font:var(--cc-text-h3); letter-spacing:var(--cc-tracking-heading); border:1px solid var(--cc-line-input); border-radius:var(--cc-radius-sm); background:var(--cc-paper); color:var(--cc-ink); }
+.checkbox { display:flex; align-items:center; gap:var(--cc-space-8); cursor:pointer; }
+.checkbox input { accent-color:var(--mantine-color-gray-9); width:20px; height:20px; }
+.error { color:var(--mantine-color-stop-7); }
+.parties { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:var(--cc-space-24); }
+.party { display:flex; flex-direction:column; gap:var(--cc-space-12); padding-top:var(--cc-space-24); border-top:1px solid var(--cc-line); }
+.badge { align-self:flex-start; border-radius:var(--cc-radius-sm); padding:var(--cc-space-4) var(--cc-space-8); color:var(--mantine-color-wait-7); background:var(--mantine-color-wait-0); }
+.badge[data-signed=true] { color:var(--mantine-color-ok-7); background:var(--mantine-color-ok-0); }
+.amount { font:var(--cc-text-h1); letter-spacing:var(--cc-tracking-heading); font-variant-numeric:var(--cc-numeric); }
+.scroll { max-width:100%; overflow-x:auto; }
+.table { width:100%; border-collapse:collapse; font:var(--cc-text-small); font-variant-numeric:var(--cc-numeric); }
+.table th,.table td { text-align:right; padding:var(--cc-space-12) var(--cc-space-8); border-bottom:1px solid var(--cc-line); white-space:nowrap; }
+.table th { white-space:normal; font-weight:500; }
+.table caption { text-align:left; font:var(--cc-text-h3); margin-bottom:var(--cc-space-24); }
+@media(max-width:47.999em) { .actions > * { width:100%; } .amount { font:var(--cc-text-h3); } }
