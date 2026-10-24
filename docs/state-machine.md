@@ -58,7 +58,7 @@ stateDiagram-v2
 | OFFER_ISSUED | SIGNING | `POST /applications/{id}/offer/accept` | подписант | оферта актуальна (последняя версия, не истекла) |
 | OFFER_ISSUED | WITHDRAWN | `POST /applications/{id}/offer/reject` | клиент | — |
 | SIGNING | SIGNED | `POST /applications/{id}/sign` | подписант (+ поручитель) | подписи всех обязательных участников (`party.required_signature`) |
-| SIGNED | DISBURSED | worker | система | оферта действует; согласие на БКИ действует; создаются `disbursement`, график, событие `BKI_REPORT` |
+| SIGNED | DISBURSED | worker | система | оферта принята; создаются `disbursement`, график, событие `BKI_REPORT` (согласие БКИ не проверяется: сообщение о выданном кредите его не требует, а провал шага оставил бы заявку в SIGNED — решение 24.10, B-09b) |
 | * до SIGNED | WITHDRAWN | `POST /applications/{id}/withdraw` | клиент | — |
 | INFO_REQUESTED, OFFER_ISSUED, SIGNING | EXPIRED | планировщик | система | истёк `due_at` / `offer.expires_at` |
 
