@@ -46,7 +46,7 @@ export default function InfoRequestSection({ application, onUpdate, onReload, on
       {request.items.map((item, index) => {
         const answer = answers[index]!;
         const update = (patch: Partial<typeof answer>) => setAnswers((previous) => previous.map((value, position) => position === index ? { ...value, ...patch } : value));
-        return <fieldset key={item.item_code} className={css.question} disabled={send.isPending || !canAnswer}>
+        return <fieldset key={`${index}:${item.item_code}`} className={css.question} disabled={send.isPending || !canAnswer}>
           <legend className={css.legend}>{item.question}</legend>
           {item.requires_value && <NumberInput label="Выручка за год, ₽" value={answer.value} onChange={(value) => update({ value })} thousandSeparator=" " allowDecimal={false} allowNegative={false} hideControls error={errors[`answers.${index}.value`]} />}
           <Textarea label={item.requires_value ? 'Пояснение' : 'Ответ'} value={answer.comment} onChange={(event) => update({ comment: event.currentTarget.value })} description={`${answer.comment.length} / 1000`} error={errors[`answers.${index}.comment`]} rows={3} />

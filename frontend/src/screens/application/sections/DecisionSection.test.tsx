@@ -11,6 +11,7 @@ import type { components } from '../../../api/schema';
 import { setToken } from '../../../auth/session';
 import { accounts, applications, applicationScenarios, companyProfiles } from '../../../mocks/fixtures';
 import { createHandlers } from '../../../mocks/handlers';
+import { createDecisionHandlers } from '../../../mocks/client/decision';
 import { theme } from '../../../theme';
 
 type Application = components['schemas']['ApplicationClient'];
@@ -205,6 +206,27 @@ it('дозапрос проверяет выручку и комментарий
   expect(body).toEqual({ answers: [{ item_code: 'REVENUE_CONFIRM', value: 14000000, comment: 'Часть выручки в другом банке' }] });
   expect(screen.queryByRole('region', { name: 'Вопросы банка' })).toBeNull();
   expect(within(screen.getByRole('list', { name: 'Этапы заявки' })).getByText('Идёт сейчас')).toBeTruthy();
+});
+it('два вопроса специалиста с одинаковым кодом получают отдельные ответы без value и закрывают запрос', async () => {
+  let body: unknown;
+  const base = applicationScenarios.find((a) => a.state === 'INFO_REQUESTED')!;
+  const application: Application = { ...base, info_request: { ...base.info_request!, items: [
+    { item_code: 'UNDERWRITER_QUESTION', question: 'Первый вопрос специалиста', requires_value: false },
+    { item_code: 'UNDERWRITER_QUESTION', question: 'Второй вопрос специалиста', requires_value: false },
+  ] } };
+  server.use(...createDecisionHandlers(new Map([[application.id, application]])));
+  server.events.on('request:start', async ({ request }) => { if (request.url.endsWith('/info-response')) body = await request.clone().json(); });
+  open(application);
+  const section = await screen.findByRole('region', { name: 'Вопросы банка' });
+  fireEvent.change(within(within(section).getByRole('group', { name: 'Первый вопрос специалиста' })).getByLabelText('Ответ'), { target: { value: 'Первый ответ' } });
+  fireEvent.change(within(within(section).getByRole('group', { name: 'Второй вопрос специалиста' })).getByLabelText('Ответ'), { target: { value: 'Второй ответ' } });
+  fireEvent.click(within(section).getByRole('button', { name: 'Отправить ответ' }));
+  await screen.findByText('Проверяем данные заявки');
+  expect(screen.queryByRole('region', { name: 'Вопросы банка' })).toBeNull();
+  expect(body).toEqual({ answers: [
+    { item_code: 'UNDERWRITER_QUESTION', comment: 'Первый ответ' },
+    { item_code: 'UNDERWRITER_QUESTION', comment: 'Второй ответ' },
+  ] });
 });
 it.each([409, 422])('дозапрос %s: закрытие перезагружает данные, валидация показывает ошибку поля', async (status) => {
   const application = applicationScenarios.find((a) => a.state === 'INFO_REQUESTED')!;

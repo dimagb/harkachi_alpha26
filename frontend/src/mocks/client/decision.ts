@@ -82,9 +82,14 @@ export function createDecisionHandlers(stored = new Map<string, Application>()) 
       if (application.state !== 'INFO_REQUESTED' || !info) return error(409, 'INVALID_TRANSITION', 'Запрос уже закрыт');
       const body = await request.json();
       const fields: Record<string, string> = {};
-      if (!Array.isArray(body.answers) || body.answers.length !== info.items.length || new Set(body.answers.map((answer) => answer?.item_code)).size !== info.items.length || info.items.some((item) => !body.answers.some((answer) => answer?.item_code === item.item_code))) fields.answers = 'Ответьте ровно один раз на каждый вопрос банка';
+      const remaining = [...info.items];
+      const matched = Array.isArray(body.answers) ? body.answers.map((answer) => {
+        const index = remaining.findIndex((item) => item.item_code === answer?.item_code);
+        return index < 0 ? undefined : remaining.splice(index, 1)[0];
+      }) : [];
+      if (!Array.isArray(body.answers) || remaining.length || matched.some((item) => !item)) fields.answers = 'Ответьте ровно один раз на каждый вопрос банка';
       if (Array.isArray(body.answers)) for (const [index, answer] of body.answers.entries()) {
-        const item = info.items.find((item) => item.item_code === answer?.item_code);
+        const item = matched[index];
         if (typeof answer?.comment !== 'string' || answer.comment.trim().length < 3 || answer.comment.length > 1000) fields[`answers.${index}.comment`] = 'Введите от 3 до 1000 символов';
         if (item?.requires_value ? !Number.isSafeInteger(answer.value) || answer.value! <= 0 : answer?.value !== undefined) fields[`answers.${index}.value`] = 'Укажите целую выручку больше нуля';
       }
