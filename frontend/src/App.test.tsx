@@ -10,6 +10,7 @@ import App from './App';
 import { api } from './api/client';
 import type { components } from './api/schema';
 import { applications, products } from './mocks/fixtures';
+import { bankApplications } from './mocks/bank/fixtures';
 
 type Me = components['schemas']['MeResponse'];
 const client: Me = {
@@ -30,6 +31,8 @@ const server = setupServer(
   http.get('*/api/v1/health', () => HttpResponse.json({ status: 'ok' })),
   http.get('*/api/v1/products', () => HttpResponse.json<components['schemas']['Product'][]>(products)),
   http.get('*/api/v1/applications', () => HttpResponse.json<components['schemas']['ApplicationListItem'][]>([])),
+  http.get('*/api/v1/underwriting/queue', () => HttpResponse.json([])),
+  http.get('*/api/v1/underwriting/applications/123', () => HttpResponse.json({ ...bankApplications.find(app => app.id === 'ooo_aml')!, id: '123' })),
 );
 
 beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
@@ -61,7 +64,7 @@ it.each([['ip_good', '/app', 'Мои заявки'], ['underwriter', '/bank/queu
   expect(screen.getByLabelText('Текущий маршрут').textContent).toBe(path);
   expect(sessionStorage.getItem('access_token')).toBe(name);
   expect(localStorage.getItem('access_token')).toBeNull();
-  expect(screen.getByText(name === 'underwriter' ? 'Орлова Мария Андреевна' : 'Смирнова Анна Викторовна')).toBeTruthy();
+  expect(screen.getByText(name === 'underwriter' ? 'Андеррайтер · Орлова Мария Андреевна' : 'Смирнова Анна Викторовна')).toBeTruthy();
 });
 
 it('без токена перенаправляет /app на /login', async () => {
@@ -80,7 +83,7 @@ it.each([['ip_good', '/bank/journal', '/app', 'Мои заявки'], ['underwri
 it.each([
   ['ip_good', '/app/applications/new', 'Зачем нужны деньги?'],
   ['ip_good', '/app/applications/123', /Банк одобрил 1\s500\s000\s₽/],
-  ['underwriter', '/bank/applications/123', 'Карточка андеррайтера'],
+  ['underwriter', '/bank/applications/123', /ООО «Альфа-Трейд»/],
   ['underwriter', '/bank/journal', 'Журнал банка'],
 ])('восстанавливает сессию %s и открывает %s', async (token, path, title) => {
   if (path === '/app/applications/123') server.use(http.get('*/api/v1/applications/123', () => HttpResponse.json({ ...applications[0]!, id: '123', company_id: 'company-1' })));

@@ -53,7 +53,7 @@ try {
   await ours.getByRole('heading', { name: 'Факторы оценки', exact: true }).waitFor();
   await ours.getByText('53 875 ₽', { exact: true }).waitFor();
   await ours.evaluate(() => globalThis.document.fonts.ready);
-  const designFactor = reference.getByText('Срок бизнеса', { exact: true }).locator('..').locator('..');
+  const designFactor = reference.getByText('Срок бизнеса', { exact: true }).locator('xpath=ancestor::div[contains(@style,"grid-template-columns")][1]');
   const ourFactor = ours.getByRole('button', { name: /Срок бизнеса/ });
   const designRecommendation = reference.getByText('Рекомендация системы', { exact: true }).locator('..').locator('..');
   const ourRecommendation = ours.getByRole('region', { name: 'Рекомендация системы', exact: true });
@@ -100,7 +100,7 @@ try {
   await ours.getByRole('button', { name: 'Меню банка' }).click();
   const factor = ours.getByRole('button', { name: /Платежи к поступлениям/ });
   await factor.click();
-  await ours.getByRole('region', { name: 'Первоисточник: Платежи к поступлениям' }).getByText(/150 000/).waitFor();
+  await ours.getByRole('region', { name: 'Первоисточник: Платежи к поступлениям' }).getByText(/150\s000/).waitFor();
   await factor.click();
   assert.deepEqual(pageErrors, [], 'ошибки браузера');
   console.log('MSW: вход underwriter; очередь 6; карточка ooo_border; платёж; раскрытие БКИ; мобильное меню — OK');

@@ -114,6 +114,25 @@ it('показывает ошибки сервера под полями', async
   expect(await screen.findByText('Уточните обоснование')).toBeTruthy();
 });
 
+it.each(['amount', 'term_months', 'client_reason_category', 'info_questions'] as const)('показывает 422 под полем %s', async field => {
+  server.use(http.post('*/api/v1/underwriting/:id/decision', () => HttpResponse.json({ error: { code: 'VALIDATION_ERROR', message: 'Проверьте поля', details: { fields: { [field]: `Ошибка поля ${field}` } } } }, { status: 422 })));
+  await ready(); comment();
+  if (field === 'amount' || field === 'term_months') { choose('Встречное'); fireEvent.change(screen.getByLabelText('Сумма, ₽'), { target: { value: '800000' } }); }
+  if (field === 'client_reason_category') { choose('Отказать'); fireEvent.click(screen.getByRole('combobox', { name: 'Причина для клиента' })); expect(screen.getAllByRole('option')).toHaveLength(9); fireEvent.click(screen.getByRole('option', { name: 'Финансовое положение' })); }
+  if (field === 'info_questions') { choose('Запросить данные'); fireEvent.change(screen.getByLabelText('Вопрос 1'), { target: { value: 'Подтвердите поступления за месяц' } }); }
+  fireEvent.click(screen.getByRole('button', { name: 'Принять решение' }));
+  expect(await screen.findByText(`Ошибка поля ${field}`)).toBeTruthy();
+});
+
+it.each(['SOURCE_UNAVAILABLE', 'GRADE_C'] as const)('берёт причину %s из последнего AUTO, даже когда MANUAL первым', async route_reason => {
+  const fixture: components['schemas']['ApplicationBank'] = await (await fetch('http://localhost/api/v1/underwriting/applications/ooo_border', { headers: { Authorization: 'Bearer demo:underwriter' } })).json();
+  const auto = fixture.decisions[0]!;
+  fixture.decisions = [{ ...auto, kind: 'MANUAL', route_reason: route_reason === 'GRADE_C' ? 'SOURCE_UNAVAILABLE' : 'GRADE_C' }, { ...auto, route_reason }];
+  server.use(http.get('*/api/v1/underwriting/applications/ooo_border', () => HttpResponse.json(fixture)));
+  await ready();
+  expect(!!screen.queryByRole('radio', { name: 'Повторить сбор сведений' })).toBe(route_reason === 'SOURCE_UNAVAILABLE');
+});
+
 it('даёт повторить сбор только для SOURCE_UNAVAILABLE', async () => {
   await ready('source_unavailable');
   expect(screen.getByRole('radio', { name: 'Повторить сбор сведений' })).toBeTruthy();

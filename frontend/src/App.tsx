@@ -13,6 +13,9 @@ import { CompanyProvider, useCompany } from './company/CompanyContext';
 import MyApplications from './screens/MyApplications';
 import NewApplication from './screens/NewApplication';
 import ApplicationCard from './screens/ApplicationCard';
+import BankLayout from './screens/bank/BankLayout';
+import Queue from './screens/bank/Queue';
+import UnderwriterCard from './screens/bank/UnderwriterCard';
 
 type Me = components['schemas']['MeResponse'];
 
@@ -72,9 +75,11 @@ export default function App() {
           <Route path="/app" element={client ? <MyApplications /> : <Navigate to={home} replace />} />
           <Route path="/app/applications/new" element={client ? <NewApplication /> : <Navigate to={home} replace />} />
           <Route path="/app/applications/:id" element={client ? <ApplicationCard companies={me.data.companies} userId={me.data.user.id} /> : <Navigate to={home} replace />} />
-          <Route path="/bank/queue" element={underwriter ? <Title order={1}>Очередь</Title> : <Navigate to={home} replace />} />
-          <Route path="/bank/applications/:id" element={underwriter ? <Title order={1}>Карточка андеррайтера</Title> : <Navigate to={home} replace />} />
-          <Route path="/bank/journal" element={underwriter ? <Title order={1}>Журнал банка</Title> : <Navigate to={home} replace />} />
+        </Route>
+        <Route element={underwriter ? <BankLayout me={me.data} /> : <Navigate to={home} replace />}>
+          <Route path="/bank/queue" element={<Queue />} />
+          <Route path="/bank/applications/:id" element={<UnderwriterCard />} />
+          <Route path="/bank/journal" element={<Title order={1}>Журнал банка</Title>} />
         </Route>
         <Route path="*" element={<Navigate to={home} replace />} />
       </Routes>
