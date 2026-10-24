@@ -37,7 +37,7 @@
 | `EXPIRED` | этап, на котором истёк срок | Срок заявки истёк | Можно подать новую заявку | `cancelled` | `NEW_APPLICATION` |
 
 **Поправки к таблице (применяются после неё, по порядку):**
-1. `DRAFT`, `OFFER_ISSUED`: у пользователя нет `can_sign` → статус `current`, `what_to_do` = «Ждём решения подписанта компании».
+1. `DRAFT`, `OFFER_ISSUED`: у пользователя нет `can_sign` → статус `current`, `what_to_do` = «Ждём решения подписанта компании». Исключение (24.10): `DRAFT`, в `allowed_actions` есть `REQUEST_SIGNATURE` → статус `action_required`, `what_to_do` = «Отправьте заявку на подпись руководителю или сотруднику с правом подписи».
 2. `SIGNING`: нет `SIGN` в `allowed_actions` → статус `current`, `what_to_do` = «Ждём подписи остальных участников».
 3. `WITHDRAWN`: `reason_code` последнего события `STATE_CHANGED` = `CLIENT_REJECTED_OFFER` → `what_happens` = «Вы отказались от предложения».
 
