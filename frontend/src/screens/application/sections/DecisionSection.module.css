@@ -1,0 +1,42 @@
+.section { display:flex; flex-direction:column; gap:var(--cc-space-32); scroll-margin-top:var(--cc-space-24); }
+.heading { margin:0; font:var(--cc-text-display); letter-spacing:var(--cc-tracking-display); font-variant-numeric:var(--cc-numeric); text-wrap:balance; }
+.section p { margin:0; text-wrap:pretty; }
+.offerColumns { display:grid; grid-template-columns:minmax(0,8fr) minmax(0,4fr); gap:var(--cc-space-32); align-items:stretch; }
+.offerFigures { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:var(--cc-space-12); font-variant-numeric:var(--cc-numeric); }
+.offerFigure { padding:calc(var(--cc-space-16) + var(--cc-space-4)); }
+.offerValue { font:var(--cc-text-h1); letter-spacing:var(--cc-tracking-heading); overflow-wrap:normal; }
+.actions { display:flex; flex-wrap:wrap; gap:var(--cc-space-12); }
+.offerColumns .actions { border-top:1px solid var(--cc-line); padding-top:var(--cc-space-24); margin-top:auto; }
+.expiry,.signatory { color:var(--cc-ink-2); }
+.explanation { gap:var(--cc-space-16); }
+.reasons { margin:0; padding:0; list-style:none; display:flex; flex-direction:column; }
+.reasons li { display:flex; align-items:flex-start; gap:var(--cc-space-12); padding:14px 0; border-top:1px solid var(--cc-line); text-wrap:pretty; }
+.checkCircle { display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; margin-top:2px; flex-shrink:0; border-radius:var(--cc-radius-round); background:var(--mantine-color-ok-6); }
+.comparison { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--cc-space-16); font-variant-numeric:var(--cc-numeric); }
+.requested,.proposed { padding:var(--cc-space-24); border-radius:var(--cc-radius-md); display:flex; flex-direction:column; gap:var(--cc-space-16); min-width:0; }
+.requested { background:var(--cc-surface); }
+.requested .smallTitle,.requested .compareAmount,.requested .compareDetails { color:var(--cc-ink-2); }
+.proposed { background:var(--cc-paper); border:2px solid var(--mantine-color-gray-9); padding:calc(var(--cc-space-24) - 1px); }
+.smallTitle { margin:0; font:500 14px/20px var(--cc-font); color:var(--cc-ink-2); }
+.proposed .smallTitle { color:var(--cc-ink); }
+.compareAmount { font:var(--cc-text-h1); letter-spacing:var(--cc-tracking-heading); }
+.compareDetails { margin:0; display:grid; grid-template-columns:160px minmax(0,1fr); }
+.compareDetails dt,.compareDetails dd { margin:0; padding:10px 0; border-top:1px solid var(--cc-line); overflow-wrap:anywhere; }
+.requested .compareDetails dt,.requested .compareDetails dd { border-color:var(--cc-line-input); }
+.proposed dd { font-weight:500; }
+.proposed dt { color:var(--cc-ink-2); }
+.guarantor { background:var(--cc-surface); border-radius:var(--cc-radius-md); padding:calc(var(--cc-space-16) + var(--cc-space-4)) var(--cc-space-24); }
+.reason { background:var(--cc-paper); border:1px solid var(--mantine-color-stop-2); box-shadow:inset 4px 0 0 var(--mantine-color-stop-6); border-radius:var(--cc-radius-md); padding:var(--cc-space-24) var(--cc-space-24) var(--cc-space-24) calc(var(--cc-space-24) + var(--cc-space-4)); display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--cc-space-32); }
+.reasonCopy { display:flex; flex-direction:column; gap:var(--cc-space-8); }
+.reasonLabel { color:var(--mantine-color-stop-7); font:500 14px/20px var(--cc-font); }
+@media(max-width:80em) { .offerColumns { grid-template-columns:minmax(0,1fr); } }
+@media(max-width:47.999em) {
+  .heading { font:var(--cc-text-h1); }
+  .offerColumns,.comparison,.reason { grid-template-columns:minmax(0,1fr); gap:var(--cc-space-24); }
+  .offerFigures { grid-template-columns:minmax(0,1fr); }
+  .offerValue { font:var(--cc-text-h3); } .compareAmount { font:var(--cc-text-h1); }
+  .requested,.proposed { padding:var(--cc-space-16); }
+  .compareDetails { grid-template-columns:130px minmax(0,1fr); }
+  .reason { padding:var(--cc-space-16) var(--cc-space-16) var(--cc-space-16) calc(var(--cc-space-16) + var(--cc-space-4)); }
+  .actions > * { width:100%; } .section { gap:var(--cc-space-24); }
+}

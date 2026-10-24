@@ -3,8 +3,9 @@ import type { components } from '../../api/schema';
 import { formatMoney } from '../../ui/status';
 import type { Application } from './presentation';
 import css from './Card.module.css';
+import decision from './sections/DecisionSection.module.css';
 
-export default function KeyFigures({ application, calculation, error, onRetry }: { application: Application; calculation?: components['schemas']['CalculatorResponse']; error: boolean; onRetry: () => void }) {
+export default function KeyFigures({ application, calculation, error, onRetry, offerOnly = false }: { application: Application; calculation?: components['schemas']['CalculatorResponse']; error: boolean; onRetry: () => void; offerOnly?: boolean }) {
   const offer = application.offer;
   const rate = offer?.rate ?? calculation?.rate_estimate;
   const payment = offer ? offer.monthly_payment : calculation?.monthly_payment;
@@ -14,8 +15,9 @@ export default function KeyFigures({ application, calculation, error, onRetry }:
     ['Ставка', rate === undefined ? 'Рассчитываем…' : `${prefix}${rate.toLocaleString('ru-RU', { maximumFractionDigits: 2 })}\u00a0%`],
     [offer ? 'Платёж в месяц' : 'Платёж в месяц (оценка)', payment === null ? 'Проценты — только за использованные дни' : payment === undefined ? 'Рассчитываем…' : `${prefix}${formatMoney(payment)}`],
   ];
-  return <section aria-label="Ключевые цифры">
-    <div className={css.figures}>{figures.map(([label, value], index) => <div key={label} className={css.figure}><span className={css.muted}>{label}</span><span className={css.figureValue}>{error && !offer && index > 1 ? 'Расчёт недоступен' : value}</span></div>)}</div>
+  const visible = offerOnly ? [figures[2]!, figures[1]!, figures[3]!] : figures;
+  return <section aria-label={offerOnly ? 'Условия предложения' : 'Ключевые цифры'}>
+    <div className={offerOnly ? decision.offerFigures : css.figures}>{visible.map(([label, value], index) => <div key={label} className={`${css.figure} ${offerOnly ? decision.offerFigure : ''}`}><span className={css.muted}>{label}</span><span className={`${css.figureValue} ${offerOnly ? decision.offerValue : ''}`}>{error && !offer && index > 1 ? 'Расчёт недоступен' : value}</span></div>)}</div>
     {error && !offer && <><p role="alert" className={css.muted}>Не удалось рассчитать предварительные условия.</p><Button variant="default" size="xs" onClick={onRetry}>Повторить расчёт</Button></>}
   </section>;
 }

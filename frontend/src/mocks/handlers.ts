@@ -1,6 +1,7 @@
 import { http, HttpResponse } from 'msw';
 import type { components } from '../api/schema';
 import { accounts, applications, applicationScenarios, companyProfiles, draftApplication, products } from './fixtures';
+import { createDecisionHandlers } from './client/decision';
 
 type Schema = components['schemas'];
 type ApiError = Schema['ApiError'];
@@ -21,6 +22,7 @@ function ownsCompany(me: Schema['MeResponse'], companyId: string) {
 export function createHandlers() {
   const stored = new Map(applications.map((application) => [application.id, application]));
   return [
+    ...createDecisionHandlers(stored),
     http.post<EmptyParams, Schema['LoginRequest'], Schema['LoginResponse'] | ApiError>('*/api/v1/auth/login', async ({ request }) => {
       const body = await request.json();
       const me = accounts[body.login];
