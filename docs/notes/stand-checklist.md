@@ -4,7 +4,7 @@
 Результат записывать в `docs/audit/stand-<дата>.md`: шаг → «ок» или «расхождение: что видно / что ожидали» + скриншот. Каждое расхождение тимлид превращает в карточку отладки.
 
 ## Подготовка (холодный старт, D14)
-1. Свежая папка: `git clone https://github.com/dimagb/harkachi_alpha26.git stand-check && cd stand-check`.
+1. Свежая папка: `git clone https://github.com/dimagb/harkachi_alpha26.git stand-check; cd stand-check` (PowerShell 5 не знает `&&`).
 2. `copy .env.example .env` (Windows) — без правок.
 3. Засечь время → `docker compose up -d --build` → дождаться, пока `docker compose ps` покажет все сервисы `healthy` (кроме `migrate`, он `exited 0`). Записать время.
 4. Браузер (Chrome), `http://localhost:8080`. Пароль у всех учёток — `demo2026`. Каждого персонажа — в **отдельном окне инкогнито**, чтобы входы не путались.
