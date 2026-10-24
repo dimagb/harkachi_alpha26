@@ -65,6 +65,14 @@ it('раскрывает БКИ под фактором и сворачивае�
   await waitFor(() => expect(screen.queryByRole('region', { name: 'Первоисточник: Платежи к поступлениям' })).toBeNull());
 });
 
+it('показывает период банковских оборотов без даты получения', async () => {
+  await ready();
+  fireEvent.click(screen.getByRole('button', { name: /Стабильность поступлений/ }));
+  const source = await screen.findByRole('region', { name: /Первоисточник: Стабильность поступлений/ });
+  expect(within(source).getByText('Обороты по счетам в банке за ноябрь 2025–октябрь 2026')).toBeTruthy();
+  expect(within(source).queryByText(/получен|переда[нн]/i)).toBeNull();
+});
+
 it('валидирует комментарий, встречное и максимум пяти вопросов', async () => {
   await ready();
   expect(screen.getByRole('button', { name: 'Принять решение' }).hasAttribute('disabled')).toBe(true);
@@ -169,6 +177,16 @@ it('обновляет очередь через 10 секунд и показы
   await act(async () => { await vi.advanceTimersByTimeAsync(10000); });
   vi.useRealTimers();
   expect(await screen.findByText('Очередь пуста. Новые заявки появятся здесь автоматически')).toBeTruthy();
+});
+
+it.each(['queue', 'ooo_border'])('обновляет ожидание при неизменных данных: %s', async id => {
+  vi.useFakeTimers({ toFake: ['Date', 'setInterval', 'clearInterval'] });
+  vi.setSystemTime(new Date('2026-10-23T11:15:00Z'));
+  open(id);
+  await screen.findByText(id === 'queue' ? '12 мин' : 'Ждёт 12 мин');
+  vi.setSystemTime(new Date('2026-10-23T11:16:00Z'));
+  await act(async () => { await vi.advanceTimersByTimeAsync(10000); });
+  expect(await screen.findByText(id === 'queue' ? '13 мин' : 'Ждёт 13 мин')).toBeTruthy();
 });
 
 it('чтение истории показывает только события API', async () => {

@@ -10,20 +10,25 @@ import css from './Underwriter.module.css';
 function Bar({ points, max, total = false }: { points: number; max: number; total?: boolean }) {
   return <span className={css.bar} aria-hidden="true"><span style={{ width: `${Math.min(100, Math.max(0, max ? points / max * 100 : 0))}%`, background: total ? 'var(--cc-ink)' : points === max ? 'var(--cc-ok)' : points === 0 ? 'var(--cc-stop)' : 'var(--mantine-color-wait-4)' }} /></span>;
 }
+function monthLabel(month: string) {
+  return new Intl.DateTimeFormat('ru-RU', { month: 'long', year: 'numeric', timeZone: 'UTC' })
+    .formatToParts(new Date(`${month}-01T00:00:00Z`)).filter(part => part.type === 'month' || part.type === 'year').map(part => part.value).join(' ');
+}
 function Factor({ factor, application, decision }: { factor: components['schemas']['FactorLine']; application: BankApplication; decision: BankDecision }) {
   const [opened, setOpened] = useState(false);
   const id = useId();
   const meta = factorMeta[factor.code];
   const label = meta?.label ?? factor.title;
   const check = application.external_checks.find(check => check.source === meta?.source);
-  // TODO(lead): turnover_12m не содержит fetched_at; нужен ли timestamp в следующей версии API?
+  const months = application.turnover_12m.map(month => month.month).sort();
+  const period = months.length ? ` за ${monthLabel(months[0]!)}–${monthLabel(months[months.length - 1]!)}` : '';
   return <div>
     <button className={css.factorRow} aria-expanded={opened} aria-controls={id} onClick={() => setOpened(v => !v)}>
       <span className={css.factorName}><span className={css.sourceIcon} data-tone={factor.points === factor.max_points ? 'ok' : factor.points === 0 ? 'stop' : 'wait'} aria-hidden="true">{factor.points < factor.max_points ? '!' : '✓'}</span>{label}</span><span className={css.factorValue}>{factor.value}</span><Bar points={factor.points} max={factor.max_points} /><span className={css.points}>{factor.points}<span> / {factor.max_points}</span></span>
     </button>
     <Collapse expanded={opened} transitionDuration={120}>{opened && <div id={id} role="region" aria-label={`Первоисточник: ${label}`} className={css.primarySource}>
-      <strong>{meta ? sourceLabels[meta.source] : 'Источник не указан'}</strong>
-      {meta?.source === 'BANK' ? <><p>Поступления за 12 месяцев:</p><ol className={css.monthList}>{application.turnover_12m.map(month => <li key={month.month}>{month.month} — {formatMoney(month.amount)}</li>)}</ol><p className={css.muted}>Дата получения оборотов не передаётся в API</p></> : check?.status === 'FAILED' ? <p>Источник не ответил ({check.attempts} попытки)</p> : check?.status === 'PENDING' ? <p>Ожидаем ответ источника</p> : <>
+      <strong>{meta?.source === 'BANK' ? `Обороты по счетам в банке${period}` : meta ? sourceLabels[meta.source] : 'Источник не указан'}</strong>
+      {meta?.source === 'BANK' ? <ol className={css.monthList}>{application.turnover_12m.map(month => <li key={month.month}>{monthLabel(month.month)} — {formatMoney(month.amount)}</li>)}</ol> : check?.status === 'FAILED' ? <p>Источник не ответил ({check.attempts} попытки)</p> : check?.status === 'PENDING' ? <p>Ожидаем ответ источника</p> : <>
         {meta?.fields.map(field => <p key={field.path}>{field.label} — {displayValue(fieldValue(check?.response, field.path), field.money)}</p>)}
         <p className={css.muted}>{check?.fetched_at ? `Получено ${formatAt(check.fetched_at)}` : 'Время получения не передано'}</p>
       </>}
