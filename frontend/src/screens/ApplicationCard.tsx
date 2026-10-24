@@ -15,6 +15,9 @@ import css from './application/Card.module.css';
 import DecisionSection, { DecisionLinks } from './application/sections/DecisionSection';
 import InfoRequestSection from './application/sections/InfoRequestSection';
 import ObjectionBlock from './application/sections/ObjectionBlock';
+import SubmitSection from './application/sections/SubmitSection';
+import SigningSection from './application/sections/SigningSection';
+import DisbursedSection from './application/sections/DisbursedSection';
 import decisionCss from './application/sections/DecisionSection.module.css';
 
 class CardError extends Error {
@@ -75,7 +78,7 @@ function CardContent({ id, companies, userId }: CardProps & { id: string }) {
   const current = data.timeline.find((step) => step.stage_code === data.stage.code);
   const status = current?.status ?? 'pending';
   const offered = data.state === 'OFFER_ISSUED' && data.offer;
-  const decisionHeading = offered ? data.offer!.kind === 'APPROVED' ? `Банк одобрил ${formatMoney(data.offer!.amount)}` : `Банк готов выдать ${formatMoney(data.offer!.amount)} на ${data.offer!.term_months} мес.` : data.state === 'DECLINED' ? 'Банк не может выдать кредит сейчас' : null;
+  const decisionHeading = offered ? data.offer!.kind === 'APPROVED' ? `Банк одобрил ${formatMoney(data.offer!.amount)}` : `Банк готов выдать ${formatMoney(data.offer!.amount)} на ${data.offer!.term_months} мес.` : data.state === 'DECLINED' ? 'Банк не может выдать кредит сейчас' : data.state === 'DISBURSED' ? `Кредит выдан: ${formatMoney(data.offer?.amount ?? data.amount)}` : null;
   const product = products.data?.find((product) => product.code === data.product_code);
   const color = offered ? data.offer!.kind === 'APPROVED' ? 'ok' : 'wait' : data.state === 'DECLINED' ? 'stop' : stageStatusColor(status);
   const label = offered ? data.offer!.kind === 'APPROVED' ? 'Одобрено' : 'Другие условия' : data.state === 'DECLINED' ? 'Отказ' : data.state === 'WITHDRAWN' ? 'Отозвана' : stateLabels[data.state];
@@ -96,6 +99,9 @@ function CardContent({ id, companies, userId }: CardProps & { id: string }) {
     <ObjectionBlock {...sectionProps} />
     {data.state === 'DECLINED' && <DecisionLinks />}
     {data.info_request && <InfoRequestSection key={data.info_request.id} {...sectionProps} />}
+    <SubmitSection {...sectionProps} companyKind={companies.find(({ company }) => company.id === data.company_id)?.company.kind} />
+    <SigningSection {...sectionProps} />
+    <DisbursedSection application={data} />
     <div className={css.columns}>
       <section className={css.card} aria-label="Параметры заявки"><h3 className={css.title}>Параметры заявки</h3>{showFigures && <KeyFigures application={data} calculation={calculation.data} error={calculation.isError} onRetry={() => void calculation.refetch()} />}<Details application={data} company={companies.find(({ company }) => company.id === data.company_id)?.company} sourceNote={profile.data?.source_note} showRequestedTerms={!showFigures} />
         {data.allowed_actions.includes('WITHDRAW') && <div className={css.withdraw}><button type="button" className={css.textButton} onClick={() => { setMessage(''); setConfirm(true); }}>Отозвать заявку</button></div>}
@@ -103,7 +109,6 @@ function CardContent({ id, companies, userId }: CardProps & { id: string }) {
       <History timeline={data.timeline} />
     </div>
     {data.state !== 'DECLINED' && data.client_reason && <Text>{data.client_reason.text}</Text>}
-    <section id="submit" /><section id="signing" />
     <Modal opened={confirm} onClose={() => { if (!withdraw.isPending) setConfirm(false); }} title={`Отозвать заявку № ${data.number}? Это действие нельзя отменить.`} centered>
       <Group justify="flex-end"><Button variant="default" disabled={withdraw.isPending} onClick={() => setConfirm(false)}>Не отзывать</Button><Button loading={withdraw.isPending} onClick={() => withdraw.mutate()}>Отозвать</Button></Group>
     </Modal>
