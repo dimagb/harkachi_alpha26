@@ -1,9 +1,10 @@
-import { Anchor, AppShell, Button, Container, Group, Loader, Select, Stack, Text } from '@mantine/core';
+import { AppShell, Burger, Button, Container, Drawer, Group, Loader, Select, Stack, Text } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import css from './screens/application/Card.module.css';
+import shell from './App.module.css';
 import { Notifications } from '@mantine/notifications';
 import { useQuery } from '@tanstack/react-query';
-import { useSyncExternalStore } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import { Link, Navigate, Outlet, Route, Routes, useLocation } from 'react-router';
 import { api } from './api/client';
 import type { components } from './api/schema';
@@ -26,9 +27,11 @@ function Shell({ me }: { me: Me }) {
   const home = me.user.role === 'UNDERWRITER' ? '/bank/queue' : '/app';
   const desktop = useMediaQuery('(min-width: 62em)');
   const { pathname } = useLocation();
+  const [menuPath, setMenuPath] = useState<string | null>(null);
+  const opened = menuPath === pathname;
   const links = me.user.role === 'UNDERWRITER'
     ? (desktop ? [] : [['/bank/queue', 'Очередь'], ['/bank/journal', 'Журнал банка']])
-    : [['/app', 'Мои заявки'], ['/app/applications/new', desktop ? 'Получить финансирование' : 'Новая заявка']];
+    : [['/app', 'Мои заявки'], ['/app/applications/new', 'Получить финансирование']];
   const company = me.companies.length > 1
     ? <Select id="company" label="Компания" value={companyId ?? me.companies[0]?.company.id} onChange={setCompanyId} allowDeselect={false} data={me.companies.map(({ company }) => ({ value: company.id, label: company.name }))} />
     : membership && <span className={css.muted}>{membership.company.name}</span>;
@@ -38,7 +41,16 @@ function Shell({ me }: { me: Me }) {
       <div className={css.navBottom}><span style={{ fontWeight: 500 }}>{me.user.full_name}</span><button type="button" className={css.textButton} style={{ alignSelf: 'flex-start', height: 'auto', fontSize: 'var(--mantine-font-size-sm)', fontWeight: 400 }} onClick={() => setToken(null)}>Выйти</button></div>
     </AppShell.Navbar> : null}
     <AppShell.Main>
-      {!desktop && <header className={css.mobileHeader}><Group justify="space-between" wrap="wrap"><Anchor component={Link} to={home} c="signal" fw={700}>Кредитный кабинет</Anchor><Group><Text size="sm">{me.user.full_name}</Text>{company}{links.filter(([to]) => to !== '/app').map(([to, label]) => <Anchor key={to} component={Link} to={to!}>{label}</Anchor>)}<Button variant="default" onClick={() => setToken(null)}>Выйти</Button></Group></Group></header>}
+      {!desktop && <>
+        <header className={shell.mobileHeader}><Link className={shell.brand} to={home}>Кредитный кабинет</Link><Burger opened={opened} onClick={() => setMenuPath(opened ? null : pathname)} aria-label={opened ? 'Закрыть меню' : 'Открыть меню'} aria-expanded={opened} aria-controls="client-menu" /></header>
+        <Drawer opened={opened} onClose={() => setMenuPath(null)} title="Меню кабинета" closeButtonProps={{ 'aria-label': 'Закрыть меню' }} position="right" size="100%">
+          <div id="client-menu" className={shell.menu}>
+            <nav className={css.navLinks} aria-label="Навигация кабинета">{links.map(([to, label]) => <Link key={to} to={to!} onClick={() => setMenuPath(null)} className={css.navLink} aria-current={pathname === to ? 'page' : undefined}>{label}</Link>)}</nav>
+            {company}
+            <div className={shell.identity}><Text fw={500}>{me.user.full_name}</Text><Button variant="default" onClick={() => setToken(null)}>Выйти</Button></div>
+          </div>
+        </Drawer>
+      </>}
       <div className={css.shellMain}><Outlet /></div>
     </AppShell.Main>
   </AppShell>;

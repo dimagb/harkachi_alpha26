@@ -1,0 +1,4 @@
+.heading { margin: 0; font: var(--cc-text-display); letter-spacing: var(--cc-tracking-display); }
+.application { color: inherit; text-decoration: none; }
+.application:hover { background: var(--cc-surface); }
+@media (max-width: 47.999em) { .heading { font: var(--cc-text-h1); } }

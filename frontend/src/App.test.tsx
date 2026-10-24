@@ -1,7 +1,7 @@
 import { MantineProvider } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { delay, http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { MemoryRouter, useLocation } from 'react-router';
@@ -64,6 +64,7 @@ it.each([['ip_good', '/app', 'Мои заявки'], ['underwriter', '/bank/queu
   expect(screen.getByLabelText('Текущий маршрут').textContent).toBe(path);
   expect(sessionStorage.getItem('access_token')).toBe(name);
   expect(localStorage.getItem('access_token')).toBeNull();
+  if (name !== 'underwriter') fireEvent.click(screen.getByRole('button', { name: 'Открыть меню' }));
   expect(screen.getByText(name === 'underwriter' ? 'Андеррайтер · Орлова Мария Андреевна' : 'Смирнова Анна Викторовна')).toBeTruthy();
 });
 
@@ -96,6 +97,7 @@ it.each([
 it('выход очищает токен и закрывает защищённый экран', async () => {
   sessionStorage.setItem('access_token', 'ip_good');
   open('/app');
+  fireEvent.click(await screen.findByRole('button', { name: 'Открыть меню' }));
   fireEvent.click(await screen.findByRole('button', { name: 'Выйти' }));
   await screen.findByRole('heading', { name: 'Вход' });
   expect(sessionStorage.getItem('access_token')).toBeNull();
@@ -144,17 +146,34 @@ it('даёт выбрать компанию и перейти к новой з�
   }));
   open('/app');
   await screen.findByText('Заявок пока нет');
+  fireEvent.click(screen.getByRole('button', { name: 'Открыть меню' }));
   const select = await screen.findByRole('combobox', { name: 'Компания' });
   fireEvent.click(select);
   fireEvent.click(await screen.findByRole('option', { name: 'Вторая компания' }));
   await waitFor(() => expect((select as HTMLInputElement).value).toBe('Вторая компания'));
   await waitFor(() => expect(requestedCompanies).toEqual(['company-1', 'company-2']));
-  fireEvent.click(screen.getByRole('link', { name: 'Новая заявка' }));
+  fireEvent.click(within(screen.getByRole('dialog')).getByRole('link', { name: 'Получить финансирование' }));
   await screen.findByRole('heading', { name: 'Зачем нужны деньги?' });
+  await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
   expect(screen.getByLabelText('Текущий маршрут').textContent).toBe('/app/applications/new');
   fireEvent.click(screen.getByRole('button', { name: 'Оборудование и развитие' }));
   await screen.findByRole('region', { name: 'Экспресс-кредит' });
   expect(screen.queryByRole('region', { name: 'Оборотный кредит' })).toBeNull();
+});
+
+it('мобильное меню содержит навигацию и выход и закрывается после перехода', async () => {
+  sessionStorage.setItem('access_token', 'ip_good');
+  open('/app');
+  const burger = await screen.findByRole('button', { name: 'Открыть меню' });
+  expect(screen.queryByRole('dialog')).toBeNull();
+  fireEvent.click(burger);
+  const menu = await screen.findByRole('dialog', { name: 'Меню кабинета' });
+  expect(within(menu).getByRole('link', { name: 'Мои заявки' })).toBeTruthy();
+  expect(within(menu).getByRole('button', { name: 'Выйти' })).toBeTruthy();
+  expect(within(menu).getByText('Смирнова Анна Викторовна')).toBeTruthy();
+  fireEvent.click(within(menu).getByRole('link', { name: 'Получить финансирование' }));
+  await screen.findByRole('heading', { name: 'Зачем нужны деньги?' });
+  await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
 });
 
 it('запрашивает health с единственным префиксом API', async () => {

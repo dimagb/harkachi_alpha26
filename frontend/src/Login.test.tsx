@@ -1,7 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { MantineProvider } from '@mantine/core';
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import Login from './Login';
@@ -28,6 +29,7 @@ const server = setupServer(...createHandlers());
 beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => {
   cleanup();
+  sessionStorage.clear();
   server.resetHandlers();
   server.events.removeAllListeners();
   vi.unstubAllEnvs();
@@ -37,6 +39,22 @@ afterAll(() => server.close());
 function renderLogin() {
   return render(<MantineProvider><Login /></MantineProvider>);
 }
+
+it('после ошибки входа предлагает повторить и заново отправляет введённые данные', async () => {
+  const bodies: unknown[] = [];
+  server.use(http.post('*/api/v1/auth/login', async ({ request }) => {
+    bodies.push(await request.json());
+    return bodies.length === 1 ? HttpResponse.json({ error: { code: 'INTERNAL_ERROR', message: 'Не удалось войти. Попробуйте ещё раз.', details: {} } }, { status: 500 }) : HttpResponse.json({ access_token: 'demo:ip_good', token_type: 'bearer', expires_in: 3600, user: accounts.ip_good!.user });
+  }));
+  renderLogin();
+  fireEvent.change(screen.getByLabelText(/^Логин/), { target: { value: 'ip_good' } });
+  fireEvent.change(screen.getByLabelText(/^Пароль/, { selector: 'input' }), { target: { value: 'demo2026' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Войти' }));
+  expect(await screen.findByRole('alert')).toBeTruthy();
+  fireEvent.click(await screen.findByRole('button', { name: 'Повторить' }));
+  await waitFor(() => expect(sessionStorage.getItem('access_token')).toBe('demo:ip_good'));
+  expect(bodies).toEqual([{ login: 'ip_good', password: 'demo2026' }, { login: 'ip_good', password: 'demo2026' }]);
+});
 
 describe('Демо-учётки на входе', () => {
   it.each(['true', 'false'])('показывает все 8 учёток и общий пароль при VITE_USE_MSW=%s', (useMsw) => {

@@ -1,0 +1,5 @@
+.page { margin-top: var(--cc-space-48); color: var(--cc-ink); }
+.heading { margin: 0; font: var(--cc-text-display); letter-spacing: var(--cc-tracking-display); }
+.account { width: 100%; text-align: left; cursor: pointer; color: var(--cc-ink); font: inherit; padding: var(--cc-space-16); border: 1px solid var(--cc-line); border-radius: var(--cc-radius-sm); background: var(--cc-paper); }
+.account:hover { background: var(--cc-surface); }
+@media (max-width: 47.999em) { .page { margin-top: 0; } .heading { font: var(--cc-text-h1); } }
