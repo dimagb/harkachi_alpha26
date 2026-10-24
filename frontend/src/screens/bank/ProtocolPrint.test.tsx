@@ -9,6 +9,7 @@ import { createBankHandlers } from '../../mocks/bank/handlers';
 import { bankApplications, borderDecision } from '../../mocks/bank/fixtures';
 import { theme } from '../../theme';
 import ProtocolPrint from './ProtocolPrint';
+import App from '../../App';
 
 const server = setupServer();
 let client: QueryClient;
@@ -54,4 +55,26 @@ it('даёт повторить запрос при ошибке', async () => {
   server.resetHandlers(...createBankHandlers());
   fireEvent.click(screen.getByRole('button', { name: 'Повторить' }));
   expect(await screen.findByRole('heading', { name: 'Протокол решения по заявке № 1047' })).toBeTruthy();
+});
+
+it('маршрут приложения открывает протокол без BankLayout', async () => {
+  server.use(http.get('*/api/v1/me', () => HttpResponse.json({ user: { id: 'bank', full_name: 'Специалист', role: 'UNDERWRITER' }, companies: [] })));
+  client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
+  render(<MantineProvider theme={theme} env="test"><QueryClientProvider client={client}><MemoryRouter initialEntries={['/bank/applications/ooo_border/protocol']}><App /></MemoryRouter></QueryClientProvider></MantineProvider>);
+  await screen.findByRole('heading', { name: 'Протокол решения по заявке № 1047' });
+  expect(screen.queryByRole('navigation')).toBeNull();
+  expect(screen.queryByText('Кредитный конвейер')).toBeNull();
+});
+
+it('не открывает протокол клиенту и не запрашивает банковские данные', async () => {
+  let reads = 0;
+  server.use(
+    http.get('*/api/v1/me', () => HttpResponse.json({ user: { id: 'client', full_name: 'Клиент', role: 'CLIENT' }, companies: [] })),
+    http.get('*/api/v1/underwriting/applications/ooo_border', () => { reads++; return HttpResponse.json(bankApplications[0]!); }),
+  );
+  client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
+  render(<MantineProvider theme={theme} env="test"><QueryClientProvider client={client}><MemoryRouter initialEntries={['/bank/applications/ooo_border/protocol']}><App /></MemoryRouter></QueryClientProvider></MantineProvider>);
+  await screen.findByRole('heading', { name: 'Мои заявки' });
+  expect(reads).toBe(0);
+  expect(screen.queryByText('Протокол решения по заявке № 1047')).toBeNull();
 });

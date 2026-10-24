@@ -1,5 +1,6 @@
 import { Button, Loader } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { useParams } from 'react-router';
 import { api } from '../../api/client';
 import { formatMoney } from '../../ui/status';
@@ -38,6 +39,8 @@ function DecisionSection({ decision }: { decision: BankDecision }) {
   </section>;
 }
 export default function ProtocolPrint() {
+  // Своя вкладка получает копию sessionStorage для входа; затем связь с исходной вкладкой не нужна.
+  useEffect(() => { window.opener = null; }, []);
   const { id = '' } = useParams();
   const query = useQuery({ queryKey: ['bank', 'application', id], queryFn: async ({ signal }) => {
     const { data, error } = await api.GET('/underwriting/applications/{id}', { params: { path: { id } }, signal });

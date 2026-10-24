@@ -18,7 +18,7 @@ export default function EventsPanel({ id }: { id: string }) {
     return data;
   } });
   return <section aria-label="События по заявке" className={css.events}>
-    <div className={css.links}><Link to={`/bank/applications/${id}`}>Открыть карточку</Link><Link to={`/bank/applications/${id}/protocol`} target="_blank" rel="noopener noreferrer">Печать протокола</Link></div>
+    <div className={css.links}><Link to={`/bank/applications/${id}`}>Открыть карточку</Link><Link to={`/bank/applications/${id}/protocol`} target="_blank" rel="opener">Печать протокола</Link></div>
     {query.isPending ? <div role="status"><Loader size="sm" color="gray" /> Загружаем события…</div> : query.isError ? <div role="alert"><p>{query.error.message}</p><Button onClick={() => void query.refetch()}>Повторить</Button></div> : <EventsTable events={query.data.events} />}
   </section>;
 }
