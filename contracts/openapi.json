@@ -740,16 +740,23 @@
             "type": "string"
           },
           "route_reason": {
-            "enum": [
-              "GRADE_C",
-              "AMOUNT_ABOVE_AUTO",
-              "NO_AUTO_CONSENT",
-              "SOURCE_UNAVAILABLE",
-              "OBJECTION",
-              "INFO_RESPONSE"
+            "anyOf": [
+              {
+                "enum": [
+                  "GRADE_C",
+                  "AMOUNT_ABOVE_AUTO",
+                  "NO_AUTO_CONSENT",
+                  "SOURCE_UNAVAILABLE",
+                  "OBJECTION",
+                  "INFO_RESPONSE"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
             ],
-            "title": "Route Reason",
-            "type": "string"
+            "title": "Route Reason"
           },
           "state": {
             "enum": [
@@ -776,8 +783,15 @@
             "type": "string"
           },
           "waiting_since": {
-            "title": "Waiting Since",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Waiting Since"
           }
         },
         "required": [
@@ -4482,6 +4496,16 @@
               }
             },
             "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
           },
           "409": {
             "content": {

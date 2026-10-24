@@ -1,5 +1,6 @@
 import logging
 import signal
+import time
 from datetime import date
 from pathlib import Path
 from threading import Event
@@ -8,6 +9,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from app.config import get_settings
+from app.expiry.service import expire_due
 from app.integrations.bureau import get_bureau_provider
 from app.integrations.registry import get_registry_provider
 from app.integrations.tax import get_tax_provider
@@ -38,9 +40,22 @@ def main() -> None:
     today = date.today
     try:
         heartbeat()
-        recover_stale(factory)
+        last_expiry = last_recovery = float("-inf")
         while not stopped.is_set():
             heartbeat()
+            now = time.monotonic()
+            if now - last_expiry >= 30:
+                last_expiry = now
+                try:
+                    expire_due(factory)
+                except Exception as error:
+                    logger.error("Expiry iteration failed: %s", type(error).__name__)
+            if now - last_recovery >= 60:
+                last_recovery = now
+                try:
+                    recover_stale(factory)
+                except Exception as error:
+                    logger.error("Recovery iteration failed: %s", type(error).__name__)
             try:
                 processed = run_once(factory, providers, today)
             except Exception as error:

@@ -2,15 +2,11 @@
 
 import re
 from pathlib import Path
-from uuid import uuid4
 
 import pytest
-from fastapi.testclient import TestClient
-from fixtures_bodies import BODIES, ID
+from fixtures_bodies import BODIES
 
-from app.auth.deps import current_user
 from app.main import app
-from app.models import User
 
 
 def contract_rows():
@@ -54,19 +50,10 @@ IMPLEMENTED = {
     ("POST", "/api/v1/applications/{id}/offer/reject"),
     ("POST", "/api/v1/applications/{id}/withdraw"),
     ("POST", "/api/v1/applications/{id}/objection"),
+    ("GET", "/api/v1/bank/applications"),
+    ("POST", "/api/v1/demo/time-shift"),
 }
-assert len(IMPLEMENTED) == 21
-
-
-@pytest.fixture
-def stub_user():
-    app.dependency_overrides[current_user] = lambda: User(
-        id=uuid4(), role="CLIENT", login="t", full_name="t", password_hash=""
-    )
-    try:
-        yield
-    finally:
-        app.dependency_overrides.pop(current_user, None)
+assert len(IMPLEMENTED) == 23
 
 
 def test_contract_paths_exact():
@@ -79,28 +66,8 @@ def test_contract_paths_exact():
     assert actual == expected
 
 
-@pytest.mark.parametrize(
-    "method,path,role,body_type,transition",
-    [row for row in STUBS if (row[0].upper(), row[1]) not in IMPLEMENTED],
-)
-def test_valid_requests_reach_stub(
-    method, path, role, body_type, transition, stub_user
-):
-    response = TestClient(app).request(
-        method,
-        path.replace("{id}", ID),
-        params={"company_id": ID} if path == "/api/v1/applications" else {},
-        headers={"If-Match": "1"},
-        json=BODIES.get(body_type),
-    )
-    assert response.status_code == 501, response.text
-    assert response.json() == {
-        "error": {
-            "code": "NOT_IMPLEMENTED",
-            "message": "Эндпоинт ещё не реализован",
-            "details": {},
-        }
-    }
+def test_every_contract_operation_is_implemented():
+    assert {(method.upper(), path) for method, path, *_ in STUBS} == IMPLEMENTED
 
 
 @pytest.mark.parametrize("method,path,role,body_type,transition", STUBS)

@@ -606,11 +606,8 @@ export interface components {
              * @enum {string}
              */
             product_code: "EXPRESS" | "WORKING_CAPITAL" | "OVERDRAFT";
-            /**
-             * Route Reason
-             * @enum {string}
-             */
-            route_reason: "GRADE_C" | "AMOUNT_ABOVE_AUTO" | "NO_AUTO_CONSENT" | "SOURCE_UNAVAILABLE" | "OBJECTION" | "INFO_RESPONSE";
+            /** Route Reason */
+            route_reason: ("GRADE_C" | "AMOUNT_ABOVE_AUTO" | "NO_AUTO_CONSENT" | "SOURCE_UNAVAILABLE" | "OBJECTION" | "INFO_RESPONSE") | null;
             /**
              * State
              * @enum {string}
@@ -619,7 +616,7 @@ export interface components {
             /** Updated At */
             updated_at: string;
             /** Waiting Since */
-            waiting_since: string;
+            waiting_since: string | null;
         };
         /** CalculatorRequest */
         CalculatorRequest: {
@@ -2525,6 +2522,15 @@ export interface operations {
             };
             /** @description Forbidden */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -153,8 +153,16 @@ def test_signatory_and_accountant_actions(application_client, state):
     )
     authenticate(client, "ooo_load_accountant")
     view = client.get(path).json()
-    assert view["timeline"][view["stage"]["index"] - 1]["status"] == "current"
-    assert view["stage"]["what_to_do"] == "Ждём решения подписанта компании"
+    if state == "DRAFT":
+        assert (
+            view["timeline"][view["stage"]["index"] - 1]["status"] == "action_required"
+        )
+        assert view["stage"]["what_to_do"] == (
+            "Отправьте заявку на подпись руководителю или сотруднику с правом подписи"
+        )
+    else:
+        assert view["timeline"][view["stage"]["index"] - 1]["status"] == "current"
+        assert view["stage"]["what_to_do"] == "Ждём решения подписанта компании"
     assert view["allowed_actions"] == (
         ["EDIT_DRAFT", "REQUEST_SIGNATURE", "WITHDRAW"] if state == "DRAFT" else []
     )

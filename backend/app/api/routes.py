@@ -486,11 +486,15 @@ def underwriting_decision(
     responses=errors(401, 403, 422, 501),
 )
 def bank_applications(
+    user: Annotated[User, Depends(underwriter_user)],
+    session: Annotated[Session, Depends(get_session)],
     state: s.ApplicationState | None = None,
     page: Annotated[int, Query(ge=1)] = 1,
     size: Annotated[int, Query(ge=1, le=100)] = 20,
 ):
-    not_implemented()
+    from app.bank.journal import list_applications
+
+    return list_applications(session, state, page, size)
 
 
 @router.post(
@@ -498,7 +502,13 @@ def bank_applications(
     response_model=s.TimeShiftResponse,
     tags=["Служебное"],
     summary="Сдвинуть сроки заявки для демонстрации",
-    responses=errors(401, 403, 409, 422, 501),
+    responses=errors(401, 403, 404, 409, 422, 501),
 )
-def time_shift(body: s.TimeShiftRequest):
-    not_implemented()
+def time_shift(
+    body: s.TimeShiftRequest,
+    user: Annotated[User, Depends(underwriter_user)],
+    session: Annotated[Session, Depends(get_session)],
+):
+    from app.expiry.service import time_shift as shift
+
+    return shift(session, body.application_id, body.days)
