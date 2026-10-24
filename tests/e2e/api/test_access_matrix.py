@@ -38,7 +38,10 @@ ENDPOINTS = (
     ("time-shift", "POST", "demo/time-shift", "bank_app"),
     ("preview", "POST", "preview", "reserved"),
 )
-SIGN_RIGHT_ACTIONS = frozenset({"submit", "offer-accept"})
+# api.md (ee33fae): без права подписи → 403 SIGN_NOT_ALLOWED.
+SIGN_RIGHT_ACTIONS = frozenset(
+    {"otp", "submit", "offer-accept", "offer-reject", "objection"}
+)
 DESTRUCTIVE = frozenset({"withdraw", "offer-reject"})
 ACTORS = (
     "own",
@@ -263,7 +266,7 @@ def test_role_swap_in_token_rejected(world):
 
 
 def test_accountant_cannot_sign_or_accept(client, persona_data):
-    """Бухгалтер ooo_load без права подписи: submit, offer/accept, sign → 403."""
+    """Бухгалтер ooo_load без права подписи: submit, otp, offer/*, sign → 403."""
     persona = find_persona(persona_data, "ooo_load")
     acc_token, company_id = login("ooo_load_accountant")
     app_id = new_draft(persona, acc_token, company_id)
@@ -285,6 +288,13 @@ def test_accountant_cannot_sign_or_accept(client, persona_data):
         acc_token, "POST", f"applications/{app_id}/offer/accept", json=accept
     )
     assert_api_error(response, 403, "SIGN_NOT_ALLOWED")
+    response = raw(acc_token, "POST", f"applications/{app_id}/offer/reject")
+    assert_api_error(response, 403, "SIGN_NOT_ALLOWED")
+    party_id = application["parties"][0]["id"] if application["parties"] else None
+    otp_body = {"purpose": "OFFER", **({"party_id": party_id} if party_id else {})}
+    response = raw(acc_token, "POST", f"applications/{app_id}/otp", json=otp_body)
+    assert_api_error(response, 403, "SIGN_NOT_ALLOWED")
+    assert client.get_application(app_id)["state"] == "OFFER_ISSUED"
 
     application = client.accept_offer(app_id, application["offer"]["version"])
     assert application["state"] == "SIGNING"
@@ -324,14 +334,8 @@ def _not_uuid_call(world, method, path, who):
 
 @pytest.mark.parametrize(("method", "path", "who"), NOT_UUID_PATHS)
 def test_not_uuid_id_is_clean_client_error(world, method, path, who):
-    """id не UUID: не 500, тело ApiError без трассировки."""
+    """id не UUID → 404 или 422 VALIDATION_ERROR, не 500 (решение тимлида 24.10)."""
     response = _not_uuid_call(world, method, path, who)
-    assert response.status_code < 500
-    assert_api_error(response, response.status_code)
-
-
-@pytest.mark.skip(reason="находка 1, ждёт тимлида")
-@pytest.mark.parametrize(("method", "path", "who"), NOT_UUID_PATHS)
-def test_not_uuid_id_is_404(world, method, path, who):
-    """Правило карточки A-09a: id не UUID → 404 (сейчас 422 VALIDATION_ERROR)."""
-    assert_api_error(_not_uuid_call(world, method, path, who), 404, "NOT_FOUND")
+    assert response.status_code in (404, 422), response.text[:200]
+    code = {404: "NOT_FOUND", 422: "VALIDATION_ERROR"}[response.status_code]
+    assert_api_error(response, response.status_code, code)

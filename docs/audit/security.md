@@ -1,6 +1,6 @@
 # Аудит безопасности API (A-09a, OWASP API Security Top 10 — 2023)
 
-Дата: 24.10.2026. Стенд: свежий `main` (`dc44663`), `docker compose up -d --build --wait`, API на `http://localhost:8080/api/v1`.
+Дата: 24.10.2026. Стенд: свежий `main` (`dc44663`, повторный прогон после решений тимлида — `873fcd0`), `docker compose up -d --build --wait`, API на `http://localhost:8080/api/v1`.
 Автотесты: `tests/e2e/api/test_access_matrix.py`, `test_client_leaks.py`, `test_races.py`.
 Команда приёмки:
 
@@ -18,12 +18,12 @@ uv run --no-project --python 3.12 --with pytest --with httpx --with jsonschema p
 | **API2 аутентификация** | Каждый из 22 путей: без токена; подпись JWT испорчена (1 символ); JWT подписан чужим ключом; `alg: none`; роль в токене подменена на `UNDERWRITER` без переподписи | Везде **401 `UNAUTHORIZED`** | — |
 | **API3 свойства объектов** (утечки клиенту) | Все клиентские ответы (`/me`, `/products`, `/calculator`, профиль, создание, `PATCH`, `otp`, `submit`, карточка, список, `objection`, `offer/accept`) для `ooo_aml` и `ip_bad` (отказ) и `ooo_border` (решение андеррайтера) сверены со схемой OpenAPI (`additionalProperties: false` — лишнее поле = ошибка) и `assert_client_safe` (нет `score`, `grade`, `factors`, `rules_fired`, `internal_reasons`, `risk_flags`, `route_reason`, `inputs_snapshot`, `SF_ADDITIONAL`). Комментарий андеррайтера с уникальной меткой: есть в карточке банка, нет ни в одном ответе клиенту | Утечек нет | — |
 | **API5 функции не своей роли** | Клиент → `/underwriting/*`, `/bank/*`, `/demo/time-shift`; андеррайтер → клиентские `/applications*`, `/calculator`, `/products`, `/companies/*`; бухгалтер `ooo_load_accountant` → банковские пути | Везде **403 `FORBIDDEN`** | — |
-| **API5 право подписи** | Бухгалтер без права подписи: `submit` в `DRAFT`, `offer/accept` в `OFFER_ISSUED`, `sign` в `SIGNING` по обеим сторонам (поручитель и подписант) с настоящим кодом | Везде **403 `SIGN_NOT_ALLOWED`**, заявка осталась в `SIGNING` | 3 (строже контракта) |
+| **API5 право подписи** | Бухгалтер без права подписи: `submit`, `otp`, `objection` в `DRAFT`; `offer/accept`, `offer/reject`, `otp` в `OFFER_ISSUED`; `sign` в `SIGNING` по обеим сторонам (поручитель и подписант) с настоящим кодом | Везде **403 `SIGN_NOT_ALLOWED`**, заявка осталась в `SIGNING` | 3 (принято: `api.md` приведён к коду) |
 | **API6 бизнес-потоки, гонки** | По два одновременных запроса (потоки + барьер, отдельные соединения): `submit`, `withdraw`, `offer/accept`, `sign`, `POST /underwriting/{id}/decision`. Затем — события `STATE_CHANGED` этого перехода в карточке банка | Ровно один 200, второй — **409 `INVALID_TRANSITION`**; итоговое состояние верное; событие перехода ровно одно; решение андеррайтера записано один раз | — |
 | **API6 устойчивость worker** | Подать `ip_good` и сразу `docker compose restart worker` | Заявка дошла до `OFFER_ISSUED` за 120 с | — |
-| **API8 настройки** — ошибки | Неизвестный путь (с токеном и без), не тот метод (`DELETE /me`, `PUT /products`), битый JSON, id не UUID; во всех ответах матрицы — проверка тела | Везде тело `ApiError` (`error.code`, `message`, `details`), без трассировки, SQL, путей файлов; 405 → `NOT_FOUND` по контракту | 1 |
+| **API8 настройки** — ошибки | Неизвестный путь (с токеном и без), не тот метод (`DELETE /me`, `PUT /products`), битый JSON, id не UUID; во всех ответах матрицы — проверка тела | Везде тело `ApiError` (`error.code`, `message`, `details`), без трассировки, SQL, путей файлов; 405 → `NOT_FOUND` по контракту | 1 (принято тимлидом) |
 | **API8 секреты в истории git** | `gitleaks v8.24.2 detect --redact` по всей истории | 209 коммитов, **0 находок**. Отчёт `gitleaks.json` удалён, в коммит не попал | — |
-| **API8 логи** | `docker compose logs api worker` после всех прогонов (3 403 строки) | Пароля, токенов, кодов подтверждения, ФИО нет; **ИНН есть** | 2 |
+| **API8 логи** | `docker compose logs api worker` после всех прогонов (3 403 строки) | Пароля, токенов, кодов подтверждения, ФИО нет; **ИНН есть** | 2 (исправляется в B-10d) |
 
 ## Матрица доступа (фактические коды)
 
@@ -40,14 +40,14 @@ uv run --no-project --python 3.12 --with pytest --with httpx --with jsonschema p
 | `GET /applications?company_id=` | 200/200 | 404/404 | 200 | 403 | 401 | 401 | 401 | 401 |
 | `GET /applications/{id}` | 200/200 | 404/404 | 200 | 403 | 401 | 401 | 401 | 401 |
 | `POST …/request-signature` | 403¹/403¹ | 404/404 | 200 | 403 | 401 | 401 | 401 | 401 |
-| `POST …/otp` | 200/200 | 404/404 | 403² | 403 | 401 | 401 | 401 | 401 |
+| `POST …/otp` | 200/200 | 404/404 | **403²** | 403 | 401 | 401 | 401 | 401 |
 | `POST …/submit` | 422³/422³ | 404/404 | **403²** | 403 | 401 | 401 | 401 | 401 |
 | `POST …/info-response` | 409/409 | 404/404 | 409 | 403 | 401 | 401 | 401 | 401 |
 | `POST …/offer/accept` | 409/409 | 404/404 | **403²** | 403 | 401 | 401 | 401 | 401 |
-| `POST …/offer/reject` | 409/409 | 404/404 | 403² | 403 | 401 | 401 | 401 | 401 |
+| `POST …/offer/reject` | 409/409 | 404/404 | **403²** | 403 | 401 | 401 | 401 | 401 |
 | `POST …/sign` | 409/409 | 404/404 | 409⁴ | 403 | 401 | 401 | 401 | 401 |
 | `POST …/withdraw` | 200/200 | 404/404 | 200 | 403 | 401 | 401 | 401 | 401 |
-| `POST …/objection` | 403⁵/403⁵ | 404/404 | 403² | 403 | 401 | 401 | 401 | 401 |
+| `POST …/objection` | 403⁵/403⁵ | 404/404 | **403²** | 403 | 401 | 401 | 401 | 401 |
 | `GET /underwriting/queue` | 403/403 | 403/403 | 403 | 200 | 401 | 401 | 401 | 401 |
 | `GET /underwriting/applications/{id}` | 403/403 | 403/403 | 403 | 200 | 401 | 401 | 401 | 401 |
 | `POST /underwriting/{id}/decision` | 403/403 | 403/403 | 403 | 409⁶ | 401 | 401 | 401 | 401 |
@@ -65,9 +65,9 @@ uv run --no-project --python 3.12 --with pytest --with httpx --with jsonschema p
 
 ## Находки
 
-1. **id не UUID → 422, а не 404** (API8, низкая). `GET /applications/abc`, `POST /applications/abc/withdraw`, `GET /underwriting/applications/abc`, `POST /underwriting/abc/decision`, `GET /companies/abc/profile` отвечают `422 VALIDATION_ERROR` с полем `id`. Правило карточки A-09a — 404. Утечки нет: тело `ApiError`, без трассировки, не 500 (это проверяет `test_not_uuid_id_is_clean_client_error`, зелёный). Строгий тест `test_not_uuid_id_is_404` помечен `skip("находка 1, ждёт тимлида")`. Исключение — `POST /demo/time-shift` с `application_id = "abc"`: там 404, как в B-10a. Вопрос тимлиду: менять код (404) или правило карточки (422 допустим)?
-2. **ИНН компаний в логах api и worker** (API8 / ПДн, низкая). 75 вхождений, из них 35 — 12-значные ИНН индивидуальных предпринимателей (идентификатор физлица). Источник — стандартный лог `httpx` уровня INFO: `HTTP Request: GET http://mocks:8001/mock/v1/registry/<ИНН>` и `…/fns/check/<ИНН>`. Пароля, токенов, кодов подтверждения, ФИО в логах нет. Предложение: поднять уровень логгера `httpx` до `WARNING` в настройке логов бэкенда. Код не меняли (проверка, а не правка).
-3. **Бухгалтер не может отклонить оферту, запросить код согласий и подать возражение** (строже контракта, не уязвимость). `contracts/api.md`: `offer/reject` и `otp` — роль `CLIENT` без требования права подписи. Фактически `ooo_load_accountant` получает `403 SIGN_NOT_ALLOWED` на `offer/reject` (в `OFFER_ISSUED`), на `otp` с `purpose = CONSENTS` и на `objection` (у `objection` в контракте — «ИП, авто-отказ», отдельного правила о подписи нет), при этом `withdraw` ему доступен. Вопрос тимлиду: поправить контракт (уточнить роль) или считать текущее поведение правильным? Тесты принимают оба варианта (доступ пройден, не `FORBIDDEN`).
+1. **id не UUID → 422, а не 404** (API8, низкая). `GET /applications/abc`, `POST /applications/abc/withdraw`, `GET /underwriting/applications/abc`, `POST /underwriting/abc/decision`, `GET /companies/abc/profile` отвечают `422 VALIDATION_ERROR` с полем `id`. Правило карточки A-09a было «404». Утечки нет: тело `ApiError`, без трассировки, не 500. `POST /demo/time-shift` с `application_id = "abc"` отвечает 404, как в B-10a. **Решение: принято тимлидом 24.10, не уязвимость.** Правило теперь «id не UUID → 404 или 422 `VALIDATION_ERROR`, но не 500»; его проверяет `test_not_uuid_id_is_clean_client_error`, строгий тест на 404 удалён.
+2. **ИНН компаний в логах api и worker** (API8 / ПДн, низкая). 75 вхождений, из них 35 — 12-значные ИНН индивидуальных предпринимателей (идентификатор физлица). Источник — стандартный лог `httpx` уровня INFO: `HTTP Request: GET http://mocks:8001/mock/v1/registry/<ИНН>` и `…/fns/check/<ИНН>`. Пароля, токенов, кодов подтверждения, ФИО в логах нет. **Решение: исправляется в B-10d** (логгер `httpx` → `WARNING`). В A-09a код не меняли (проверка, а не правка).
+3. **Бухгалтер не может отклонить оферту, запросить код согласий и подать возражение** (было строже контракта, не уязвимость). В `contracts/api.md` у `offer/reject`, `otp` и `objection` была роль `CLIENT` без требования права подписи. Фактически `ooo_load_accountant` получает `403 SIGN_NOT_ALLOWED` на `offer/reject` (в `OFFER_ISSUED`), на `otp` с `purpose = CONSENTS` и на `objection` (у `objection` в контракте — «ИП, авто-отказ», отдельного правила о подписи нет), при этом `withdraw` ему доступен. **Решение: код прав, `api.md` приведён к коду** (тимлид, коммит `ee33fae`): отказ от оферты и возражение — юридически значимые действия компании, нужны права подписанта. Тесты ждут только `403 SIGN_NOT_ALLOWED` (матрица и `test_accountant_cannot_sign_or_accept`).
 
 ## Что не проверяли (A-09b и позже)
 
