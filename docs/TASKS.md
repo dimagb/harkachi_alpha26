@@ -54,7 +54,8 @@
 | A-07 | Покрытие автомата состояний по журналу событий | кто свободен (Codex) | 25.10 | нет | A-03, F-09 на стенде | [черновик] (D15) |
 | A-08 | Обход интерфейса: консоль, 4xx/5xx, 375 px, коды в тексте, axe-core, Firefox | кто свободен (Codex) | 25.10 | нет | F-06…F-08 | [черновик] (D15) |
 | A-09a | Доступ к чужому, гонки, утечки, секреты, логи (часть A-09) | Катя (Claude Code) | 24.10 вечер | нет | B-10a ✔ | [готова] |
-| A-09b | Schemathesis, npm audit/pip-audit, офлайн-запуск, цифры для README (часть A-09) | кто свободен | 25.10 | нет | A-09a | [черновик] (D15) |
+| A-09b | Schemathesis, npm audit/pip-audit, офлайн-запуск, цифры для README (часть A-09) | Аня | 24.10 вечер | нет | B-10a ✔ | [готова] |
+| B-10c | Мелочи по ревью B-10a: `raising=False`, фильтр `route_reason` по каталогу, debug-лог | Аня | 24.10 вечер | да | B-10a ✔ | [готова] |
 | F-09 | Playwright: демо-путь целиком | Лана или человек | 25.10 вечер | нет | M2 | [черновик] |
 | A-06 | Репетиция T20 на чистом ПК | Катя | 26.10 9:00 | — | M2 | [черновик] |
 | L-02a | Черновик README для жюри (T4) | Катя (Claude Code) | 24.10 вечер | — | — | слита (#34) |
@@ -1591,6 +1592,36 @@ uv run --no-project --python 3.12 --with pytest --with httpx --with jsonschema p
 - Самопроверка `/review` — в PR.
 
 **Не делать:** вид ключевых экранов сверх пп. 3–4; бэкенд, `contracts/`, `theme.ts`, `package.json`; новые функции.
+
+### B-10c — Мелочи по ревью B-10a · Аня · Облако: да · ≤20 мин
+**Зачем.** Неблокирующие замечания ревьюера к B-10a (#33): после переименования тест должен падать явно; при неизвестном коде в журнале и очереди не должно быть 500.
+
+**Сделать:**
+1. `backend/tests/expiry/test_worker.py:50, 55` — убрать `raising=False` (атрибуты в `worker` существуют).
+2. `route_reason` из `payload` входа в `MANUAL_REVIEW` (`backend/app/underwriting/queue.py:53, 86`, `backend/app/bank/journal.py:36`): брать значение, только если оно есть в каталоге `RouteReason` (`contracts/codes.md`); иначе — `route_reason` AUTO-решения, как сейчас. Тест: вход с `payload = {"route_reason": "FOO"}` → в очереди и журнале 200, `route_reason` из AUTO-решения.
+3. `backend/app/expiry/service.py`, `expire_due`: `log.debug` с числом заявок, пропущенных из-за блокировки (без текста исключений и ПДн).
+
+**Приёмка:** `uv run pytest -q -rA` с `TEST_DATABASE_URL` — зелёный, 0 skipped; `ruff check`, `ruff format --check` — чисто. Только эти файлы и тесты рядом.
+
+### A-09b — Зависимости, фаззинг по контракту, автономность, цифры для README · Аня · Облако: нет (нужен стенд) · ≤1,5 ч
+**Зачем.** Вторая половина A-09 (`docs/notes/audit-plan.md` §2, п. 2, 5, 7 и «Цифры для README»). Требования T8 (OpenAPI совпадает с реализацией), T6 (`THIRD_PARTY_NOTICES`), T14 (автономность), желательный пункт C (свои SLA). Параллельно Катя делает A-09a — **её файлы** (`tests/e2e/api/test_access_matrix.py`, `test_races.py`, `test_client_leaks.py`, `docs/audit/security.md`) **не трогать**.
+
+**Это проверка, а не правка:** код приложения, контракт, `package.json`, `pyproject.toml` и lock-файлы **не менять**. Нужные инструменты — через `uvx`, `uv run --with`, `npx --yes` или `npm i --no-save` (не в коммит).
+
+**Стенд:** свежий `main`, `docker compose up -d --build --wait`; адрес — `http://localhost:8080` (на некоторых Windows `127.0.0.1:8080` занят другим сервером — используйте `localhost`).
+
+**Файлы:** `docs/audit/numbers.md` (новый, отчёт); `docs/audit/licenses.md` (новый); `scripts/audit/latency.py` (новый, только стандартная библиотека + `httpx`). Больше ничего.
+
+**Сделать:**
+1. **Фаззинг по контракту (Schemathesis):** `uvx schemathesis` (версию зафиксировать в отчёте) против `http://localhost:8080/api/v1/openapi.json` — два прогона: с токеном клиента `ip_good` и с токеном `underwriter`; проверки — «нет 5xx» и «ответ соответствует схеме» (флаги смотреть в `--help` своей версии). Ограничить число примеров так, чтобы прогон занял ≤10 мин. Каждая находка — в отчёт: эндпоинт, запрос (без токена), что вернулось. **Не чинить** — тимлид выдаст карточку.
+2. **Уязвимые зависимости:** `npm audit --omit=dev` во `frontend/`; `uv export --frozen --no-dev` + `uvx pip-audit -r ...` для `backend/` и `mocks/`. В отчёт — число `high`/`critical`, пакет, есть ли исправленная версия. Ничего не обновлять.
+3. **Автономность:** (а) в собранном `frontend/dist` и в коде бэкенда нет обращений к внешним адресам во время работы (поиск `https?://` кроме `localhost`, `mocks`, `api`, комментариев и лицензий; шрифты локальные); (б) `docker compose up -d --pull never` после сборки — стенд стартует без скачивания. Ручную проверку «выключить сеть» сделает человек — описать в отчёте шаги.
+4. **Покрытие тестами:** `cd backend && uv run --with pytest-cov pytest --cov=app --cov-report=term` (с `TEST_DATABASE_URL`); фронтенд — `npm i --no-save @vitest/coverage-v8@5.0.5` и `npx vitest run --coverage`. В отчёт — итоговые проценты строк.
+5. **Время ответа** (`scripts/audit/latency.py`): по 50 последовательных запросов к `GET /applications/{id}` и `GET /applications?company_id=` (клиент), `GET /underwriting/queue`, `GET /bank/applications`, `GET /underwriting/applications/{id}` (андеррайтер), `POST /calculator` — p50/p95/max в мс. Плюс время «подача → решение» для `ip_good` (3 заявки, медиана). Запуск: `uv run --no-project --python 3.12 --with httpx python -X utf8 scripts/audit/latency.py`. Цифры — в отчёт с оговоркой «ноутбук, Docker Desktop, 1 пользователь, пауза конвейера 2 с между шагами».
+6. **Лицензии** (`docs/audit/licenses.md`): `npx --yes license-checker --production --summary` во `frontend/`; для `backend/` и `mocks/` — `uv run --with pip-licenses pip-licenses --format=markdown` (только рабочие зависимости). Таблица «лицензия → число пакетов», список пакетов с лицензиями не из {MIT, BSD, Apache-2.0, ISC, PSF} — отдельно. Также базовые образы Docker (`postgres`, `nginx`, `node`, `python`) и шрифт Onest (лицензия из `node_modules/@fontsource/onest`). Это основа `THIRD_PARTY_NOTICES` (его пишет тимлид).
+
+**Приёмка:** два отчёта заполнены, в каждом — команды, версии инструментов и итоговые строки вывода; `scripts/audit/latency.py` запускается командой выше; `git diff --stat` — только три новых файла.
+**Не делать:** не исправлять найденное; не обновлять зависимости; не трогать файлы A-09a.
 
 ### A-09a — Доступ к чужому, гонки, утечки, секреты, логи (OWASP API Top 10) · Катя (Claude Code) · Облако: нет (нужен стенд) · ≤2 ч
 **Зачем.** Требование T17 «enterprise-подход» и стандарт OWASP API Security Top 10 (2023). Жюри может открыть чужую заявку по ссылке, нажать кнопку дважды или посмотреть логи. Нужны **доказательства**, что это безопасно, — автотесты и отчёт `docs/audit/security.md`. Это часть A-09 из `docs/notes/audit-plan.md` §2 (п. 1, 3, 4, 6, 8). Schemathesis, `npm audit`/`pip-audit` и офлайн-запуск — позже (A-09b).
