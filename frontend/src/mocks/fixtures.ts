@@ -151,3 +151,27 @@ export const products: Schema['Product'][] = [
   { code: 'WORKING_CAPITAL', name: 'Оборотный кредит', description: 'На пополнение оборотных средств', purposes: ['WORKING_CAPITAL', 'CASH_GAP'], min_amount: 500000, max_amount: 15000000, min_term_months: 3, max_term_months: 24, rate_from: 21.00, requires_guarantor_ooo: true, key_rate: 14.00, key_rate_date: '2026-10-23' },
   { code: 'OVERDRAFT', name: 'Овердрафт', description: 'На покрытие кассовых разрывов', purposes: ['CASH_GAP', 'WORKING_CAPITAL'], min_amount: 100000, max_amount: 5000000, min_term_months: 12, max_term_months: 12, rate_from: 24.00, requires_guarantor_ooo: true, key_rate: 14.00, key_rate_date: '2026-10-23' },
 ];
+
+// F-06: detail fixtures for submission, both director signatures and disbursement.
+export const signingScenarios: Record<string, Schema['ApplicationClient']> = {};
+for (const [key, baseIndex, suffix, state] of [
+  ['ip_draft', 0, 301, 'DRAFT'], ['ooo_draft', 1, 302, 'DRAFT'],
+  ['accountant_draft', 1, 303, 'DRAFT'], ['ooo_signing', 1, 304, 'SIGNING'],
+  ['ip_disbursed', 0, 305, 'DISBURSED'],
+] as const) {
+  const base = applications[baseIndex]!;
+  const draft = draftApplication(base, `30000000-0000-4000-8000-${String(suffix).padStart(12, '0')}`, 1000 + suffix);
+  const stageIndex = state === 'DRAFT' ? 1 : state === 'SIGNING' ? 5 : 6;
+  const signing = state === 'SIGNING';
+  signingScenarios[key] = { ...draft, state,
+    stage: { index: stageIndex, code: draft.timeline[stageIndex - 1]!.stage_code, title: stageNames[stageIndex - 1]!, what_happens: state === 'DRAFT' ? 'Заявка ещё не отправлена в банк' : signing ? 'Готовим договор к подписанию' : 'Деньги зачислены на счёт', what_to_do: state === 'DRAFT' ? 'Проверьте параметры заявки, подпишите согласия и отправьте её' : signing ? 'Подпишите договор кодом подтверждения' : null },
+    timeline: draft.timeline.map((step, i) => ({ ...step, title: stageNames[i]!, status: i < stageIndex - 1 || state === 'DISBURSED' ? 'done' : i === stageIndex - 1 ? 'action_required' : 'pending', at: i < stageIndex ? at : null })),
+    offer: state === 'DRAFT' ? null : { ...base.offer!, status: 'ACCEPTED' },
+    parties: signing ? [
+      { id: '60000000-0000-4000-8000-000000000001', role: 'BORROWER_SIGNATORY', full_name: accounts.ooo_load!.user.full_name, signed: false, is_me: true },
+      { id: '60000000-0000-4000-8000-000000000002', role: 'GUARANTOR', full_name: accounts.ooo_load!.user.full_name, signed: false, is_me: true },
+    ] : [],
+    allowed_actions: state === 'DRAFT' ? ['EDIT_DRAFT', 'SUBMIT', 'WITHDRAW'] : signing ? ['SIGN', 'WITHDRAW'] : ['NEW_APPLICATION'],
+  };
+}
+applicationScenarios.push(...Object.values(signingScenarios));

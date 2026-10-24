@@ -1,6 +1,7 @@
 import { http, HttpResponse } from 'msw';
 import type { components } from '../../api/schema';
 import { accounts, applications, applicationScenarios } from '../fixtures';
+import { enterSigning, signingView } from './signing';
 
 type Schema = components['schemas'];
 type Application = Schema['ApplicationClient'];
@@ -40,7 +41,7 @@ export function createDecisionHandlers(stored = new Map<string, Application>()) 
   return [
     http.get<Params>('*/api/v1/applications/:id', ({ request, params }) => {
       const application = access(request, params.id);
-      return application ? HttpResponse.json(view(request, application)) : undefined;
+      return application ? HttpResponse.json(['DRAFT', 'SIGNING', 'SIGNED', 'DISBURSED'].includes(application.state) ? signingView(request, application) : view(request, application)) : undefined;
     }),
     http.post<Params, Schema['AcceptOfferRequest']>('*/api/v1/applications/:id/offer/accept', async ({ request, params }) => {
       const application = access(request, params.id);
@@ -51,9 +52,9 @@ export function createDecisionHandlers(stored = new Map<string, Application>()) 
       if (application.state !== 'OFFER_ISSUED' || offer?.status !== 'ACTIVE') return error(409, 'INVALID_TRANSITION', 'Предложение уже закрыто.');
       const body = await request.json();
       if (body.offer_version !== offer.version) return error(409, 'CONFLICT_VERSION', 'Условия изменились — проверьте их ещё раз');
-      const updated = { ...move(application, 'SIGNING', 5, 'current', 'Готовим договор к подписанию', 'Ждём подписи остальных участников', ['WITHDRAW']), offer: { ...offer, status: 'ACCEPTED' as const } };
+      const updated = enterSigning(application);
       stored.set(updated.id, updated);
-      return HttpResponse.json(view(request, updated));
+      return HttpResponse.json(signingView(request, updated));
     }),
     http.post<Params>('*/api/v1/applications/:id/offer/reject', ({ request, params }) => {
       const application = access(request, params.id);
