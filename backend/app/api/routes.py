@@ -376,8 +376,18 @@ def reject_offer(
     summary="Подписать документы",
     responses=errors(401, 403, 404, 409, 422, 501),
 )
-def sign(id: UUID, body: s.SignRequest):
-    not_implemented()
+def sign(
+    id: UUID,
+    body: s.SignRequest,
+    user: Annotated[User, Depends(authenticated_user)],
+    session: Annotated[Session, Depends(get_session)],
+):
+    from app.applications.serializers import to_client
+    from app.auth.deps import require_roles
+    from app.signing.sign import sign
+
+    require_roles("CLIENT", "GUARANTOR")(user)
+    return to_client(session, sign(session, id, body, user), user)
 
 
 @router.post(
