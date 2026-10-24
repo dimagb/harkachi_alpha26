@@ -73,7 +73,8 @@ def _validate(
         not body.info_questions
         or not 1 <= len(body.info_questions) <= 5
         or any(
-            not 5 <= len(question.strip()) <= 500 for question in body.info_questions
+            not 5 <= len(question) <= 500 or len(question.strip()) < 5
+            for question in body.info_questions
         )
     ):
         _invalid(

@@ -289,8 +289,7 @@ def info_response(
     if (
         info is None
         or len(codes) != len(info.items)
-        or len(set(codes)) != len(codes)
-        or set(codes) != {item["item_code"] for item in info.items}
+        or codes != [item["item_code"] for item in info.items]
     ):
         raise ApiErrorException(
             422,

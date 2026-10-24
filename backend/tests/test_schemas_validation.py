@@ -86,6 +86,10 @@ def validation_user():
     ],
 )
 def test_invalid_bodies(path, model, changes, field):
+    if path == DECIDE:
+        app.dependency_overrides[current_user] = lambda: User(
+            id=uuid4(), role="UNDERWRITER", login="t", full_name="t", password_hash=""
+        )
     body = deepcopy(BODIES[model])
     body.update(changes)
     assert_validation(TestClient(app).post(path, json=body), field)
@@ -136,24 +140,6 @@ def test_nullable_response_fields_remain_required():
     client = schema["ApplicationClient"]
     assert set(client["properties"]) == set(client["required"])
     assert "risk_flags" not in client["properties"]
-
-
-@pytest.mark.parametrize(
-    "outcome,remove",
-    [
-        ("APPROVE", "amount"),
-        ("APPROVE", "term_months"),
-        ("COUNTER", "amount"),
-        ("COUNTER", "term_months"),
-        ("DECLINE", "client_reason_category"),
-        ("REQUEST_INFO", "info_questions"),
-    ],
-)
-def test_decision_conditional_required_fields(outcome, remove):
-    body = deepcopy(BODIES["UnderwriterDecisionRequest"])
-    body["outcome"] = outcome
-    body.pop(remove, None)
-    assert_validation(TestClient(app).post(DECIDE, json=body), "request")
 
 
 @pytest.mark.parametrize("model", list(BODIES))

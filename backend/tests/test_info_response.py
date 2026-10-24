@@ -68,7 +68,7 @@ def test_gap_response_restarts_pipeline(pipeline_factory, persona_data):
     "invalid,field",
     [
         ("missing", "answers"),
-        ("duplicate", "answers"),
+        ("too_many", "answers"),
         ("extra", "answers"),
         ("no_value", "value"),
         ("zero", "value"),
@@ -82,7 +82,9 @@ def test_invalid_answers_are_atomic(pipeline_factory, persona_data, invalid, fie
     body = {"answers": deepcopy(persona["demo"]["info_response"])}
     if invalid == "missing":
         body["answers"] = []
-    elif invalid == "duplicate":
+    elif invalid == "too_many":
+        # Two answers for one item are invalid; repeated item codes themselves
+        # are permitted when the request contains two matching questions.
         body["answers"] *= 2
     elif invalid == "extra":
         body["answers"].append({"item_code": "PURPOSE_DETAILS", "comment": "Пояснение"})
@@ -136,14 +138,23 @@ def test_underwriter_response_routes_to_review(pipeline_factory, persona_data):
                         "item_code": "UNDERWRITER_QUESTION",
                         "question": "На что нужны деньги?",
                         "requires_value": False,
-                    }
+                    },
+                    {
+                        "item_code": "UNDERWRITER_QUESTION",
+                        "question": "Как будете возвращать кредит?",
+                        "requires_value": False,
+                    },
                 ],
                 due_at=datetime.now(UTC) + timedelta(days=2),
             )
         )
     body = {
         "answers": [
-            {"item_code": "UNDERWRITER_QUESTION", "comment": "На закупку товара"}
+            {"item_code": "UNDERWRITER_QUESTION", "comment": "На закупку товара"},
+            {
+                "item_code": "UNDERWRITER_QUESTION",
+                "comment": "Из поступлений от продаж",
+            },
         ]
     }
     with client_for(pipeline_factory, "ooo_border") as client:
@@ -154,6 +165,10 @@ def test_underwriter_response_routes_to_review(pipeline_factory, persona_data):
     assert response.json()["state"] == "MANUAL_REVIEW"
     assert response.json()["info_request"] is None
     with pipeline_factory() as session:
+        request = session.scalar(
+            select(InfoRequest).where(InfoRequest.application_id == application_id)
+        )
+        assert request.response == body["answers"]
         event = session.scalar(
             select(ApplicationEvent).where(
                 ApplicationEvent.application_id == application_id,

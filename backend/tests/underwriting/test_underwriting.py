@@ -344,7 +344,8 @@ def test_two_questions_and_answer_round_trip(
 @pytest.mark.parametrize(
     "product,amount,term,rate,payment",
     [
-        ("EXPRESS", 1_500_000, 24, 26, 80813),
+        # Independent Decimal annuity: 80811.850447590258... -> 80812 RUB.
+        ("EXPRESS", 1_500_000, 24, 26, 80812),
         ("OVERDRAFT", 500_000, 12, 28, None),
     ],
 )
@@ -476,6 +477,10 @@ def test_retry_only_unavailable(
         ),
         ({"outcome": "REQUEST_INFO", "info_questions": ["Раз"]}, "info_questions"),
         ({"outcome": "REQUEST_INFO", "info_questions": ["а" * 501]}, "info_questions"),
+        (
+            {"outcome": "REQUEST_INFO", "info_questions": ["Вопрос" + " " * 500]},
+            "info_questions",
+        ),
     ],
 )
 def test_field_validation(bank_context, run_persona, body, field):
@@ -509,3 +514,38 @@ def test_wrong_state_is_atomic(bank_context, pipeline_factory, run_persona):
             )
             == 0
         )
+
+
+@pytest.mark.parametrize(
+    "outcome,missing",
+    [
+        ("APPROVE", "amount"),
+        ("APPROVE", "term_months"),
+        ("COUNTER", "amount"),
+        ("COUNTER", "term_months"),
+        ("DECLINE", "client_reason_category"),
+        ("REQUEST_INFO", "info_questions"),
+    ],
+)
+def test_decision_conditional_required_fields(
+    bank_context, run_persona, outcome, missing
+):
+    # Migrated from test_schemas_validation.py per B-08 answer 24.10 ~18:15:
+    # conditional checks now belong to the service and name the actual field.
+    application_id = run_persona()
+    client, _ = bank_context
+    body = {
+        "outcome": outcome,
+        "amount": 800_000,
+        "term_months": 24,
+        "comment": "Проверены сведения компании",
+        "client_reason_category": "Финансовое положение",
+        "info_questions": ["Уточните обязательства компании"],
+    }
+    body.pop(missing)
+    response = client.post(f"/api/v1/underwriting/{application_id}/decision", json=body)
+    assert response.status_code == 422, response.text
+    error = response.json()["error"]
+    assert error["code"] == "VALIDATION_ERROR"
+    assert missing in error["details"]["fields"]
+    assert "request" not in error["details"]["fields"]
