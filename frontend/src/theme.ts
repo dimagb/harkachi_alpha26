@@ -39,7 +39,7 @@ export const theme = createTheme({
   luminanceThreshold: 0.35,
 
   fontFamily: "'Onest', system-ui, -apple-system, 'Segoe UI', sans-serif",
-  fontFamilyMonospace: "ui-monospace, 'SF Mono', Menlo, monospace",
+  fontFamilyMonospace: "ui-monospace, 'Cascadia Mono', Consolas, 'SF Mono', Menlo, monospace",
   fontSmoothing: true,
   fontSizes: { xs: '12px', sm: '14px', md: '16px', lg: '20px', xl: '24px' },
   lineHeights: { xs: '1.334', sm: '1.43', md: '1.5', lg: '1.4', xl: '1.334' },

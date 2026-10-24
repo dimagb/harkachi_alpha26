@@ -130,10 +130,23 @@ it('оставляет возможность повторить загрузк�
   sessionStorage.setItem('access_token', 'ip_good');
   server.use(http.get('*/api/v1/me', () => HttpResponse.json({ error: { code: 'SERVICE_UNAVAILABLE', message: 'Попробуйте позже', details: {} } }, { status: 503 })));
   open('/app');
-  await screen.findByText('Попробуйте позже');
+  await screen.findByText('Не удалось загрузить профиль.');
+  expect(screen.queryByText('Попробуйте позже')).toBeNull();
   server.resetHandlers();
   fireEvent.click(await screen.findByRole('button', { name: 'Повторить' }));
   await screen.findByRole('heading', { name: 'Мои заявки' });
+});
+
+it('500 очереди показывает встроенную ошибку без уведомлений и позволяет повторить', async () => {
+  sessionStorage.setItem('access_token', 'underwriter');
+  server.use(http.get('*/api/v1/underwriting/queue', () => HttpResponse.json({ error: { code: 'INTERNAL_ERROR', message: 'Данные недоступны', details: {} } }, { status: 500 })));
+  open('/bank/queue');
+  expect((await screen.findByText('Не удалось загрузить очередь', {}, { timeout: 5000 })).closest('[role="alert"]')).toBeTruthy();
+  expect(screen.getByRole('link', { name: 'Очередь · недоступна' })).toBeTruthy();
+  expect(document.querySelectorAll('.mantine-Notification-root')).toHaveLength(0);
+  server.resetHandlers();
+  fireEvent.click(screen.getByRole('button', { name: 'Повторить' }));
+  await screen.findByText('Очередь пуста. Новые заявки появятся здесь автоматически');
 });
 
 it('даёт выбрать компанию и перейти к новой заявке', async () => {
