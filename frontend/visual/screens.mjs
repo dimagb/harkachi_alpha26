@@ -83,6 +83,16 @@ try {
       await capture('mobile-menu');
       await menu.getByRole('link', { name: 'Получить финансирование', exact: true }).click();
       await menu.waitFor({ state: 'hidden' });
+      await page.getByRole('heading', { name: 'Зачем нужны деньги?', exact: true }).waitFor();
+      await page.getByRole('button', { name: 'Открыть меню' }).click();
+      await menu.waitFor();
+      await page.goBack();
+      await page.getByRole('heading', { name: 'Мои заявки', exact: true }).waitFor();
+      await menu.waitFor({ state: 'hidden' });
+      await page.goForward();
+      await page.getByRole('heading', { name: 'Зачем нужны деньги?', exact: true }).waitFor();
+      await page.waitForTimeout(300);
+      assert.equal(await menu.count(), 0, 'История браузера не открывает меню повторно');
     } else await page.goto(`${appUrl}/app/applications/new`);
     await page.getByRole('heading', { name: 'Зачем нужны деньги?', exact: true }).waitFor();
     await page.getByRole('button', { name: 'Кассовый разрыв', exact: true }).click();

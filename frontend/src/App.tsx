@@ -27,8 +27,9 @@ function Shell({ me }: { me: Me }) {
   const home = me.user.role === 'UNDERWRITER' ? '/bank/queue' : '/app';
   const desktop = useMediaQuery('(min-width: 62em)');
   const { pathname } = useLocation();
-  const [menuPath, setMenuPath] = useState<string | null>(null);
-  const opened = menuPath === pathname;
+  const [menu, setMenu] = useState({ pathname, opened: false });
+  if (menu.pathname !== pathname) setMenu({ pathname, opened: false });
+  const opened = menu.pathname === pathname && menu.opened;
   const links = me.user.role === 'UNDERWRITER'
     ? (desktop ? [] : [['/bank/queue', 'Очередь'], ['/bank/journal', 'Журнал банка']])
     : [['/app', 'Мои заявки'], ['/app/applications/new', 'Получить финансирование']];
@@ -42,10 +43,10 @@ function Shell({ me }: { me: Me }) {
     </AppShell.Navbar> : null}
     <AppShell.Main>
       {!desktop && <>
-        <header className={shell.mobileHeader}><Link className={shell.brand} to={home}>Кредитный кабинет</Link><Burger opened={opened} onClick={() => setMenuPath(opened ? null : pathname)} aria-label={opened ? 'Закрыть меню' : 'Открыть меню'} aria-expanded={opened} aria-controls="client-menu" /></header>
-        <Drawer opened={opened} onClose={() => setMenuPath(null)} title="Меню кабинета" closeButtonProps={{ 'aria-label': 'Закрыть меню' }} position="right" size="100%">
+        <header className={shell.mobileHeader}><Link className={shell.brand} to={home}>Кредитный кабинет</Link><Burger opened={opened} onClick={() => setMenu({ pathname, opened: !opened })} aria-label={opened ? 'Закрыть меню' : 'Открыть меню'} aria-expanded={opened} aria-controls="client-menu" /></header>
+        <Drawer opened={opened} onClose={() => setMenu({ pathname, opened: false })} title="Меню кабинета" closeButtonProps={{ 'aria-label': 'Закрыть меню' }} position="right" size="100%">
           <div id="client-menu" className={shell.menu}>
-            <nav className={css.navLinks} aria-label="Навигация кабинета">{links.map(([to, label]) => <Link key={to} to={to!} onClick={() => setMenuPath(null)} className={css.navLink} aria-current={pathname === to ? 'page' : undefined}>{label}</Link>)}</nav>
+            <nav className={css.navLinks} aria-label="Навигация кабинета">{links.map(([to, label]) => <Link key={to} to={to!} onClick={() => setMenu({ pathname, opened: false })} className={css.navLink} aria-current={pathname === to ? 'page' : undefined}>{label}</Link>)}</nav>
             {company}
             <div className={shell.identity}><Text fw={500}>{me.user.full_name}</Text><Button variant="default" onClick={() => setToken(null)}>Выйти</Button></div>
           </div>

@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { delay, http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
-import { MemoryRouter, useLocation } from 'react-router';
+import { MemoryRouter, useLocation, useNavigate } from 'react-router';
 import { afterAll, afterEach, beforeAll, expect, it } from 'vitest';
 import App from './App';
 import { api } from './api/client';
@@ -46,7 +46,8 @@ afterEach(() => {
 });
 
 function Location() {
-  return <output aria-label="Текущий маршрут">{useLocation().pathname}</output>;
+  const navigate = useNavigate();
+  return <><output aria-label="Текущий маршрут">{useLocation().pathname}</output><button onClick={() => void navigate(-1)}>Назад в истории</button><button onClick={() => void navigate(1)}>Вперёд в истории</button></>;
 }
 function open(path = '/login') {
   render(<MantineProvider env="test"><QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><MemoryRouter initialEntries={[path]}><App /><Location /></MemoryRouter></QueryClientProvider></MantineProvider>);
@@ -174,6 +175,23 @@ it('мобильное меню содержит навигацию и выхо�
   fireEvent.click(within(menu).getByRole('link', { name: 'Получить финансирование' }));
   await screen.findByRole('heading', { name: 'Зачем нужны деньги?' });
   await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+});
+
+it('история браузера закрывает меню и не открывает его повторно при возврате на прежний адрес', async () => {
+  sessionStorage.setItem('access_token', 'ip_good');
+  open('/app');
+  fireEvent.click(await screen.findByRole('link', { name: 'Получить финансирование' }));
+  await screen.findByRole('heading', { name: 'Зачем нужны деньги?' });
+  const back = screen.getByRole('button', { name: 'Назад в истории' });
+  const forward = screen.getByRole('button', { name: 'Вперёд в истории' });
+  fireEvent.click(screen.getByRole('button', { name: 'Открыть меню' }));
+  expect(await screen.findByRole('dialog')).toBeTruthy();
+  fireEvent.click(back);
+  await screen.findByRole('heading', { name: 'Мои заявки' });
+  await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+  fireEvent.click(forward);
+  await screen.findByRole('heading', { name: 'Зачем нужны деньги?' });
+  expect(screen.queryByRole('dialog')).toBeNull();
 });
 
 it('запрашивает health с единственным префиксом API', async () => {
