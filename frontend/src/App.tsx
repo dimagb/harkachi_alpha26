@@ -1,4 +1,4 @@
-import { Anchor, AppShell, Button, Container, Group, Loader, Select, Stack, Text, Title } from '@mantine/core';
+import { Anchor, AppShell, Button, Container, Group, Loader, Select, Stack, Text } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import css from './screens/application/Card.module.css';
 import { Notifications } from '@mantine/notifications';
@@ -16,6 +16,8 @@ import ApplicationCard from './screens/ApplicationCard';
 import BankLayout from './screens/bank/BankLayout';
 import Queue from './screens/bank/Queue';
 import UnderwriterCard from './screens/bank/UnderwriterCard';
+import Journal from './screens/bank/Journal';
+import ProtocolPrint from './screens/bank/ProtocolPrint';
 
 type Me = components['schemas']['MeResponse'];
 
@@ -79,8 +81,9 @@ export default function App() {
         <Route element={underwriter ? <BankLayout me={me.data} /> : <Navigate to={home} replace />}>
           <Route path="/bank/queue" element={<Queue />} />
           <Route path="/bank/applications/:id" element={<UnderwriterCard />} />
-          <Route path="/bank/journal" element={<Title order={1}>Журнал банка</Title>} />
+          <Route path="/bank/journal" element={<Journal />} />
         </Route>
+        <Route path="/bank/applications/:id/protocol" element={underwriter ? <ProtocolPrint /> : <Navigate to={home} replace />} />
         <Route path="*" element={<Navigate to={home} replace />} />
       </Routes>
     );

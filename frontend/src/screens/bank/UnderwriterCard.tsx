@@ -42,6 +42,6 @@ export default function UnderwriterCard() {
       <Sources application={application} /><Turnover application={application} />{decision && <Policy decision={decision} />}
     </div><aside className={css.aside}>{decision && <Recommendation decision={decision} />}
       {application.state === 'MANUAL_REVIEW' ? <DecisionForm key={application.id} application={application} decision={decision} onConflict={() => { setConflict(true); void query.refetch(); void queue.refetch(); }} /> : manual ? <section className={css.section} aria-label="Решение принято"><h2>Решение принято</h2><strong>{outcomeLabels[manual.outcome]}</strong><p>{manual.comment}</p><span className={css.muted}>{manual.made_by} · {formatAt(manual.created_at)}</span><Link to="/bank/queue">Вернуться в очередь</Link></section> : <section className={css.section}><h2>{application.state === 'DECLINED' ? 'Решение системы' : 'Заявка обрабатывается'}</h2><p>{application.stage.what_happens}</p><Link to="/bank/queue">Вернуться в очередь</Link></section>}
-    </aside></div><Protocol application={application} />
+    </aside></div><Link to={`/bank/applications/${application.id}/protocol`} target="_blank" rel="opener">Печать протокола</Link><Protocol application={application} />
   </div>;
 }

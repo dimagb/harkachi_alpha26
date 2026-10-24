@@ -1,0 +1,35 @@
+.stack { display: flex; flex-direction: column; gap: 24px; color: var(--cc-ink); }
+.header { display: flex; justify-content: space-between; align-items: end; gap: 24px; }
+.header h1 { margin: 0 0 8px; font: var(--cc-text-h1); }
+.header p { margin: 0; color: var(--cc-ink-2); }
+.header > :last-child { min-width: 280px; }
+.loading { display: flex; align-items: center; gap: 12px; padding: 24px 0; }
+.empty { padding: 32px; border: 1px solid var(--cc-line); border-radius: var(--cc-radius-md); }
+.tableScroll { overflow-x: auto; border: 1px solid var(--cc-line); border-radius: var(--cc-radius-md); }
+.table { width: 100%; border-collapse: collapse; text-align: left; font: var(--cc-text-small); }
+.table th { background: var(--cc-surface); color: var(--cc-ink-2); font: var(--cc-text-caption); padding: 12px 16px; }
+.table td { padding: 16px; border-top: 1px solid var(--cc-line); vertical-align: top; }
+.table th, .money { white-space: nowrap; }
+.money { font-variant-numeric: tabular-nums; }
+.applicationRow { cursor: pointer; }
+.applicationRow:hover, .applicationRow:focus-within { background: var(--cc-surface); }
+.number { padding: 0; border: 0; background: none; font: inherit; color: inherit; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.company { display: block; font-weight: 500; }
+.muted { color: var(--cc-ink-2); }
+.badge { display: inline-flex; border-radius: var(--cc-radius-sm); padding: 2px 8px; font-weight: 500; }
+.badge[data-tone=ok] { background: var(--cc-ok-bg); color: var(--cc-ok-text); }
+.badge[data-tone=wait] { background: var(--cc-wait-bg); color: var(--cc-wait-text); }
+.badge[data-tone=stop] { background: var(--cc-stop-bg); color: var(--cc-stop-text); }
+.badge[data-tone=gray] { background: var(--cc-surface); color: var(--cc-ink-2); }
+.table .expanded { padding: 16px 24px 24px; background: var(--cc-paper); }
+.events { display: flex; flex-direction: column; gap: 16px; }
+.links, .actions, .pagination { display: flex; align-items: center; gap: 16px; }
+.links a { color: var(--cc-ink); text-underline-offset: 3px; }
+.actions { justify-content: end; margin-top: 24px; }
+.pagination { justify-content: space-between; }
+@media (max-width: 62em) {
+  .header { align-items: stretch; flex-direction: column; }
+  .pagination { flex-wrap: wrap; }
+  .tableScroll > .table { min-width: 1100px; }
+  .table th, .table td { padding: 12px; }
+}
