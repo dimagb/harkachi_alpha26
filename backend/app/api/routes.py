@@ -364,12 +364,14 @@ def reject_offer(id: UUID):
 def sign(
     id: UUID,
     body: s.SignRequest,
-    user: Annotated[User, Depends(client_user)],
+    user: Annotated[User, Depends(authenticated_user)],
     session: Annotated[Session, Depends(get_session)],
 ):
     from app.applications.serializers import to_client
+    from app.auth.deps import require_roles
     from app.signing.sign import sign
 
+    require_roles("CLIENT", "GUARANTOR")(user)
     return to_client(session, sign(session, id, body, user), user)
 
 
