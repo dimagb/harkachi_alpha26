@@ -11,9 +11,14 @@ import SubmitSection from './SubmitSection';
 
 type Application = components['schemas']['ApplicationClient'];
 const server = setupServer();
+const originalScroll = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'scrollIntoView');
 beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterAll(() => server.close());
-afterEach(() => { cleanup(); setToken(null); server.resetHandlers(); vi.useRealTimers(); });
+afterEach(() => {
+  cleanup(); setToken(null); server.resetHandlers(); vi.useRealTimers();
+  if (originalScroll) Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', originalScroll);
+  else Reflect.deleteProperty(HTMLElement.prototype, 'scrollIntoView');
+});
 function open(login = 'ip_good', awaiting = false) {
   const base = applications[login === 'ip_good' ? 0 : 1]!;
   const application = { ...draftApplication(base, base.id, base.number), awaiting_signature: awaiting, allowed_actions: login === 'ooo_load_accountant' ? awaiting ? [] : ['REQUEST_SIGNATURE'] : ['SUBMIT'] } as Application;
@@ -44,7 +49,7 @@ it.each(['ip_good', 'ooo_load'])('%s: обязательные согласия,
   }));
   await consentAndCode();
   expect(screen.getByText('Демо-режим: код 123456')).toBeTruthy();
-  expect(document.activeElement).toBe(screen.getByLabelText('Код из SMS'));
+  await waitFor(() => expect(document.activeElement).toBe(screen.getByLabelText('Код из SMS')));
   fireEvent.change(screen.getByLabelText('Код из SMS'), { target: { value: '1a2345678' } });
   expect((screen.getByLabelText('Код из SMS') as HTMLInputElement).value).toBe('123456');
   fireEvent.click(screen.getByRole('button', { name: 'Подставить' }));
@@ -59,6 +64,23 @@ it('ИП может отдельно согласиться на автомат�
   await consentAndCode(); fireEvent.click(screen.getByRole('button', { name: 'Подставить' }));
   fireEvent.click(screen.getByRole('button', { name: 'Подтвердить и отправить' }));
   await waitFor(() => expect(submitted).toMatchObject({ consents: { auto_decision: true } }));
+});
+it('ведёт к получению кода после отправки и прокручивает поле кода в центр с фокусом', async () => {
+  const scroll = vi.fn();
+  Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', { configurable: true, value: scroll });
+  otp(); open();
+  fireEvent.click(screen.getByRole('checkbox', { name: 'Согласен: обработка персональных данных' }));
+  fireEvent.click(screen.getByRole('checkbox', { name: 'Согласен: запрос кредитной истории' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Подписать и отправить' }));
+  const request = screen.getByRole('button', { name: 'Получить код' });
+  expect(document.activeElement).toBe(request);
+  expect(scroll).toHaveBeenLastCalledWith({ block: 'center' });
+  scroll.mockClear();
+  fireEvent.click(request);
+  const input = await screen.findByLabelText('Код из SMS');
+  await waitFor(() => expect(document.activeElement).toBe(input));
+  expect(scroll).toHaveBeenLastCalledWith({ block: 'center' });
+  expect(scroll.mock.instances.at(-1)).toBe(input);
 });
 it('неверный код очищается и ошибка сервера видна под полем', async () => {
   otp(); open();

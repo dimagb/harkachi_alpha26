@@ -4,7 +4,7 @@ import { effectLabels, eventLabels, formatAt, formatPercent, outcomeLabels, stat
 import css from './Underwriter.module.css';
 
 export function Rules({ decision }: { decision: BankDecision }) {
-  return !!decision.rules_fired.length && <section className={css.section} aria-label="Сработавшие правила"><h2>Сработавшие правила</h2>{decision.rules_fired.map((rule, index) => <div key={`${rule.code}-${index}`} className={css.rule}><div><strong>{rule.title}</strong> <code>{rule.code}</code></div><span>{rule.value} · Условие: {rule.threshold}</span><span className={css.badge} data-tone={rule.effect === 'STOP' ? 'stop' : rule.effect === 'ROUTE' ? 'wait' : 'gray'}>{effectLabels[rule.effect]}</span></div>)}{!!decision.internal_reasons.length && <ul>{decision.internal_reasons.map((text, i) => <li key={i}>{text}</li>)}</ul>}</section>;
+  return !!decision.rules_fired.length && <section className={css.section} aria-label="Сработавшие правила"><h2>Сработавшие правила</h2>{decision.rules_fired.map((rule, index) => <div key={`${rule.code}-${index}`} className={css.rule}><div className={css.ruleCopy}><strong title={rule.code}>{rule.title}</strong><span>Факт: {rule.value}</span><span>Порог: {rule.threshold}</span></div><span className={css.badge} data-tone={rule.effect === 'STOP' ? 'stop' : rule.effect === 'ROUTE' ? 'wait' : 'gray'}>{effectLabels[rule.effect]}</span><code className={css.ruleCode}>{rule.code}</code></div>)}{!!decision.internal_reasons.length && <ul>{decision.internal_reasons.map((text, i) => <li key={i}>{text}</li>)}</ul>}</section>;
 }
 
 export function Turnover({ application }: { application: BankApplication }) {
