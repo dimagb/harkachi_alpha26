@@ -152,6 +152,29 @@ def test_queue_current_event_order_and_constant_queries(
         assert get_queue(session)[0].route_reason == "GRADE_C"
 
 
+@pytest.mark.parametrize("route", ["FOO", "", None, 123, {"code": "GRADE_C"}])
+def test_current_route_ignores_invalid_entry(pipeline_factory, run_persona, route):
+    from app.underwriting.queue import current_route
+
+    identity = run_persona()
+    with pipeline_factory.begin() as session:
+        entry = session.scalar(
+            select(ApplicationEvent).where(
+                ApplicationEvent.application_id == identity,
+                ApplicationEvent.to_state == "MANUAL_REVIEW",
+            )
+        )
+        entry.payload = {"route_reason": route}
+        auto = session.scalar(
+            select(Decision).where(
+                Decision.application_id == identity, Decision.kind == "AUTO"
+            )
+        )
+        assert current_route(session, session.get(Application, identity), auto) == (
+            "GRADE_C"
+        )
+
+
 @pytest.mark.parametrize("count", [1, 10])
 def test_queue_constant_queries(bank_context, pipeline_factory, run_persona, count):
     for _ in range(count):

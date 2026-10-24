@@ -92,6 +92,7 @@ def expire_due(factory: sessionmaker[Session]) -> int:
             )
         )
     expired = 0
+    skipped_locked = 0
     for identity in candidates:
         try:
             with factory.begin() as session:
@@ -100,14 +101,16 @@ def expire_due(factory: sessionmaker[Session]) -> int:
                     .where(Application.id == identity)
                     .with_for_update(skip_locked=True, of=Application)
                 )
-                changed = application is not None and expire_application(
-                    session, application
-                )
+                if application is None:
+                    skipped_locked += 1
+                    continue
+                changed = expire_application(session, application)
             expired += int(changed)
         except Exception as error:
             logger.error(
                 "Application %s expiry failed: %s", identity, type(error).__name__
             )
+    logger.debug("Expiry skipped locked applications: %s", skipped_locked)
     return expired
 
 

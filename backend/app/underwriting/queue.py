@@ -1,11 +1,13 @@
 """Bank queue projected in one SQL query, independently of queue size."""
 
-from sqlalchemy import func, select
+from typing import get_args
+
+from sqlalchemy import case, func, select
 from sqlalchemy.dialects.postgresql import distinct_on
 from sqlalchemy.orm import Session
 
 from app.models import Application, ApplicationEvent, Company, Decision
-from app.schemas.api import QueueItem
+from app.schemas.api import QueueItem, RouteReason
 
 
 def latest_auto():
@@ -37,6 +39,11 @@ def latest_entry():
     )
 
 
+def entry_route(entry, auto):
+    route = entry.c.payload["route_reason"].astext
+    return case((route.in_(get_args(RouteReason)), route), else_=auto.c.route_reason)
+
+
 def get_queue(session: Session) -> list[QueueItem]:
     auto, entry = latest_auto(), latest_entry()
     waiting = func.coalesce(entry.c.created_at, Application.updated_at)
@@ -49,9 +56,7 @@ def get_queue(session: Session) -> list[QueueItem]:
             Application.product_code,
             Application.amount,
             auto.c.grade,
-            func.coalesce(
-                entry.c.payload["route_reason"].astext, auto.c.route_reason
-            ).label("route_reason"),
+            entry_route(entry, auto).label("route_reason"),
             waiting.label("waiting_since"),
         )
         .join(Company, Company.id == Application.company_id)
@@ -84,4 +89,8 @@ def current_route(session: Session, application: Application, auto: Decision | N
         .limit(1)
     )
     route = (entry.payload or {}).get("route_reason") if entry else None
-    return route or (auto.route_reason if auto else None)
+    return (
+        route
+        if route in get_args(RouteReason)
+        else (auto.route_reason if auto else None)
+    )

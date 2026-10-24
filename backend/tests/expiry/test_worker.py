@@ -47,12 +47,11 @@ def test_maintenance_runs_during_busy_queue_and_survives_errors(
     monkeypatch.setattr(worker, "sessionmaker", lambda *args: object())
     monkeypatch.setattr(worker, "run_once", process)
     monkeypatch.setattr(worker, "recover_stale", maintain("recover"))
-    monkeypatch.setattr(worker, "expire_due", maintain("expire"), raising=False)
+    monkeypatch.setattr(worker, "expire_due", maintain("expire"))
     monkeypatch.setattr(
         worker,
         "time",
         SimpleNamespace(monotonic=lambda: seconds[len(iterations)]),
-        raising=False,
     )
     worker.main()
     assert iterations == seconds
