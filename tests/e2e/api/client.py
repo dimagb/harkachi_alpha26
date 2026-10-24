@@ -1,5 +1,8 @@
 """HTTP-клиент сценариев с диагностикой шага и контролем утечек."""
 
+import base64
+import hashlib
+import hmac
 import json
 import os
 import time
@@ -22,6 +25,8 @@ INTERNAL_KEYS = frozenset(
         "route_reason",
     }
 )
+# A-09a: коды подтверждения, выданные тестам, — для поиска в логах стенда.
+ISSUED_CODES = []
 
 
 def assert_client_safe(data, raw_text):
@@ -110,7 +115,10 @@ class ApiClient:
         body = {"purpose": purpose}
         if party_id is not None:
             body["party_id"] = party_id
-        return self.request("otp", "POST", f"applications/{app_id}/otp", json=body)
+        data = self.request("otp", "POST", f"applications/{app_id}/otp", json=body)
+        if "demo_code" in data:
+            ISSUED_CODES.append(data["demo_code"])
+        return data
 
     def submit(self, app_id, body):
         return self.request(
@@ -175,3 +183,80 @@ def wait_state(client, app_id, *, leave=PROCESSING):
             f"timeline={json.dumps(application['timeline'], ensure_ascii=False)}"
         )
         time.sleep(min(1, remaining))
+
+
+# ---------- A-09a: проверки безопасности на сыром HTTP ----------
+
+LEAK_MARKERS = (
+    "Traceback",
+    'File "',
+    "sqlalchemy",
+    "psycopg",
+    "asyncpg",
+    "SELECT ",
+    "/app/",
+    ".py",
+)
+
+
+def raw(token, method, path, **kwargs):
+    """Один запрос без проверок: для матрицы доступа и гонок."""
+    headers = dict(kwargs.pop("headers", {}) or {})
+    if token is not None:
+        headers["Authorization"] = f"Bearer {token}"
+    with httpx.Client(
+        base_url=os.getenv("E2E_BASE_URL", DEFAULT_BASE_URL).rstrip("/") + "/",
+        timeout=15,
+        trust_env=False,
+    ) as http:
+        response = http.request(method, path, headers=headers, **kwargs)
+    if path.endswith("/otp") and response.status_code == 200:
+        ISSUED_CODES.append(response.json().get("demo_code", ""))
+    return response
+
+
+def assert_api_error(response, status, code=None):
+    """Ответ — ApiError с нужным HTTP и кодом, без трассировки, SQL и путей."""
+    assert response.status_code == status, (
+        f"{response.request.method} {response.request.url.path}: "
+        f"ждали {status} {code or ''}, пришло {response.status_code} "
+        f"{response.text[:200]}"
+    )
+    body = response.json()
+    assert set(body) == {"error"}, f"Тело не ApiError: {response.text[:200]}"
+    assert {"code", "message", "details"} <= set(body["error"])
+    if code is not None:
+        assert body["error"]["code"] == code, response.text[:200]
+    for marker in LEAK_MARKERS:
+        assert marker not in response.text, f"В ошибке есть «{marker}»"
+    return body
+
+
+def _b64(data):
+    return base64.urlsafe_b64encode(data).rstrip(b"=").decode()
+
+
+def _unb64(part):
+    return base64.urlsafe_b64decode(part + "=" * (-len(part) % 4))
+
+
+def broken_token(token, mode):
+    """Испорченные варианты настоящего JWT (секрет стенда тестам не нужен)."""
+    header, payload, signature = token.split(".")
+    if mode == "tampered":
+        # Средний символ подписи: у последнего часть бит — выравнивание base64.
+        i = len(signature) // 2
+        swap = "A" if signature[i] != "A" else "B"
+        return f"{header}.{payload}.{signature[:i]}{swap}{signature[i + 1 :]}"
+    if mode == "forged":
+        unsigned = f"{header}.{payload}".encode()
+        fake = hmac.new(b"not-the-stand-secret", unsigned, hashlib.sha256).digest()
+        return f"{header}.{payload}.{_b64(fake)}"
+    if mode == "alg_none":
+        none = _b64(json.dumps({"alg": "none", "typ": "JWT"}).encode())
+        return f"{none}.{payload}."
+    if mode == "role_swap":
+        claims = json.loads(_unb64(payload))
+        claims["role"] = "UNDERWRITER"
+        return f"{header}.{_b64(json.dumps(claims).encode())}.{signature}"
+    raise ValueError(mode)
