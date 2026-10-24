@@ -39,6 +39,13 @@ def underwriter_user(user: Annotated[User, Depends(authenticated_user)]) -> User
     return require_roles("UNDERWRITER")(user)
 
 
+def catalog_user(user: Annotated[User, Depends(authenticated_user)]) -> User:
+    from app.auth.deps import require_roles
+
+    # The catalog holds no client data; the underwriter's decision form needs it.
+    return require_roles("CLIENT", "UNDERWRITER")(user)
+
+
 def errors(*codes: int) -> dict:
     return {code: {"model": ApiError} for code in codes}
 
@@ -81,7 +88,7 @@ def me(
     responses=errors(401, 403, 501),
 )
 def products(
-    user: Annotated[User, Depends(client_user)],
+    user: Annotated[User, Depends(catalog_user)],
     session: Annotated[Session, Depends(get_session)],
 ):
     return list_products(session)

@@ -85,6 +85,8 @@ def test_bank_card_all_states(
     assert card["allowed_actions"] == []
     assert all(not p["is_me"] for p in card["parties"])
     assert all(not re.fullmatch(r"[A-Z_]+", e["note"] or "") for e in card["events"])
+    titles = [f["title"] for d in card["decisions"] for f in d["factors"]]
+    assert all("`" not in t and "_" not in t for t in titles), titles
     if code != "ooo_gap":
         assert {c["source"] for c in card["external_checks"]} == {"EGRUL", "BKI", "FNS"}
     if code == "ooo_border":

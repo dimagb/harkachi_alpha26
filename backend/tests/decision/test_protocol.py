@@ -1,3 +1,4 @@
+import re
 from dataclasses import replace
 from pathlib import Path
 
@@ -44,7 +45,14 @@ def test_factor_wording_matches_current_table(persona_data, build_inputs):
         for line in table.splitlines()
         if line.startswith("|") and line.split("|")[2].strip().isdigit()
     ]
-    expected = [(title.strip(), rule.strip()) for title, rule in rows]
+    # B-11: в интерфейсе — названия без технических имён в скобках.
+    # TODO(lead): привести таблицу decision-model.md §4 к этим названиям и
+    # вернуть точное сравнение (файл тимлида, вне карточки B-11).
+    renamed = {"Тренд": "Тренд оборотов"}
+    expected = []
+    for title, rule in rows:
+        title = re.sub(r"\s*\([^()]*`[^()]*\)", "", title.strip())
+        expected.append((renamed.get(title, title), rule.strip()))
     result = decide(build_inputs(persona_data["personas"][0]), DEFAULT_CONFIG)
     assert len(expected) == 12
     assert [(factor.title, factor.rule) for factor in result.factors] == expected
