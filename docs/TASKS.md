@@ -55,7 +55,7 @@
 | A-08 | Обход интерфейса: консоль, 4xx/5xx, 375 px, коды в тексте, axe-core, Firefox | кто свободен (Codex) | 25.10 | нет | F-06…F-08 | [черновик] (D15) |
 | A-09a | Доступ к чужому, гонки, утечки, секреты, логи (часть A-09) | Катя (Claude Code) | 24.10 вечер | нет | B-10a ✔ | слита (#36) |
 | A-09b | Schemathesis, npm audit/pip-audit, офлайн-запуск, цифры для README (часть A-09) | Аня | 24.10 вечер | нет | B-10a ✔ | слита (#37) |
-| B-10c | Мелочи по ревью B-10a: `raising=False`, фильтр `route_reason` по каталогу, debug-лог | Аня | 24.10 вечер | нет | B-10a ✔ | [готова] |
+| B-10c | Мелочи по ревью B-10a: `raising=False`, фильтр `route_reason` по каталогу, debug-лог | Аня | 24.10 вечер | нет | B-10a ✔ | слита (#38) |
 | B-10d | Находки аудита: ИНН в логах `httpx`, 500 на огромном `page` журнала | Аня | 24.10 вечер | нет | A-09a, A-09b | [готова] |
 | F-09 | Playwright: демо-путь целиком | Лана или человек | 25.10 вечер | нет | M2 | [черновик] |
 | A-06 | Репетиция T20 на чистом ПК | Катя | 26.10 9:00 | — | M2 | [черновик] |
@@ -1594,7 +1594,7 @@ uv run --no-project --python 3.12 --with pytest --with httpx --with jsonschema p
 
 **Не делать:** вид ключевых экранов сверх пп. 3–4; бэкенд, `contracts/`, `theme.ts`, `package.json`; новые функции.
 
-### B-10d — Находки аудита: ИНН в логах, огромный `page` в журнале · Аня · Облако: нет · ≤30 мин
+### B-10d — Находки аудита: ИНН в логах, огромный `page` в журнале, `route_reason` в событиях · Аня · Облако: нет · ≤40 мин
 **Зачем.** Две находки аудита. A-09a: в логах `api` и `worker` 75 раз встречается ИНН, из них 35 — ИНН ИП, то есть персональные данные (152-ФЗ). Источник — INFO-лог `httpx` вида `HTTP Request: GET http://mocks:8001/mock/v1/registry/<ИНН>`. A-09b: Schemathesis нашёл ошибку 500 на `GET /bank/applications?page=15052842692487972973998667464704&size=68`: `(page-1)*size` не помещается в `bigint` Postgres.
 
 **Файлы:** `backend/app/logging.py`; `backend/app/bank/journal.py`; тесты рядом (`backend/tests/bank/`, тест логирования рядом с существующими).
@@ -1603,6 +1603,7 @@ uv run --no-project --python 3.12 --with pytest --with httpx --with jsonschema p
 1. В `configure_logging` поставить логгерам `httpx` и `httpcore` уровень `WARNING` при любом `LOG_LEVEL`. Тест: после `configure_logging("INFO")` у `logging.getLogger("httpx")` уровень не ниже `WARNING`.
 2. В `list_applications` проверить смещение `(page - 1) * size` **до** запроса. Если оно больше 2^63−1 или заведомо больше любого числа заявок (например, `page > 10**9`), вернуть `Page(items=[], total=<число по фильтру>, page, size)` и не передавать смещение в SQL. Контракт не меняется: ограничения `page` ≥ 1 остаются как есть. Тест: `page=15052842692487972973998667464704&size=68` → 200, `items = []`, `total` равен числу без `page`.
 3. Проверить так же очередь и другие запросы со смещением (`grep -rn "offset(" backend/app`). Если есть ещё — та же защита.
+4. **Вопрос из B-10c (#38):** карточка андеррайтера отдаёт 500, если `payload.route_reason` в событии — не строка из каталога (`RouteReason`). Сейчас такой `payload` пишет только наш код, поэтому риск низкий, но правка дешёвая. При отображении событий (`backend/app/underwriting/card.py` или там, где события превращаются в текст) неизвестное значение показывать так же, как отсутствующее, без 500. Удалить `TODO(lead)` из `backend/tests/underwriting/test_underwriting.py` и добавить тест: `{"code": "GRADE_C"}` и `"FOO"` в `payload` → карточка 200. Файлы: + `card.py` (только эта функция) и тест.
 
 **Приёмка:** `uv run pytest -q -rA` с `TEST_DATABASE_URL` — зелёный, 0 skipped; `ruff check`, `ruff format --check` — чисто. На стенде повторить запрос Schemathesis из `docs/audit/numbers.md`, ожидается 200. Затем выполнить `docker compose logs api worker | Select-String -Pattern "mock/v1/(registry|fns)"`, ожидается пусто. Вывод — в PR.
 **Не делать:** не менять контракт и `openapi.json`, не трогать другие логгеры.
