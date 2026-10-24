@@ -140,11 +140,11 @@ function ApplicationForm({ product, initialPurpose, onBack }: { product: Product
       <Paper className={card.card} component="form" aria-label="Параметры заявки" onSubmit={submit} noValidate><Stack>
         <Title order={2} size="h3">Параметры заявки</Title>
         <Fieldset variant="unstyled" disabled={!ready || create.isPending}><Stack>
-          <NumberInput label="Сумма, ₽" value={amount} onChange={setAmount} min={product.min_amount} max={product.max_amount} step={10000} thousandSeparator=" " allowDecimal={false} clampBehavior="none" error={fields.amount} />
+          <NumberInput hideControls label="Сумма, ₽" value={amount} onChange={setAmount} min={product.min_amount} max={product.max_amount} step={10000} thousandSeparator=" " allowDecimal={false} clampBehavior="none" error={fields.amount} />
           <Select label="Срок, мес." value={term} onChange={setTerm} allowDeselect={false} disabled={product.code === 'OVERDRAFT'} data={Array.from({ length: product.max_term_months - product.min_term_months + 1 }, (_, index) => String(product.min_term_months + index))} error={fields.term_months} />
           <Select label="Цель" value={purpose} onChange={(value) => { const selected = product.purposes.find((item) => item === value); if (selected) setPurpose(selected); }} allowDeselect={false} data={product.purposes.map((value) => ({ value, label: purposeLabels[value] }))} error={fields.purpose} />
           {purpose === 'OTHER' && <Textarea label="Опишите цель" description={`${purposeText.length} / 500`} value={purposeText} onChange={(event) => setPurposeText(event.currentTarget.value)} minLength={10} maxLength={500} rows={3} error={fields.purpose_text} />}
-          <NumberInput label="Выручка за год, ₽" value={revenue} onChange={setRevenue} min={1} allowDecimal={false} thousandSeparator=" " clampBehavior="none" description={profile.data ? `По оборотам в нашем банке — около ${formatMoney(profile.data.avg_monthly_turnover * 12)}` : undefined} error={fields.declared_revenue_year} />
+          <NumberInput hideControls label="Выручка за год, ₽" value={revenue} onChange={setRevenue} min={1} allowDecimal={false} thousandSeparator=" " clampBehavior="none" description={profile.data ? `По оборотам в нашем банке — около ${formatMoney(profile.data.avg_monthly_turnover * 12)}` : undefined} error={fields.declared_revenue_year} />
         </Stack></Fieldset>
         <Divider />
         <Stack gap="xs" aria-live="polite">

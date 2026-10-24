@@ -55,6 +55,10 @@
 .mobileHeader { padding:var(--cc-space-16); border-bottom:1px solid var(--cc-line); }
 @media(max-width:61.999em) { .caret { display:none; } .shellMain { padding:var(--cc-space-24) calc(var(--cc-space-16) + var(--cc-space-4)) var(--cc-space-32); } .columns { grid-template-columns:minmax(0,1fr); } .panel { grid-template-columns:1fr 1fr; } .cta { grid-column:1/-1; justify-self:start; } }
 @media(max-width:47.999em) {
+  .page { overflow-wrap:anywhere; }
+  .meta { flex-wrap:wrap; }
+  .meta > * { min-width:0; max-width:100%; }
+  .badge { height:auto; min-height:24px; }
   .page { gap:var(--cc-space-24); } .card { padding:var(--cc-space-16); } .columns { gap:var(--cc-space-24); }
   .headingCopy { font:var(--cc-text-body); } .amount { font:var(--cc-text-h1); letter-spacing:var(--cc-tracking-display); }
   .figure { padding:var(--cc-space-12); } .figureValue { font:var(--cc-text-h3); letter-spacing:var(--cc-tracking-heading); }

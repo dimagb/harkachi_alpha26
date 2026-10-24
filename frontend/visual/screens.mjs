@@ -20,6 +20,7 @@ let browser;
 let mocks;
 try {
   const { createHandlers } = await vite.ssrLoadModule('/src/mocks/handlers.ts');
+  const { applications, applicationScenarios, accounts } = await vite.ssrLoadModule('/src/mocks/fixtures.ts');
   mocks = setupServer(...createHandlers());
   mocks.listen({ onUnhandledFrame: 'bypass' });
   await vite.listen();
@@ -77,6 +78,38 @@ try {
     await page.getByRole('link', { name: /№ 1001/ }).waitFor();
     await capture('applications');
     if (width === 375) {
+      for (const name of ['ip_good', 'ooo_load', 'ip_bad', 'ooo_aml']) {
+        if (name !== 'ip_good') await login(name);
+        const companyIds = accounts[name].companies.map(item => item.company.id);
+        const cards = [...applications, ...applicationScenarios].filter(item => companyIds.includes(item.company_id));
+        for (const application of cards) {
+          await page.goto(`${appUrl}/app/applications/${application.id}`);
+          await page.getByRole('region', { name: 'Что происходит с заявкой' }).waitFor();
+          const label = `card-${application.state.toLowerCase()}-${application.number}`;
+          await capture(label);
+          const overflowing = await page.getByRole('main').locator('h1, h2, h3, [class*="badge"], [class*="heading"]').evaluateAll(elements => elements.filter(element => {
+            const box = element.getBoundingClientRect();
+            return box.width > 1 && box.height > 1 && (box.right > globalThis.innerWidth + 1 || box.left < -1 || element.scrollWidth > box.width + 1 || element.scrollHeight > box.height + 1);
+          }).map(element => element.textContent));
+          assert.deepEqual(overflowing, [], `${label}: заголовки и бейджи помещаются в карточку`);
+          if (application.number === 1301 || application.number === 1304) {
+            if (application.number === 1301) {
+              await page.getByRole('checkbox', { name: 'Согласен: обработка персональных данных' }).check();
+              await page.getByRole('checkbox', { name: 'Согласен: запрос кредитной истории' }).check();
+            }
+            await page.getByRole('button', { name: application.number === 1301 ? 'Подписать и отправить' : 'Подписать договор', exact: true }).click();
+            await page.getByRole('button', { name: 'Получить код', exact: true }).click();
+            const input = page.getByLabel('Код из SMS');
+            await input.waitFor();
+            assert(await input.evaluate(element => element === globalThis.document.activeElement), `${label}: фокус в поле кода`);
+            const box = await input.boundingBox();
+            assert(box.y >= 0 && box.y + box.height <= 1100, `${label}: поле кода в видимой области`);
+          }
+        }
+      }
+      await login('ip_good');
+    }
+    if (width === 375) {
       const header = page.locator('header').first();
       assert((await header.boundingBox()).height <= 56, 'Высота мобильной шапки ≤ 56 px');
       await page.getByRole('button', { name: 'Открыть меню' }).click();
@@ -104,6 +137,7 @@ try {
     await page.getByRole('region', { name: 'Экспресс-кредит', exact: true }).getByRole('button', { name: 'Выбрать', exact: true }).click();
     await page.getByText(/Платёж в месяц ≈/).waitFor();
     await capture('form');
+    assert.equal(await page.locator('.mantine-NumberInput-controls').count(), 0, 'У суммы и выручки нет стрелок ±1');
 
     failures.add('/api/v1/applications');
     await page.goto(`${appUrl}/app`);
@@ -123,6 +157,17 @@ try {
     await login('underwriter');
     await page.getByRole('table', { name: 'Очередь заявок' }).waitFor();
     await capture('queue');
+    await page.getByRole('table', { name: 'Очередь заявок' }).getByRole('link').first().click();
+    await page.getByRole('region', { name: 'Факторы оценки' }).waitFor();
+    const factor = page.locator('button[class*="factorRow"]').first();
+    await factor.hover();
+    const padding = await factor.evaluate(element => {
+      const style = globalThis.getComputedStyle(element);
+      return { left: parseFloat(style.paddingLeft), right: parseFloat(style.paddingRight) };
+    });
+    assert(padding.right >= padding.left, 'У строки фактора отступ справа не меньше левого');
+    await page.goBack();
+    await page.getByRole('table', { name: 'Очередь заявок' }).waitFor();
     failures.add('/api/v1/underwriting/queue');
     const beforeQueueError = requests.get('/api/v1/underwriting/queue') ?? 0;
     await page.reload();
@@ -150,7 +195,7 @@ try {
     assert.deepEqual(issues, [], 'Нет ошибок JavaScript');
     await context.close();
   }
-  console.log(`F-10: все проверки пройдены${check ? ', без скриншотов' : ''}`);
+  console.log(`F-10/F-11: все проверки пройдены${check ? ', без скриншотов' : ''}`);
 } finally {
   mocks?.close();
   await browser?.close();
