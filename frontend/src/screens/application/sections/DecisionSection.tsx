@@ -22,7 +22,7 @@ export default function DecisionSection({ application, product, companyKind, use
     const result = await api.POST('/calculator', { body: { product_code: application.product_code, amount: requested!.amount, term_months: requested!.term_months }, signal });
     if (result.error || !result.data) throw new Error('Не удалось рассчитать платёж');
     return result.data;
-  }, enabled: !!requested && offer?.status === 'ACTIVE', retry: false, staleTime: Infinity });
+  }, enabled: application.state === 'OFFER_ISSUED' && !!requested && offer?.status === 'ACTIVE', retry: false, staleTime: Infinity });
   const action = useMutation({ mutationFn: async (kind: 'accept' | 'reject') => {
     onMessage('');
     const params = { path: { id: application.id } };
@@ -52,6 +52,7 @@ export default function DecisionSection({ application, product, companyKind, use
     {application.allowed_actions.includes('REJECT_OFFER') && <Button className={card.cta} variant="light" color="gray" disabled={action.isPending} onClick={() => setConfirm(true)}>Отказаться</Button>}
   </div> : <p className={css.signatory}>Принять предложение может руководитель или сотрудник с правом подписи</p>;
   return <section id="decision" aria-label="Решение банка" className={css.section}>
+    <div className={css.offerColumns}>
     {offer.kind === 'COUNTER' && <section className={card.card} aria-label="Сравнение условий">
       {offer.counter_reason && <p className={css.counterReason}>{offer.counter_reason}</p>}
       <div className={css.comparison}>
@@ -59,9 +60,9 @@ export default function DecisionSection({ application, product, companyKind, use
         <section aria-label="Мы предлагаем" className={css.proposed}><h3 className={css.smallTitle}>Мы предлагаем</h3><span className={css.compareAmount}>{formatMoney(offer.amount)}</span><dl className={css.compareDetails}><dt>Срок</dt><dd>{offer.term_months} мес.</dd><dt>Ставка</dt><dd>{offer.rate.toLocaleString('ru-RU', { maximumFractionDigits: 2 })} %</dd><dt>Платёж в месяц</dt><dd>{offer.monthly_payment === null ? 'Проценты — только за использованные дни' : formatMoney(offer.monthly_payment)}</dd></dl></section>
       </div>
       {companyKind === 'OOO' && product?.requires_guarantor_ooo && <p className={css.guarantor}>Для ООО нужен поручитель — учредитель с долей больше 50%. Поручительство подписывается на следующем шаге</p>}
+      <p className={css.expiry}>Предложение действует до {date(offer.expires_at)}</p>{buttons}
     </section>}
-    <div className={css.offerColumns}>
-      <section aria-label="Условия" className={card.card}><h3 className={card.title}>Условия</h3><KeyFigures application={application} error={false} onRetry={() => {}} offerOnly /><p className={css.expiry}>Предложение действует до {date(offer.expires_at)}</p>{buttons}</section>
+      {offer.kind === 'APPROVED' && <section aria-label="Условия" className={card.card}><h3 className={card.title}>Условия</h3><KeyFigures application={application} error={false} onRetry={() => {}} offerOnly /><p className={css.expiry}>Предложение действует до {date(offer.expires_at)}</p>{buttons}</section>}
       <section aria-label="Почему одобрили" className={`${card.card} ${css.explanation}`}><h3 className={card.title}>Почему одобрили</h3><ul className={css.reasons}>{offer.explanation.map((text, index) => <li key={index}><span className={css.checkCircle} aria-hidden="true"><span className={card.check} /></span><span>{text}</span></li>)}</ul></section>
     </div>
     <Modal opened={confirm} onClose={() => { if (!action.isPending) setConfirm(false); }} title="Отказаться от предложения?" centered>
@@ -70,6 +71,6 @@ export default function DecisionSection({ application, product, companyKind, use
   </section>;
 }
 
-export function DecisionLinks({ application }: { application: Application }) {
-  return <div className={css.actions}>{application.allowed_actions.includes('NEW_APPLICATION') && <Button component={Link} to="/app/applications/new" className={card.cta}>Подать новую заявку</Button>}<Button component={Link} to="/app" variant="light" color="gray" className={card.cta}>Вернуться к заявкам</Button></div>;
+export function DecisionLinks() {
+  return <div className={css.actions}><Button component={Link} to="/app" variant="light" color="gray" className={card.cta}>Вернуться к заявкам</Button></div>;
 }

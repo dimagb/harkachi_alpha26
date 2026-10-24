@@ -128,13 +128,14 @@ applicationScenarios.push({
 });
 
 // F-05: isolated public decline scenarios, client wording from contracts/codes.md.
+// ip_bad name/inn/ogrn: contracts/personas.json, personas[code="ip_bad"].
 for (const [login, id, companyId, name, kind] of [
-  ['ip_bad', '30000000-0000-4000-8000-000000000201', '20000000-0000-4000-8000-000000000201', 'ИП — демо просрочки', 'IP'],
+  ['ip_bad', '30000000-0000-4000-8000-000000000201', '20000000-0000-4000-8000-000000000201', 'ИП Козлов Дмитрий Сергеевич', 'IP'],
   ['ooo_aml', '30000000-0000-4000-8000-000000000202', '20000000-0000-4000-8000-000000000202', 'ООО — демо дополнительных проверок', 'OOO'],
 ] as const) {
   const base = accounts[kind === 'IP' ? 'ip_good' : 'ooo_load']!;
-  accounts[login] = { user: { ...base.user, id: companyId.replace('20000000', '10000000') }, companies: base.companies.map((membership) => ({ ...membership, company: { ...membership.company, id: companyId, name } })) };
-  companyProfiles[companyId] = { ...companyProfiles[base.companies[0]!.company.id]!, ...accounts[login]!.companies[0]!.company };
+  accounts[login] = { user: { ...base.user, id: companyId.replace('20000000', '10000000') }, companies: base.companies.map((membership) => ({ ...membership, company: { ...membership.company, id: companyId, name, ...(login === 'ip_bad' ? { inn: '770412345664' } : {}) } })) };
+  companyProfiles[companyId] = { ...companyProfiles[base.companies[0]!.company.id]!, ...accounts[login]!.companies[0]!.company, ...(login === 'ip_bad' ? { ogrn: '321774600054321' } : {}) };
   const declined = applicationScenarios.find((item) => item.state === 'DECLINED')!;
   applications.push({ ...declined, id, company_id: companyId, number: kind === 'IP' ? 1201 : 1202,
     client_reason: kind === 'IP'

@@ -71,6 +71,10 @@ try {
       blocks.push(['terms', reference.getByRole('heading', { name: 'Условия', exact: true }).locator('..'), ours.getByRole('region', { name: 'Условия', exact: true })]);
       blocks.push(['why', reference.getByRole('heading', { name: 'Почему одобрили', exact: true }).locator('..'), ours.getByRole('region', { name: 'Почему одобрили', exact: true })]);
     } else if (login === 'ooo_load') {
+      const comparison = await ours.getByRole('region', { name: 'Сравнение условий', exact: true }).boundingBox();
+      const explanation = await ours.getByRole('region', { name: 'Почему одобрили', exact: true }).boundingBox();
+      assert(comparison && explanation && explanation.x >= comparison.x + comparison.width, '1440: «Почему одобрили» справа от сравнения');
+      assert.equal(await ours.getByRole('region', { name: 'Условия', exact: true }).count(), 0);
       for (const [name, text] of [['requested', 'Вы просили'], ['proposed', 'Мы предлагаем']]) blocks.push([name, reference.getByText(text, { exact: true }).locator('..'), ours.getByRole('region', { name: text, exact: true })]);
       assert.equal(await ours.getByRole('region', { name: 'Вы просили' }).getByText('Ставка', { exact: true }).count(), 0);
       await ours.getByRole('region', { name: 'Вы просили' }).getByText(/^около/).waitFor();
@@ -93,11 +97,22 @@ try {
     }
     await ours.screenshot({ path: `${out}/decision-${login}-1440.png`, fullPage: true });
     await ours.setViewportSize({ width: 375, height: 1100 });
+    await ours.evaluate(() => globalThis.document.fonts.ready);
+    await ours.waitForTimeout(300);
     await ours.waitForFunction(() => {
       const stages = globalThis.document.querySelectorAll('[aria-label="Этапы заявки"] > li');
       return stages.length === 6 && stages[1].getBoundingClientRect().y > stages[0].getBoundingClientRect().y;
     });
-    assert.equal(await ours.evaluate(() => globalThis.document.documentElement.scrollWidth > globalThis.innerWidth), false, `${login}: горизонтальный скролл на 375`);
+    const overflow = await ours.evaluate(() => ({
+      width: globalThis.document.documentElement.scrollWidth,
+      viewport: globalThis.innerWidth,
+      elements: [...globalThis.document.querySelectorAll('body *')].flatMap((element) => {
+        const rect = element.getBoundingClientRect();
+        return rect.width > 0 && (rect.right > globalThis.innerWidth || rect.left < 0) ? [{ tag: element.tagName, class: element.className, text: element.textContent?.slice(0, 100), left: rect.left, right: rect.right, width: rect.width }] : [];
+      }),
+    }));
+    if (overflow.width > overflow.viewport) console.error(`${login}: элементы за границами 375 px`, overflow);
+    assert.equal(overflow.width > overflow.viewport, false, `${login}: горизонтальный скролл на 375`);
     const stages = ours.getByRole('list', { name: 'Этапы заявки' }).getByRole('listitem');
     // Read both rectangles in one frame: scrolling can change between two protocol calls.
     assert(await stages.evaluateAll((items) => items[1].getBoundingClientRect().y > items[0].getBoundingClientRect().y));

@@ -31,7 +31,7 @@ function serve(application: Application) { server.use(http.get('*/api/v1/applica
 it.each([[22, '22\u00a0%'], [21.5, '21,5\u00a0%']])('ставка %s без лишних нулей', async (rate, expected) => {
   const application = { ...applications[0]!, offer: { ...applications[0]!.offer!, rate: Number(rate) } };
   serve(application); open(application);
-  const figures = await screen.findByRole('region', { name: 'Ключевые цифры' });
+  const figures = await screen.findByRole('region', { name: 'Условия предложения' });
   expect(within(figures).getByText(String(expected).replace(/\s/g, ' '))).toBeTruthy();
 });
 
@@ -113,9 +113,9 @@ it('COUNTER: сумма и срок в шапке и цифрах из offer, т
   const headline = await screen.findByRole('heading', { name: /Банк готов выдать/ });
   expect(headline.textContent?.replace(/\s/g, ' ')).toContain('2 850 000 ₽');
   expect(headline.textContent).toContain('24 мес.');
-  const figures = screen.getByRole('region', { name: 'Ключевые цифры' });
+  const figures = screen.getByRole('region', { name: 'Мы предлагаем' });
   expect(figures.textContent?.replace(/\s/g, ' ')).toContain('149 264 ₽');
-  expect(figures.textContent).toContain('23\u00a0%');
+  expect(figures.textContent).toContain('23 %');
   expect(figures.textContent).not.toContain('около');
 });
 
@@ -197,7 +197,7 @@ it('овердрафт показывает проценты за использ
   const base = applications[0]!;
   const application: Application = { ...base, product_code: 'OVERDRAFT', term_months: 12, offer: { ...base.offer!, product_code: 'OVERDRAFT', term_months: 12, monthly_payment: null } };
   serve(application); open(application);
-  const figures = await screen.findByRole('region', { name: 'Ключевые цифры' });
+  const figures = await screen.findByRole('region', { name: 'Условия предложения' });
   expect(within(figures).getByText('Проценты — только за использованные дни')).toBeTruthy();
 });
 

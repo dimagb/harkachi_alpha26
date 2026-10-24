@@ -9,7 +9,7 @@ import { afterAll, afterEach, beforeAll, beforeEach, expect, it, vi } from 'vite
 import App from '../../../App';
 import type { components } from '../../../api/schema';
 import { setToken } from '../../../auth/session';
-import { applications, applicationScenarios } from '../../../mocks/fixtures';
+import { accounts, applications, applicationScenarios, companyProfiles } from '../../../mocks/fixtures';
 import { createHandlers } from '../../../mocks/handlers';
 import { theme } from '../../../theme';
 
@@ -31,6 +31,59 @@ function error(status: number, code: string, details = {}) { return HttpResponse
 it.each([['ip_good', 0], ['ooo_load', 1]] as const)('%s: оферта сверяется с golden personas.json', (code, index) => {
   const personas = JSON.parse(readFileSync('../contracts/personas.json', 'utf8')) as { personas: { code: string; demo: { expected: { offer?: Record<string, number> } } }[] };
   expect(applications[index]!.offer).toMatchObject(personas.personas.find((p) => p.code === code)!.demo.expected.offer!);
+});
+it('ip_bad: название, ИНН и ОГРН компании совпадают с personas.json', () => {
+  const personas = JSON.parse(readFileSync('../contracts/personas.json', 'utf8')) as { personas: { code: string; name: string; inn: string; ogrn: string }[] };
+  const persona = personas.personas.find((p) => p.code === 'ip_bad')!;
+  const company = accounts.ip_bad!.companies[0]!.company;
+  expect(company).toMatchObject({ name: persona.name, inn: persona.inn });
+  expect(companyProfiles[company.id]).toMatchObject({ name: persona.name, inn: persona.inn, ogrn: persona.ogrn });
+});
+it.each(['OFFER_ISSUED', 'SIGNING', 'DISBURSED'] as const)('%s с офертой: параметры содержат пять строк исходной заявки без плиток', async (state) => {
+  const application = { ...applications[1]!, state };
+  serve(application); open(application, 'ooo_load');
+  const params = await screen.findByRole('region', { name: 'Параметры заявки' });
+  expect([...params.querySelectorAll('dt')].map((element) => element.textContent)).toEqual(['Сумма заявки', 'Срок', 'Цель', 'Выручка за год', 'Компания']);
+  const values = [...params.querySelectorAll('dd')];
+  expect(values[0]!.textContent?.replace(/\s/g, ' ')).toBe('4 000 000 ₽');
+  expect(values[1]!.textContent).toBe('12 мес.');
+  expect(values[2]!.textContent).toBe('Оборотные средства');
+  expect(values[3]!.textContent?.replace(/\s/g, ' ')).toBe('24 000 000 ₽');
+  expect(values[4]!.textContent).toContain('ООО «Северный склад»');
+  expect(within(params).queryByRole('region', { name: 'Ключевые цифры' })).toBeNull();
+  expect(params.textContent).not.toContain('Ставка');
+  expect(params.textContent).not.toContain('Платёж');
+});
+it('COUNTER: единственная карточка сравнения содержит срок действия и действия, объяснение остаётся рядом', async () => {
+  open(applications[1]!, 'ooo_load');
+  const comparison = await screen.findByRole('region', { name: 'Сравнение условий' });
+  expect(screen.queryByRole('region', { name: 'Условия' })).toBeNull();
+  expect(within(comparison).getByText('Предложение действует до 30.10.2026')).toBeTruthy();
+  expect(within(comparison).getByRole('button', { name: 'Принять предложение' })).toBeTruthy();
+  expect(within(comparison).getByRole('button', { name: 'Отказаться' })).toBeTruthy();
+  expect(screen.getByRole('region', { name: 'Почему одобрили' })).toBeTruthy();
+});
+it.each([
+  { state: 'DECLINED', withOffer: false }, { state: 'DECLINED', withOffer: true },
+  { state: 'WITHDRAWN', withOffer: false }, { state: 'WITHDRAWN', withOffer: true },
+  { state: 'EXPIRED', withOffer: false }, { state: 'EXPIRED', withOffer: true },
+] as const)('$state, offer=$withOffer: нет оценочных плиток и запросов /calculator', async ({ state, withOffer }) => {
+  let calculations = 0;
+  server.events.on('request:start', ({ request }) => { if (request.url.endsWith('/calculator')) calculations++; });
+  const application: Application = { ...applications[1]!, state, offer: withOffer ? applications[1]!.offer : null, allowed_actions: ['NEW_APPLICATION'] };
+  serve(application); open(application, 'ooo_load');
+  await screen.findByText('Данные из ЕГРЮЛ на 23.10.2026');
+  const params = screen.getByRole('region', { name: 'Параметры заявки' });
+  expect(within(params).queryByRole('region', { name: 'Ключевые цифры' })).toBeNull();
+  expect(params.textContent).not.toContain('около');
+  expect(calculations).toBe(0);
+});
+it('DECLINED: новая заявка предлагается один раз в панели, снизу только возврат к списку', async () => {
+  open({ ...applications[0]!, id: badId }, 'ip_bad');
+  await screen.findByRole('heading', { name: 'Банк не может выдать кредит сейчас' });
+  expect(screen.getAllByRole('link', { name: 'Подать новую заявку' })).toHaveLength(1);
+  expect(within(screen.getByRole('region', { name: 'Что происходит с заявкой' })).getByRole('link', { name: 'Подать новую заявку' })).toBeTruthy();
+  expect(screen.getByRole('link', { name: 'Вернуться к заявкам' }).getAttribute('href')).toBe('/app');
 });
 it('одобрение показывает условия, срок действия и три объяснения', async () => {
   open();

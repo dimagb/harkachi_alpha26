@@ -21,6 +21,7 @@ class CardError extends Error {
   constructor(readonly status: number) { super('Не удалось загрузить заявку. Попробуйте ещё раз.'); }
 }
 const polling = new Set(['SUBMITTED', 'VALIDATION', 'ENRICHMENT', 'ASSESSMENT', 'MANUAL_REVIEW', 'SIGNED']);
+const terminal = new Set(['DECLINED', 'WITHDRAWN', 'EXPIRED']);
 type CardProps = { companies: components['schemas']['MeResponse']['companies']; userId: string };
 export default function ApplicationCard({ companies, userId }: CardProps) {
   const { id = '' } = useParams();
@@ -36,6 +37,7 @@ function CardContent({ id, companies, userId }: CardProps & { id: string }) {
     return data;
   }, retry: false, refetchInterval: (query) => query.state.data && !query.state.error && polling.has(query.state.data.state) ? 2000 : false });
   const data = application.data;
+  const showFigures = !!data && !data.offer && !terminal.has(data.state);
   const products = useQuery({ queryKey: ['products'], queryFn: async ({ signal }) => {
     const { data, error } = await api.GET('/products', { signal });
     if (error || !data) throw new Error('Не удалось загрузить продукты.');
@@ -45,7 +47,7 @@ function CardContent({ id, companies, userId }: CardProps & { id: string }) {
     const { data: estimate, error } = await api.POST('/calculator', { body: { product_code: data!.product_code, amount: data!.amount, term_months: data!.term_months }, signal });
     if (error || !estimate) throw new Error('Расчёт недоступен.');
     return estimate;
-  }, enabled: !!data && !data.offer, retry: false, staleTime: Infinity, gcTime: 0, refetchOnWindowFocus: false, refetchOnReconnect: false });
+  }, enabled: showFigures, retry: false, staleTime: Infinity, gcTime: 0, refetchOnWindowFocus: false, refetchOnReconnect: false });
   const profile = useQuery({ queryKey: ['company-profile', data?.company_id, userId], queryFn: async ({ signal }) => {
     const { data: company, error } = await api.GET('/companies/{id}/profile', { params: { path: { id: data!.company_id } }, signal });
     if (error || !company) throw new Error('Сведения о компании недоступны.');
@@ -92,10 +94,10 @@ function CardContent({ id, companies, userId }: CardProps & { id: string }) {
     {message && <Notification role="alert" color="stop" withCloseButton={false}>{message}</Notification>}
     <DecisionSection {...sectionProps} userId={userId} product={product} companyKind={companies.find(({ company }) => company.id === data.company_id)?.company.kind} />
     <ObjectionBlock {...sectionProps} />
-    {data.state === 'DECLINED' && <DecisionLinks application={data} />}
+    {data.state === 'DECLINED' && <DecisionLinks />}
     {data.info_request && <InfoRequestSection key={data.info_request.id} {...sectionProps} />}
     <div className={css.columns}>
-      <section className={css.card} aria-label="Параметры заявки"><h3 className={css.title}>Параметры заявки</h3><KeyFigures application={data} calculation={calculation.data} error={calculation.isError} onRetry={() => void calculation.refetch()} /><Details application={data} company={companies.find(({ company }) => company.id === data.company_id)?.company} sourceNote={profile.data?.source_note} />
+      <section className={css.card} aria-label="Параметры заявки"><h3 className={css.title}>Параметры заявки</h3>{showFigures && <KeyFigures application={data} calculation={calculation.data} error={calculation.isError} onRetry={() => void calculation.refetch()} />}<Details application={data} company={companies.find(({ company }) => company.id === data.company_id)?.company} sourceNote={profile.data?.source_note} showRequestedTerms={!showFigures} />
         {data.allowed_actions.includes('WITHDRAW') && <div className={css.withdraw}><button type="button" className={css.textButton} onClick={() => { setMessage(''); setConfirm(true); }}>Отозвать заявку</button></div>}
       </section>
       <History timeline={data.timeline} />
