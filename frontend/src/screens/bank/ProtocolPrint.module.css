@@ -1,0 +1,26 @@
+.page { max-width: 1120px; margin: 0 auto; padding: 32px; background: var(--cc-paper); color: var(--cc-ink); font: var(--cc-text-small); }
+.toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 32px; color: var(--cc-ink-2); }
+.header { border-bottom: 1px solid var(--cc-line); padding-bottom: 16px; }
+.page h1 { font: var(--cc-text-h1); }
+.page h2 { font: var(--cc-text-h2); margin: 24px 0 16px; }
+.page h3 { font-size: 1rem; margin: 24px 0 12px; }
+.page table { width: 100%; border-collapse: collapse; text-align: left; font: inherit; }
+.page th, .page td { padding: 10px 12px; border: 1px solid var(--cc-line); vertical-align: top; overflow-wrap: anywhere; }
+.page th { background: var(--cc-surface); font-weight: 500; }
+.decision { padding-bottom: 24px; border-bottom: 1px solid var(--cc-line); }
+.footer { margin-top: 32px; color: var(--cc-ink-2); }
+@page { size: A4; margin: 15mm 12mm 20mm; }
+@media print {
+  :global(html), :global(body), :global(#root) { background: white !important; color: black !important; }
+  .page { max-width: none; margin: 0; padding: 0; font: 9pt/1.4 Arial, sans-serif; }
+  .page, .page * { color: black !important; background: transparent !important; box-shadow: none !important; text-shadow: none !important; }
+  .toolbar { display: none; }
+  .page h1 { font: bold 16pt/1.2 Arial, sans-serif; }
+  .page h2 { font: bold 12pt/1.3 Arial, sans-serif; }
+  .page h3 { font-size: 10pt; }
+  .page h1, .page h2, .page h3 { break-after: avoid; }
+  .page tr { break-inside: avoid; }
+  .page thead { display: table-header-group; }
+  .page th, .page td { border-color: black; padding: 5pt; }
+  .footer { position: fixed; bottom: -13mm; left: 0; font-size: 8pt; }
+}
