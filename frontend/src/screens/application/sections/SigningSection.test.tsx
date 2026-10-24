@@ -34,8 +34,10 @@ function open(others = false, state: Application['state'] = 'SIGNING') {
 }
 async function sign(name: string) {
   fireEvent.click(screen.getByRole('button', { name }));
+  expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Получить код' }));
   fireEvent.click(screen.getByRole('button', { name: 'Получить код' }));
   await screen.findByText('Демо-режим: код 123456');
+  expect(document.activeElement).toBe(screen.getByLabelText('Код из SMS'));
   fireEvent.click(screen.getByRole('button', { name: 'Подставить' }));
   fireEvent.click(screen.getByRole('button', { name: 'Подтвердить подпись' }));
 }

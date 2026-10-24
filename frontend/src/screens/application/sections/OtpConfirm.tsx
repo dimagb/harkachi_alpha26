@@ -1,5 +1,5 @@
 import { Button } from '@mantine/core';
-import { useEffect, useId, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { api } from '../../../api/client';
 import type { components } from '../../../api/schema';
 import css from './SigningSection.module.css';
@@ -14,12 +14,20 @@ export default function OtpConfirm({ applicationId, purpose, partyId, confirmLab
   const [pending, setPending] = useState(false);
   const [now, setNow] = useState(() => Date.now());
   const errorId = useId();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const requestRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     if (!otp) return;
     const timer = window.setInterval(() => setNow(Date.now()), 250);
     return () => window.clearInterval(timer);
   }, [otp]);
   const seconds = otp ? Math.max(0, Math.ceil((Date.parse(otp.expires_at) - now) / 1000)) : 0;
+  const expired = seconds === 0;
+  useEffect(() => {
+    const target = expired ? requestRef.current : inputRef.current;
+    target?.focus({ preventScroll: true });
+    target?.scrollIntoView?.({ block: 'center' });
+  }, [otp, expired]);
   async function run(action: () => Promise<void>) {
     setPending(true); setMessage('');
     try { await action(); } catch (error) {
@@ -40,8 +48,8 @@ export default function OtpConfirm({ applicationId, purpose, partyId, confirmLab
   }
   return <div className={css.otp}>
     {otp && seconds === 0 && <p role="status">Код истёк</p>}
-    {(!otp || seconds === 0) ? <Button disabled={pending} loading={pending} onClick={() => void run(requestCode)}>{otp ? 'Получить новый код' : 'Получить код'}</Button> : <>
-      <label className={css.input}>Код из SMS<input autoFocus inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={code} aria-invalid={!!message} aria-describedby={message ? errorId : undefined} onChange={(event) => setCode(event.currentTarget.value.replace(/\D/g, '').slice(0, 6))} /></label>
+    {(!otp || seconds === 0) ? <Button ref={requestRef} disabled={pending} loading={pending} onClick={() => void run(requestCode)}>{otp ? 'Получить новый код' : 'Получить код'}</Button> : <>
+      <label className={css.input}>Код из SMS<input ref={inputRef} inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={code} aria-invalid={!!message} aria-describedby={message ? errorId : undefined} onChange={(event) => setCode(event.currentTarget.value.replace(/\D/g, '').slice(0, 6))} /></label>
       {message && <p id={errorId} role="alert" className={css.error}>{message}</p>}
       <p className={css.muted}>Код действует ещё {Math.floor(seconds / 60)}:{String(seconds % 60).padStart(2, '0')}</p>
       {otp.demo_code && <div className={css.actions}><p>Демо-режим: код {otp.demo_code}</p><Button variant="light" color="gray" disabled={pending} onClick={() => setCode(otp.demo_code)}>Подставить</Button></div>}

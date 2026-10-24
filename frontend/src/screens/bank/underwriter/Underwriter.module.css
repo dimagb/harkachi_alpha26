@@ -107,9 +107,12 @@
 .log strong { font-weight: 500; }
 .log p { margin-top: 4px; overflow-wrap: anywhere; }
 .rule { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 16px; border-top: 1px solid var(--cc-line); padding-top: 8px; }
+.ruleCopy { display: flex; flex-direction: column; gap: 4px; min-width: 0; overflow-wrap: anywhere; }
+.ruleCode { margin-left: auto; font: var(--cc-text-caption); color: var(--cc-ink-3); overflow-wrap: anywhere; }
+.factorRow { padding-right: 24px; }
 @media (max-width: 85em) and (min-width: 62em) {
   .factorColumns, .groupRow, .factorRow { grid-template-columns: minmax(0, 1fr) 150px 70px 64px; gap: 0 8px; }
-  .factorRow { padding-left: 8px; }
+  .factorRow { padding-left: 8px; padding-right: 8px; }
   .policyTiles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 @media (max-width: 61.99em) {
@@ -127,7 +130,7 @@
   .groupRow, .factorRow { grid-template-columns: minmax(0, 1fr) 64px; gap: 4px 8px; }
   .groupRow > span, .factorRow .bar { display: none; }
   .factorName { grid-column: 1 / -1; }
-  .factorRow { padding: 8px 0 8px 12px; }
+  .factorRow { padding: 8px 12px; }
   .factorValue { grid-column: 1; }
   .primarySource { margin-left: 0; }
   .monthList { grid-template-columns: minmax(0, 1fr); }
