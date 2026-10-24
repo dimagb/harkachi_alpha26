@@ -48,7 +48,7 @@ def sign(
         raise ApiErrorException(409, "INVALID_TRANSITION", "Документ уже подписан")
     offer = session.get(Offer, application.current_offer_id)
     now = datetime.now(UTC)
-    if offer.expires_at <= now:
+    if offer.status == "EXPIRED" or offer.expires_at <= now:
         raise ApiErrorException(409, "OFFER_EXPIRED", "Срок предложения истёк")
     purpose = "OFFER" if party.role == "BORROWER_SIGNATORY" else "GUARANTEE"
     verified_at = verify_otp(
