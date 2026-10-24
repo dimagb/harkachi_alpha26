@@ -1,6 +1,7 @@
 """Idempotent loan disbursement and integer-ruble repayment schedules."""
 
 import calendar
+import logging
 import time
 from datetime import UTC, date, datetime, timedelta, timezone
 from decimal import ROUND_HALF_UP, Decimal
@@ -16,6 +17,7 @@ from app.models import Application, Disbursement, Offer
 from app.pipeline.persist import event
 
 MOSCOW = timezone(timedelta(hours=3))
+logger = logging.getLogger(__name__)
 
 
 def schedule(
@@ -62,6 +64,10 @@ def disburse(factory: sessionmaker[Session], application_id: UUID) -> None:
             return
         offer = session.get(Offer, application.current_offer_id)
         if offer.status != "ACCEPTED":
+            logger.warning(
+                "Disbursement skipped: offer is not ACCEPTED, application_id=%s",
+                application_id,
+            )
             return
         now = datetime.now(UTC)
         issued_on = now.astimezone(MOSCOW).date()

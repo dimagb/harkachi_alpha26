@@ -297,6 +297,7 @@ def test_director_signs_both_roles_and_guarantor_consents(signing):
         ("wrong_party_otp", 422, "OTP_INVALID"),
         ("signed_party", 409, "INVALID_TRANSITION"),
         ("expired_offer", 409, "OFFER_EXPIRED"),
+        ("expired_offer_status", 409, "OFFER_EXPIRED"),
         ("wrong_state", 409, "INVALID_TRANSITION"),
     ],
 )
@@ -341,6 +342,8 @@ def test_sign_rejects_invalid_requests_without_side_effects(
         borrower.status = "SIGNED"
     elif case == "expired_offer":
         offer.expires_at = datetime.now(UTC) - timedelta(seconds=1)
+    elif case == "expired_offer_status":
+        offer.status = "EXPIRED"
     elif case == "wrong_state":
         application.state = "OFFER_ISSUED"
     session.commit()
@@ -439,7 +442,7 @@ def test_overdraft_has_no_schedule(signing):
     "state,status", [("SIGNING", "ACCEPTED"), ("SIGNED", "ACTIVE")]
 )
 def test_disbursement_requires_signed_application_and_accepted_offer(
-    signing, state, status
+    signing, state, status, caplog
 ):
     _, session, factory, _, _, _, application, offer, _ = signing
     application.state = state
@@ -448,6 +451,13 @@ def test_disbursement_requires_signed_application_and_accepted_offer(
     from app.disbursement.service import disburse
 
     disburse(factory, application.id)
+    if state == "SIGNED":
+        assert any(
+            record.name == "app.disbursement.service"
+            and record.levelname == "WARNING"
+            and str(application.id) in record.getMessage()
+            for record in caplog.records
+        )
     session.expire_all()
     assert application.state == state
     assert (
