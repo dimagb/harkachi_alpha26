@@ -122,8 +122,34 @@ def test_empty_journal(bank_context):
     assert response.json() == {"items": [], "total": 0, "page": 1, "size": 20}
 
 
-# TODO(lead): bank card event rendering returns 500 for an object route_reason;
-# B-10c covers queue/journal responses and current_route, not event rendering.
+@pytest.mark.parametrize(
+    "page",
+    [
+        135637824071393762,
+        135637824071393763,
+        15052842692487972973998667464704,
+    ],
+)
+@pytest.mark.parametrize(
+    "state,total", [(None, 2), ("MANUAL_REVIEW", 1), ("ENRICHMENT", 0)]
+)
+def test_journal_huge_page_returns_empty_with_filtered_total(
+    bank_context, run_persona, page, state, total
+):
+    client, _ = bank_context
+    run_persona("ooo_border")
+    run_persona("ip_good")
+    params = {} if state is None else {"state": state}
+    first = client.get("/api/v1/bank/applications", params=params)
+    assert first.status_code == 200, first.text
+    assert first.json()["total"] == total
+    response = client.get(
+        "/api/v1/bank/applications", params={**params, "page": page, "size": 68}
+    )
+    assert response.status_code == 200, response.text
+    assert response.json() == {"items": [], "total": total, "page": page, "size": 68}
+
+
 @pytest.mark.parametrize(
     "path",
     [

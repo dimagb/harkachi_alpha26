@@ -136,6 +136,7 @@ def _events(session: Session, application: Application) -> list[EventBank]:
     result = []
     for entry, full_name in rows:
         payload = entry.payload or {}
+        route = payload.get("route_reason")
         actor = (
             "Система"
             if entry.actor_type == "SYSTEM"
@@ -151,7 +152,7 @@ def _events(session: Session, application: Application) -> list[EventBank]:
                 actor=actor,
                 reason_code=entry.reason_code,
                 note=payload.get("comment")
-                or ROUTE_LABELS.get(payload.get("route_reason")),
+                or (ROUTE_LABELS.get(route) if isinstance(route, str) else None),
             )
         )
     return result

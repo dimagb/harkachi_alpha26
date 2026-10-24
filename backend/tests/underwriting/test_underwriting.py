@@ -122,6 +122,31 @@ def test_bank_card_all_states(
         )
 
 
+@pytest.mark.parametrize("route", [{"code": "GRADE_C"}, "FOO", None, 123, []])
+def test_bank_card_ignores_invalid_event_route(
+    bank_context, pipeline_factory, run_persona, route
+):
+    client, _ = bank_context
+    identity = run_persona()
+    with pipeline_factory.begin() as session:
+        entry = session.scalar(
+            select(ApplicationEvent).where(
+                ApplicationEvent.application_id == identity,
+                ApplicationEvent.to_state == "MANUAL_REVIEW",
+            )
+        )
+        entry.payload = {"route_reason": route}
+    response = client.get(f"/api/v1/underwriting/applications/{identity}")
+    assert response.status_code == 200, response.text
+    events = [
+        entry
+        for entry in response.json()["events"]
+        if entry["to_state"] == "MANUAL_REVIEW"
+    ]
+    assert len(events) == 1
+    assert events[0]["note"] is None
+
+
 def test_queue_current_event_order_and_constant_queries(
     bank_context, pipeline_factory, run_persona
 ):
