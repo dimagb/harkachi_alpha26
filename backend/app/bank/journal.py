@@ -11,8 +11,14 @@ from app.underwriting.queue import entry_route, latest_auto, latest_entry
 def list_applications(
     session: Session, state: ApplicationState | None, page: int, size: int
 ) -> Page[BankListItem]:
-    auto, entry = latest_auto(), latest_entry()
     filters = () if state is None else (Application.state == state,)
+    offset = (page - 1) * size
+    if offset > 2**63 - 1:
+        total = session.scalar(
+            select(func.count()).select_from(Application).where(*filters)
+        )
+        return Page[BankListItem](items=[], total=total, page=page, size=size)
+    auto, entry = latest_auto(), latest_entry()
     manual = Application.state == "MANUAL_REVIEW"
     total = (
         select(func.count().label("total"))
@@ -48,7 +54,7 @@ def list_applications(
         .outerjoin(entry, entry.c.application_id == Application.id)
         .where(*filters)
         .order_by(Application.updated_at.desc(), Application.id)
-        .offset((page - 1) * size)
+        .offset(offset)
         .limit(size)
         .subquery()
     )
