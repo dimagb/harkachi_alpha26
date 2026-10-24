@@ -6,7 +6,7 @@ from pathlib import Path
 
 import httpx
 import pytest
-from client import DEFAULT_BASE_URL, ApiClient
+from client import DEFAULT_BASE_URL, ISSUED_CODES, ApiClient
 
 ROOT = Path(__file__).resolve().parents[3]
 
@@ -28,8 +28,18 @@ class StandModule(pytest.Module):
         return super().collect()
 
 
+STAND_MODULES = frozenset(
+    {
+        "test_personas.py",
+        "test_access_matrix.py",
+        "test_client_leaks.py",
+        "test_races.py",
+    }
+)
+
+
 def pytest_pycollect_makemodule(module_path, parent):
-    if module_path.name == "test_personas.py":
+    if module_path.name in STAND_MODULES:
         return StandModule.from_parent(parent, path=module_path)
     return None
 
@@ -50,3 +60,10 @@ def bank(persona_data):
     with ApiClient() as api:
         api.login(persona_data["staff"][0]["login"])
         yield api
+
+
+def pytest_sessionfinish(session):
+    # A-09a: список кодов для поиска в логах; файл вне репозитория, по запросу.
+    out = os.getenv("E2E_OTP_LOG")
+    if out:
+        Path(out).write_text("\n".join(ISSUED_CODES), encoding="utf-8")
