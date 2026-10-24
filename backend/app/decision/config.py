@@ -100,7 +100,7 @@ def _factors() -> Mapping[str, FactorConfig]:
                 0,
             ),
             "turnover_stability": FactorConfig(
-                "Стабильность (`turnover_cv`)",
+                "Стабильность",
                 "<0,3 — 10; 0,3–0,6 — 5; >0,6 — 0 (10)",
                 10,
                 (
@@ -110,7 +110,7 @@ def _factors() -> Mapping[str, FactorConfig]:
                 0,
             ),
             "turnover_trend": FactorConfig(
-                "Тренд (`turnover_trend`)",
+                "Тренд оборотов",
                 "≥0,95 — 10; 0,8–0,95 — 5; <0,8 — 0 (10)",
                 10,
                 (
@@ -120,7 +120,7 @@ def _factors() -> Mapping[str, FactorConfig]:
                 0,
             ),
             "zero_months": FactorConfig(
-                "Месяцы без поступлений (`zero_months`)",
+                "Месяцы без поступлений",
                 "0 — 10; 1 — 5; ≥2 — 0 (10)",
                 10,
                 (
@@ -130,7 +130,7 @@ def _factors() -> Mapping[str, FactorConfig]:
                 0,
             ),
             "payment_to_turnover": FactorConfig(
-                "PTR (платежи к оборотам, см. ниже)",
+                "Платежи по кредитам к оборотам (PTR)",
                 "<10% — 15; 10–20% (не вкл.) — 10; 20–30% (не вкл.) — 4; ≥30% — 0 (15)",
                 15,
                 (
@@ -141,7 +141,7 @@ def _factors() -> Mapping[str, FactorConfig]:
                 0,
             ),
             "debt_to_turnover": FactorConfig(
-                "Долг к годовому обороту (`total_balance` / 12 × `avg_turnover`)",
+                "Долг к годовому обороту",
                 "<25% — 10; 25–50% — 5; >50% — 0 (10)",
                 10,
                 (
@@ -151,7 +151,7 @@ def _factors() -> Mapping[str, FactorConfig]:
                 0,
             ),
             "delinquency_12m": FactorConfig(
-                "Просрочки за 12 мес. (`max_dpd_12m`)",
+                "Просрочки за 12 мес.",
                 "0 — 10; 1–30 дней — 5; 31–60 — 0 (10)",
                 10,
                 (

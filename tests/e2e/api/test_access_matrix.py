@@ -11,11 +11,12 @@ from client import ApiClient, assert_api_error, broken_token, raw, wait_state
 from flows import create_body
 from test_personas import find_persona
 
-# kind: me — все роли; client — клиент без объекта; company/app — объект клиента;
+# kind: me — все роли; catalog — клиент и андеррайтер (B-11); client — клиент без
+# объекта; company/app — объект клиента;
 # bank/bank_app — андеррайтер; reserved — Б2, путь зарезервирован и не реализован.
 ENDPOINTS = (
     ("me", "GET", "me", "me"),
-    ("products", "GET", "products", "client"),
+    ("products", "GET", "products", "catalog"),
     ("calculator", "POST", "calculator", "client"),
     ("profile", "GET", "companies/{company}/profile", "company"),
     ("create", "POST", "applications", "company"),

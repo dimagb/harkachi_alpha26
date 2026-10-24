@@ -8,7 +8,7 @@
 | --- | --- | --- | --- | --- |
 | POST | `/auth/login` | все | `LoginRequest` → `LoginResponse` | — |
 | GET | `/me` | все | → `MeResponse` | — |
-| GET | `/products` | CLIENT | → `Product[]` | — |
+| GET | `/products` | CLIENT, UNDERWRITER | → `Product[]` | — |
 | POST | `/calculator` | CLIENT | `CalculatorRequest` → `CalculatorResponse` | — |
 | GET | `/companies/{id}/profile` | CLIENT (своя компания) | → `CompanyProfile` | — |
 | POST | `/applications` | CLIENT | `ApplicationCreate` → `ApplicationClient` | → DRAFT |

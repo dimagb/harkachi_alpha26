@@ -64,6 +64,19 @@ def test_products_match_contract(catalog_context):
         assert product["requires_guarantor_ooo"] is (cells[4] == "да")
 
 
+def test_underwriter_sees_same_products(catalog_context):
+    client, _ = catalog_context
+    for_client = client.get("/products")
+    token = client.post(
+        "/auth/login", json={"login": "underwriter", "password": "b03-test-password"}
+    ).json()["access_token"]
+    for_underwriter = client.get(
+        "/products", headers={"Authorization": f"Bearer {token}"}
+    )
+    assert for_client.status_code == for_underwriter.status_code == 200
+    assert for_underwriter.json() == for_client.json()
+
+
 @pytest.mark.parametrize(
     "code,amount,term,rate,payment",
     [

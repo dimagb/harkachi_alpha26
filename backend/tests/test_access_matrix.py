@@ -16,7 +16,7 @@ CASES = [
     ("GET", "/me", "underwriter", 200),
     ("GET", "/products", "anonymous", 401),
     ("GET", "/products", "client", 200),
-    ("GET", "/products", "underwriter", 403),
+    ("GET", "/products", "underwriter", 200),
     ("POST", "/calculator", "anonymous", 401),
     ("POST", "/calculator", "client", 200),
     ("POST", "/calculator", "underwriter", 403),
