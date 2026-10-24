@@ -32,11 +32,10 @@ from app.models import (
 
 @pytest.fixture
 def signing(migrated_database, monkeypatch):
-    monkeypatch.setenv("DEMO_MODE", "true")
-    monkeypatch.setenv("PIPELINE_STEP_DELAY_SEC", "0")
     from app.config import get_settings
 
-    get_settings.cache_clear()
+    monkeypatch.setattr(get_settings(), "demo_mode", True)
+    monkeypatch.setattr(get_settings(), "pipeline_step_delay_sec", 0)
     engine, _ = migrated_database
     connection = engine.connect()
     transaction = connection.begin()
@@ -69,6 +68,7 @@ def signing(migrated_database, monkeypatch):
         share_pct=100,
     )
     application = Application(
+        number=9_000_001,
         company_id=company.id,
         created_by=user.id,
         product_code="WORKING_CAPITAL",
@@ -121,7 +121,6 @@ def signing(migrated_database, monkeypatch):
     session.close()
     transaction.rollback()
     connection.close()
-    get_settings.cache_clear()
 
 
 def otp(client, application, party, purpose="OFFER"):
@@ -314,6 +313,7 @@ def test_sign_rejects_invalid_requests_without_side_effects(
         borrower.user_id = None
     elif case == "foreign_application":
         other = Application(
+            number=9_000_002,
             company_id=application.company_id,
             created_by=user.id,
             product_code=application.product_code,
@@ -377,4 +377,121 @@ def test_duplicate_sign_does_not_create_second_signature(signing):
             ).all()
         )
         == 1
+    )
+
+
+def test_bank_event_identifies_client(signing):
+    client, session, _, user, _, _, application, _, borrower = signing
+    assert (
+        sign(client, application, otp(client, application, borrower)).status_code == 200
+    )
+    user.role = "UNDERWRITER"
+    session.commit()
+    response = client.get(f"/api/v1/underwriting/applications/{application.id}")
+    assert response.status_code == 200, response.text
+    events = [e for e in response.json()["events"] if e["event_type"] == "SIGNED"]
+    assert len(events) == 1
+    assert events[0]["actor"] == "Клиент: Иван Иванов"
+
+
+def test_overdraft_has_no_schedule(signing):
+    client, session, factory, _, _, _, application, offer, borrower = signing
+    offer.product_code = "OVERDRAFT"
+    offer.monthly_payment = None
+    session.commit()
+    assert (
+        sign(client, application, otp(client, application, borrower)).status_code == 200
+    )
+    from app.disbursement.service import disburse
+
+    disburse(factory, application.id)
+    row = session.scalar(
+        select(Disbursement).where(Disbursement.application_id == application.id)
+    )
+    assert row.schedule is None
+
+
+@pytest.mark.parametrize(
+    "state,status", [("SIGNING", "ACCEPTED"), ("SIGNED", "ACTIVE")]
+)
+def test_disbursement_requires_signed_application_and_accepted_offer(
+    signing, state, status
+):
+    _, session, factory, _, _, _, application, offer, _ = signing
+    application.state = state
+    offer.status = status
+    session.commit()
+    from app.disbursement.service import disburse
+
+    disburse(factory, application.id)
+    session.expire_all()
+    assert application.state == state
+    assert (
+        session.scalar(
+            select(Disbursement).where(Disbursement.application_id == application.id)
+        )
+        is None
+    )
+
+
+def test_disbursement_uses_moscow_calendar_date(signing, monkeypatch):
+    client, session, factory, _, _, _, application, _, borrower = signing
+    assert (
+        sign(client, application, otp(client, application, borrower)).status_code == 200
+    )
+    from app.disbursement import service
+
+    class AtMidnightInMoscow(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return datetime(2026, 1, 31, 22, tzinfo=UTC).astimezone(tz)
+
+    monkeypatch.setattr(service, "datetime", AtMidnightInMoscow)
+    service.disburse(factory, application.id)
+    row = session.scalar(
+        select(Disbursement).where(Disbursement.application_id == application.id)
+    )
+    assert row.schedule[0]["date"] == "2026-03-01"
+    report = session.scalar(
+        select(ApplicationEvent).where(
+            ApplicationEvent.application_id == application.id,
+            ApplicationEvent.event_type == "BKI_REPORT",
+        )
+    )
+    assert report.payload["disbursed_on"] == "2026-02-01"
+
+
+def test_disbursement_failure_rolls_back_all_writes(signing, monkeypatch):
+    client, session, factory, _, _, _, application, _, borrower = signing
+    assert (
+        sign(client, application, otp(client, application, borrower)).status_code == 200
+    )
+    from app.disbursement import service
+
+    real_event = service.event
+
+    def unavailable_report(session, application, event_type, payload):
+        if event_type == "BKI_REPORT":
+            raise RuntimeError("report failed")
+        real_event(session, application, event_type, payload)
+
+    monkeypatch.setattr(service, "event", unavailable_report)
+    with pytest.raises(RuntimeError, match="report failed"):
+        service.disburse(factory, application.id)
+    session.expire_all()
+    assert application.state == "SIGNED"
+    assert (
+        session.scalar(
+            select(Disbursement).where(Disbursement.application_id == application.id)
+        )
+        is None
+    )
+    assert (
+        session.scalars(
+            select(ApplicationEvent).where(
+                ApplicationEvent.application_id == application.id,
+                ApplicationEvent.event_type.in_(["DISBURSED", "BKI_REPORT"]),
+            )
+        ).all()
+        == []
     )

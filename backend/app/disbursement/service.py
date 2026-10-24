@@ -19,10 +19,11 @@ MOSCOW = timezone(timedelta(hours=3))
 
 
 def schedule(
-    amount: int, rate: Decimal, term: int, issued_on: date
+    amount: int, rate: Decimal | int | float, term: int, issued_on: date
 ) -> list[dict[str, int | str]]:
-    payment = rub(annuity(amount, rate, term))
-    rate_units = int((rate * 100).to_integral_value(rounding=ROUND_HALF_UP))
+    decimal_rate = Decimal(str(rate))
+    payment = rub(annuity(amount, decimal_rate, term))
+    rate_units = int((decimal_rate * 100).to_integral_value(rounding=ROUND_HALF_UP))
     balance = amount
     rows = []
     for number in range(1, term + 1):

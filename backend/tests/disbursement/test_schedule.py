@@ -40,3 +40,21 @@ def test_schedule_zero_rate_and_year_rollover():
     rows = schedule(100, Decimal("0.00"), 3, date(2026, 12, 31))
     assert [row["payment"] for row in rows] == [33, 33, 34]
     assert [row["date"] for row in rows] == ["2027-01-31", "2027-02-28", "2027-03-31"]
+
+
+@pytest.mark.parametrize("rate", [22, 22.0])
+def test_schedule_accepts_numeric_rates(rate):
+    from app.disbursement.service import schedule
+
+    rows = schedule(1_500_000, rate, 24, date(2026, 1, 31))
+    assert rows[0]["payment"] == 77_817
+    assert rows[0]["interest"] == 27_500
+
+
+def test_schedule_rounds_half_ruble_interest_up():
+    from app.disbursement.service import schedule
+
+    rows = schedule(3_000, Decimal("0.20"), 2, date(2026, 1, 1))
+    assert rows[0]["interest"] == 1
+    assert rows[0]["principal"] == 1_499
+    assert rows[-1]["balance"] == 0
