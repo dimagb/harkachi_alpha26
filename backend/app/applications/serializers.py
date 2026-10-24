@@ -173,6 +173,12 @@ def _presentation(
         and not membership.can_sign
     ):
         status, todo = "current", "Ждём решения подписанта компании"
+        if application.state == "DRAFT" and "REQUEST_SIGNATURE" in actions:
+            status = "action_required"
+            todo = (
+                "Отправьте заявку на подпись руководителю "
+                "или сотруднику с правом подписи"
+            )
     if application.state == "SIGNING" and "SIGN" not in actions:
         status, todo = "current", "Ждём подписи остальных участников"
     if (

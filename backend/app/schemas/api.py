@@ -455,7 +455,16 @@ class UnderwriterDecisionRequest(Schema):
     comment: str = Field(min_length=5, max_length=2000)
 
 
-class BankListItem(QueueItem):
+class BankListItem(Schema):
+    id: str
+    number: int
+    company_name: str
+    company_kind: CompanyKind
+    product_code: ProductCode
+    amount: int
+    grade: Grade | None
+    route_reason: RouteReason | None
+    waiting_since: str | None
     state: ApplicationState
     updated_at: str
 

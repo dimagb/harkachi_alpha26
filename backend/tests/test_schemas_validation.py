@@ -86,7 +86,7 @@ def validation_user():
     ],
 )
 def test_invalid_bodies(path, model, changes, field):
-    if path == DECIDE:
+    if path in {DECIDE, "/api/v1/demo/time-shift"}:
         app.dependency_overrides[current_user] = lambda: User(
             id=uuid4(), role="UNDERWRITER", login="t", full_name="t", password_hash=""
         )
@@ -117,6 +117,9 @@ def test_missing_required_field():
 
 
 def test_size_limit():
+    app.dependency_overrides[current_user] = lambda: User(
+        id=uuid4(), role="UNDERWRITER", login="t", full_name="t", password_hash=""
+    )
     assert_validation(TestClient(app).get("/api/v1/bank/applications?size=101"), "size")
 
 
