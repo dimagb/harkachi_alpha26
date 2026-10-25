@@ -140,6 +140,26 @@ flowchart LR
 - [docs/state-machine.md](docs/state-machine.md) — состояния заявки и допустимые переходы (любой другой переход отклоняется с ошибкой `409 INVALID_TRANSITION`);
 - [docs/assumptions.md](docs/assumptions.md) — допущения и моки.
 
+## Документация
+
+| Что требует кейс | Где |
+| --- | --- |
+| Продуктовое описание: возможности, исследования → решения, преимущества, скриншоты | [docs/product.md](docs/product.md) |
+| Архитектурная схема | раздел «Архитектура» выше, [docs/architecture.md](docs/architecture.md) |
+| Модель кредитного процесса | [docs/process.md](docs/process.md) |
+| Диаграмма состояний заявки | [docs/state-machine.md](docs/state-machine.md) |
+| Модель принятия решения: признаки, баллы, кредитная политика | [docs/decision-model.md](docs/decision-model.md), эталон расчёта — [contracts/decision_reference.py](contracts/decision_reference.py) |
+| Модель данных | [docs/data-model.md](docs/data-model.md) |
+| Описание API | [contracts/api.md](contracts/api.md), коды и тексты — [contracts/codes.md](contracts/codes.md) |
+| OpenAPI / Swagger | [contracts/openapi.json](contracts/openapi.json); на стенде — [http://localhost:8080/api/v1/docs](http://localhost:8080/api/v1/docs) |
+| Коллекция запросов | [docs/api-collection](docs/api-collection/README.md) (Bruno) |
+| Контракты внешних источников (моки) | [contracts/external-mocks.md](contracts/external-mocks.md) |
+| Тестовые сценарии | [docs/test-scenarios.md](docs/test-scenarios.md), ручной чек-лист — [docs/notes/stand-checklist.md](docs/notes/stand-checklist.md) |
+| Синтетические данные и учётки | раздел «Демо-учётки», [contracts/personas.json](contracts/personas.json), [data/README.md](data/README.md) |
+| Допущения и моки | [docs/assumptions.md](docs/assumptions.md) |
+| Сторонние компоненты | [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) |
+| Требования кейса и как они закрыты | [docs/requirements-checklist.md](docs/requirements-checklist.md) |
+
 ## Конфигурация
 
 Все переменные необязательны. По умолчанию стенд работает локально на синтетических данных. Переменные задаются в `.env`; образец — `.env.example`.
