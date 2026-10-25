@@ -19,6 +19,8 @@ import Queue from './screens/bank/Queue';
 import UnderwriterCard from './screens/bank/UnderwriterCard';
 import Journal from './screens/bank/Journal';
 import ProtocolPrint from './screens/bank/ProtocolPrint';
+import alfaLogo from './assets/alfa-logo.svg';
+import PrototypeFooter from './PrototypeFooter';
 
 type Me = components['schemas']['MeResponse'];
 
@@ -38,12 +40,12 @@ function Shell({ me }: { me: Me }) {
     : membership && <span className={css.muted}>{membership.company.name}</span>;
   return <AppShell navbar={{ width: 240, breakpoint: 'md', collapsed: { mobile: true } }}>
     {desktop ? <AppShell.Navbar className={css.navbar} component="nav" aria-label="Главная навигация">
-      <div className={css.navTop}><Link className={css.brand} to={home}>Кредитный кабинет</Link>{me.companies.length > 1 && company}<div className={css.navLinks}>{links.map(([to, label]) => <Link key={to} to={to!} className={css.navLink} aria-current={(to === '/app' ? pathname.startsWith('/app') && pathname !== '/app/applications/new' : pathname === to) ? 'page' : undefined}>{label}</Link>)}</div></div>
+      <div className={css.navTop}><Link className={`${css.brand} ${shell.brand}`} to={home}><img className={shell.logo} src={alfaLogo} alt="Альфа-Банк" /><span>Кредитный кабинет</span></Link>{me.companies.length > 1 && company}<div className={css.navLinks}>{links.map(([to, label]) => <Link key={to} to={to!} className={css.navLink} aria-current={(to === '/app' ? pathname.startsWith('/app') && pathname !== '/app/applications/new' : pathname === to) ? 'page' : undefined}>{label}</Link>)}</div></div>
       <div className={css.navBottom}><span style={{ fontWeight: 500 }}>{me.user.full_name}</span><button type="button" className={css.textButton} style={{ alignSelf: 'flex-start', height: 'auto', fontSize: 'var(--mantine-font-size-sm)', fontWeight: 400 }} onClick={() => setToken(null)}>Выйти</button></div>
     </AppShell.Navbar> : null}
-    <AppShell.Main>
+    <AppShell.Main className={shell.main}>
       {!desktop && <>
-        <header className={shell.mobileHeader}><Link className={shell.brand} to={home}>Кредитный кабинет</Link><Burger opened={opened} onClick={() => setMenu({ pathname, opened: !opened })} aria-label={opened ? 'Закрыть меню' : 'Открыть меню'} aria-expanded={opened} aria-controls="client-menu" /></header>
+        <header className={shell.mobileHeader}><Link className={shell.brand} to={home}><img className={shell.logo} src={alfaLogo} alt="Альфа-Банк" /><span>Кредитный кабинет</span></Link><Burger opened={opened} onClick={() => setMenu({ pathname, opened: !opened })} aria-label={opened ? 'Закрыть меню' : 'Открыть меню'} aria-expanded={opened} aria-controls="client-menu" /></header>
         <Drawer opened={opened} onClose={() => setMenu({ pathname, opened: false })} title="Меню кабинета" closeButtonProps={{ 'aria-label': 'Закрыть меню' }} position="right" size="100%">
           <div id="client-menu" className={shell.menu}>
             <nav className={css.navLinks} aria-label="Навигация кабинета">{links.map(([to, label]) => <Link key={to} to={to!} onClick={() => setMenu({ pathname, opened: false })} className={css.navLink} aria-current={pathname === to ? 'page' : undefined}>{label}</Link>)}</nav>
@@ -53,6 +55,7 @@ function Shell({ me }: { me: Me }) {
         </Drawer>
       </>}
       <div className={css.shellMain}><Outlet /></div>
+      <PrototypeFooter />
     </AppShell.Main>
   </AppShell>;
 }

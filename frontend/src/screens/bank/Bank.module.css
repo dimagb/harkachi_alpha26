@@ -1,5 +1,5 @@
-.bank { color: var(--cc-ink); background: var(--cc-paper); min-height: 100vh; font: var(--cc-text-small); }
-.topbar { min-height: 48px; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; gap: 24px; border-bottom: 1px solid var(--cc-line); }
+.bank { display: flex; flex-direction: column; color: var(--cc-ink); background: var(--cc-surface); min-height: 100vh; font: var(--cc-text-small); --mantine-color-dimmed: var(--cc-ink-2); }
+.topbar { background: var(--cc-paper); min-height: 48px; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; gap: 24px; border-bottom: 1px solid var(--cc-line); }
 .topLeft { display: flex; align-items: center; gap: 24px; }
 .brand { font-weight: 600; color: var(--cc-ink); text-decoration: none; white-space: nowrap; }
 .desktopNav { display: flex; gap: 4px; }
@@ -8,12 +8,13 @@
 .desktopNav a[aria-current], .mobileMenu a[aria-current] { font-weight: 500; }
 .identity { display: flex; align-items: center; gap: 16px; color: var(--cc-ink-2); }
 .burger, .mobileMenu { display: none; }
+.mobileMenu { background: var(--cc-paper); }
 .main { padding: 24px 32px 40px; }
 .stack { display: flex; flex-direction: column; gap: 24px; }
 .queueHeader h1 { margin: 0 0 8px; font: var(--cc-text-h1); }
 .muted { color: var(--cc-ink-2); }
-.empty { padding: 32px; border: 1px solid var(--cc-line); border-radius: var(--cc-radius-md); }
-.tableScroll { overflow-x: auto; border: 1px solid var(--cc-line); border-radius: var(--cc-radius-md); }
+.empty { background: var(--cc-paper); padding: 32px; border: 1px solid var(--cc-line); border-radius: var(--cc-radius-md); }
+.tableScroll { background: var(--cc-paper); overflow-x: auto; border: 1px solid var(--cc-line); border-radius: var(--cc-radius-md); }
 .queueTable { width: 100%; border-collapse: collapse; text-align: left; }
 .queueTable th { font: var(--cc-text-caption); color: var(--cc-ink-2); padding: 12px 16px; background: var(--cc-surface); white-space: nowrap; }
 .queueTable td { padding: 16px; border-top: 1px solid var(--cc-line); }

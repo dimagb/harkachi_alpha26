@@ -60,7 +60,7 @@ export const theme = createTheme({
   spacing: {
     '2xs': '4px', xs: '8px', sm: '12px', md: '16px', lg: '24px', xl: '32px', '2xl': '48px',
   },
-  radius: { xs: '4px', sm: '6px', md: '12px', lg: '16px', xl: '999px' },
+  radius: { xs: '4px', sm: '6px', md: 'var(--cc-radius-md)', lg: '16px', xl: '999px' },
   defaultRadius: 'sm',
   shadows: {
     xs: 'none',

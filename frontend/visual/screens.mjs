@@ -49,6 +49,47 @@ try {
       await page.waitForTimeout(300);
       const dimensions = await page.evaluate(() => ({ width: globalThis.document.documentElement.scrollWidth, viewport: globalThis.innerWidth }));
       assert(dimensions.width <= dimensions.viewport, `${name}: горизонтальный скролл на ${width} px (${dimensions.width})`);
+      if (name !== 'login' && name !== 'mobile-menu') {
+        const main = page.getByRole('main');
+        const surface = await main.evaluate(element => {
+          let node = element;
+          while (node) {
+            const background = globalThis.getComputedStyle(node).backgroundColor;
+            if (background !== 'rgba(0, 0, 0, 0)') return background;
+            node = node.parentElement;
+          }
+        });
+        assert.equal(surface, 'rgb(242, 243, 245)', `${name}: серая подложка раздела`);
+        const logo = page.getByRole('img', { name: 'Альфа-Банк', exact: true });
+        const logoSize = await logo.boundingBox();
+        assert(logoSize.height >= 24 && logoSize.height <= 28, `${name}: высота логотипа 24–28 px`);
+        assert(await logo.evaluate(element => element.complete && element.naturalWidth > 0), `${name}: официальный логотип загружен`);
+        await page.getByRole('contentinfo').getByText(/Данные синтетические/).waitFor();
+        const cards = main.locator(page.url().includes('/bank/')
+          ? '[class*="tableScroll"], [class*="section_"], [class*="stages_"], [class*="factors_"], [class*="formSection_"], [class*="protocol_"]'
+          : '[class*="card_"]').filter({ visible: true });
+        for (const element of await cards.all()) {
+          const style = await element.evaluate(node => {
+            const computed = globalThis.getComputedStyle(node);
+            return { background: computed.backgroundColor, radius: computed.borderTopLeftRadius };
+          });
+          const label = await element.getAttribute('class');
+          assert.equal(style.background, 'rgb(255, 255, 255)', `${name}: белая карточка ${label}`);
+          assert.equal(style.radius, width === 375 ? '16px' : '24px', `${name}: скругление карточки ${label}`);
+        }
+        const faintOnGray = await main.evaluate(element => [...element.querySelectorAll('*')].filter(node => {
+          if (![...node.childNodes].some(child => child.nodeType === 3 && child.textContent.trim())) return false;
+          if (!node.getBoundingClientRect().width || globalThis.getComputedStyle(node).color !== 'rgb(106, 114, 128)') return false;
+          let parent = node;
+          while (parent) {
+            const background = globalThis.getComputedStyle(parent).backgroundColor;
+            if (background !== 'rgba(0, 0, 0, 0)') return background === 'rgb(242, 243, 245)';
+            parent = parent.parentElement;
+          }
+          return false;
+        }).map(node => node.textContent.trim()));
+        assert.deepEqual(faintOnGray, [], `${name}: --cc-ink-3 используется только на белом`);
+      }
       if (['queue-error', 'journal-error', 'applications-error'].includes(name)) {
         assert.equal(await page.locator('.mantine-Notifications-root .mantine-Notification-root').count(), 0, `${name}: 0 уведомлений`);
       }
@@ -133,10 +174,25 @@ try {
     await page.getByRole('button', { name: 'Кассовый разрыв', exact: true }).click();
     await page.getByRole('region', { name: 'Экспресс-кредит', exact: true }).waitFor();
     await capture('selection');
+    const purposeStyle = await page.getByRole('button', { name: 'Кассовый разрыв', exact: true }).evaluate(element => {
+      const style = globalThis.getComputedStyle(element);
+      return { background: style.backgroundColor, border: style.borderTopColor, selected: element.getAttribute('aria-pressed') };
+    });
+    assert.deepEqual(purposeStyle, { background: 'rgb(255, 255, 255)', border: 'rgb(31, 35, 41)', selected: 'true' }, 'Цель: белая карточка с чёрной рамкой выбранного варианта');
     await page.getByRole('region', { name: 'Экспресс-кредит', exact: true }).getByRole('button', { name: 'Выбрать', exact: true }).click();
     await page.getByText(/Платёж в месяц ≈/).waitFor();
     await capture('form');
     assert.equal(await page.locator('.mantine-NumberInput-controls').count(), 0, 'У суммы и выручки нет стрелок ±1');
+    assert.equal(await page.getByRole('combobox', { name: 'Срок, мес.' }).count(), 1, 'Больше шести сроков: выпадающий список');
+    await page.getByRole('button', { name: 'Назад к выбору продукта', exact: true }).click();
+    await page.getByRole('region', { name: 'Овердрафт', exact: true }).getByRole('button', { name: 'Выбрать', exact: true }).click();
+    const term = page.getByRole('radio', { name: '12', exact: true });
+    assert(await term.isChecked() && await term.isDisabled(), 'Овердрафт: срок 12 выбран и заблокирован');
+    const termStyle = await page.locator('.mantine-Chip-label').evaluate(element => {
+      const style = globalThis.getComputedStyle(element);
+      return { background: style.backgroundColor, color: style.color, radius: style.borderRadius };
+    });
+    assert.deepEqual(termStyle, { background: 'rgb(31, 35, 41)', color: 'rgb(255, 255, 255)', radius: '999px' }, 'Срок: чёрная таблетка с белым текстом');
 
     failures.add('/api/v1/applications');
     await page.goto(`${appUrl}/app`);
@@ -160,6 +216,7 @@ try {
     await page.getByRole('region', { name: 'Факторы оценки' }).waitFor();
     const factor = page.locator('button[class*="factorRow"]').first();
     await factor.hover();
+    await capture('underwriter');
     const padding = await factor.evaluate(element => {
       const style = globalThis.getComputedStyle(element);
       return { left: parseFloat(style.paddingLeft), right: parseFloat(style.paddingRight) };
@@ -194,7 +251,7 @@ try {
     assert.deepEqual(issues, [], 'Нет ошибок JavaScript');
     await context.close();
   }
-  console.log(`F-10/F-11: все проверки пройдены${check ? ', без скриншотов' : ''}`);
+  console.log(`F-10/F-11/F-12: все проверки пройдены${check ? ', без скриншотов' : ''}`);
 } finally {
   mocks?.close();
   await browser?.close();

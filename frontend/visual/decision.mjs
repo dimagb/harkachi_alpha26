@@ -10,6 +10,7 @@ import { setupServer } from 'msw/node';
 const appUrl = process.env.VISUAL_APP_URL ?? 'http://127.0.0.1:5173';
 const designUrl = process.env.VISUAL_DESIGN_URL ?? 'http://127.0.0.1:8090';
 const out = fileURLToPath(new URL('./out/', import.meta.url));
+const screenshots = !process.argv.includes('--check');
 await mkdir(out, { recursive: true });
 const fontDir = new URL('../node_modules/@fontsource/onest/files/', import.meta.url);
 const fonts = (await readdir(fontDir)).filter((name) => /^onest-(cyrillic|latin)-(400|500|600)-normal\.woff2$/.test(name));
@@ -47,7 +48,10 @@ try {
     const a = await computed(left), b = await computed(right);
     for (const property of properties) {
       const equal = a[property] === b[property];
-      const reason = property === 'font-family' && a[property].startsWith('Onest') && b[property].startsWith('Onest') ? 'Onest, отличаются резервные семейства' : exceptions[property];
+      const reason = property === 'font-family' && a[property].startsWith('Onest') && b[property].startsWith('Onest') ? 'Onest, отличаются резервные семейства'
+        : property === 'border-radius' && a[property] === '12px' && b[property] === '24px' ? 'F-12: карточки со скруглением 24 px'
+        : property === 'background-color' && a[property] === 'rgba(0, 0, 0, 0)' && b[property] === 'rgb(255, 255, 255)' ? 'F-12: белые карточки на сером разделе'
+        : exceptions[property];
       if (!equal && !reason) unexpected++;
       rows.push([block, property, a[property], b[property], equal ? 'совпадает' : reason ? `допущено: ${reason}` : 'НЕ СОВПАДАЕТ']);
     }
@@ -85,8 +89,10 @@ try {
       console.log('Отказ: текст и действие из codes.md, дата из retry_after; категория 600 — по F-05.');
     }
     for (const [name, left, right] of blocks) {
-      await left.screenshot({ path: `${out}/decision-${name}-design.png` });
-      await right.screenshot({ path: `${out}/decision-${name}-ours.png` });
+      if (screenshots) {
+        await left.screenshot({ path: `${out}/decision-${name}-design.png` });
+        await right.screenshot({ path: `${out}/decision-${name}-ours.png` });
+      }
       await compare(name, left, right, surface);
     }
     await compare(`${login}: заголовок`, reference.locator('header h2'), ours.locator('h2').first(), typography);
@@ -95,7 +101,7 @@ try {
       await compare('значение плитки', blocks[0][1].getByText('22%', { exact: true }), blocks[0][2].getByText('22 %', { exact: true }), typography);
       await compare('галочка', blocks[1][1].locator('li>span').first(), blocks[1][2].locator('li>span').first(), ['width', 'height', 'background-color', 'border-radius']);
     }
-    await ours.screenshot({ path: `${out}/decision-${login}-1440.png`, fullPage: true });
+    if (screenshots) await ours.screenshot({ path: `${out}/decision-${login}-1440.png`, fullPage: true });
     await ours.setViewportSize({ width: 375, height: 1100 });
     await ours.evaluate(() => globalThis.document.fonts.ready);
     await ours.waitForTimeout(300);
@@ -116,11 +122,11 @@ try {
     const stages = ours.getByRole('list', { name: 'Этапы заявки' }).getByRole('listitem');
     // Read both rectangles in one frame: scrolling can change between two protocol calls.
     assert(await stages.evaluateAll((items) => items[1].getBoundingClientRect().y > items[0].getBoundingClientRect().y));
-    await ours.screenshot({ path: `${out}/decision-${login}-375.png`, fullPage: true });
+    if (screenshots) await ours.screenshot({ path: `${out}/decision-${login}-375.png`, fullPage: true });
     console.log(`${login}: 1440/375 px, вертикальная лента, горизонтального скролла нет`);
     await ours.close();
   }
-  await design.locator('[id="1d"] [data-screen-label]').screenshot({ path: `${out}/decision-mobile-design.png` });
+  if (screenshots) await design.locator('[id="1d"] [data-screen-label]').screenshot({ path: `${out}/decision-mobile-design.png` });
   const table = ['| Блок | Свойство | Макет | Наш | Результат |', '| --- | --- | --- | --- | --- |', ...rows.map((row) => `| ${row.join(' | ')} |`)].join('\n');
   await writeFile(`${out}/decision-computed.md`, table + '\n');
   await writeFile(`${out}/decision-computed.json`, JSON.stringify(rows, null, 2));

@@ -9,6 +9,7 @@ import App from '../App';
 import type { components } from '../api/schema';
 import { setToken } from '../auth/session';
 import { createHandlers } from '../mocks/handlers';
+import { products } from '../mocks/fixtures';
 import { theme } from '../theme';
 
 const server = setupServer();
@@ -53,9 +54,35 @@ it.each([['ooo_load', true], ['ip_good', false]] as const)('поручитель
 it('овердрафт блокирует срок на 12 месяцах и показывает проценты за дни', async () => {
   open();
   await choose('Кассовый разрыв', 'Овердрафт');
-  expect(screen.getByRole<HTMLInputElement>('combobox', { name: 'Срок, мес.' }).disabled).toBe(true);
-  expect(screen.getByRole<HTMLInputElement>('combobox', { name: 'Срок, мес.' }).value).toBe('12');
+  const term = screen.getByRole<HTMLInputElement>('radio', { name: '12' });
+  expect(term.disabled).toBe(true);
+  expect(term.checked).toBe(true);
   expect(await screen.findByText('Проценты — только за использованные дни')).toBeTruthy();
+});
+
+it('короткий набор сроков выбирается таблетками и отправляет выбранный срок', async () => {
+  const express = products.find(product => product.code === 'EXPRESS')!;
+  server.use(http.get('*/api/v1/products', () => HttpResponse.json([{ ...express, min_term_months: 6, max_term_months: 11 }])));
+  let body: components['schemas']['ApplicationCreate'] | undefined;
+  server.events.on('request:start', async ({ request }) => {
+    if (request.url.endsWith('/applications') && request.method === 'POST') body = await request.clone().json();
+  });
+  open(); await choose();
+  const terms = screen.getByRole('group', { name: 'Срок, мес.' });
+  expect(within(terms).getAllByRole('radio')).toHaveLength(6);
+  fireEvent.click(within(terms).getByRole('radio', { name: '11' }));
+  expect(within(terms).getByRole<HTMLInputElement>('radio', { name: '11' }).checked).toBe(true);
+  revenue();
+  fireEvent.click(screen.getByRole('button', { name: 'Создать заявку' }));
+  await screen.findByRole('heading', { name: 'Карточка заявки' });
+  expect(body?.term_months).toBe(11);
+});
+
+it('больше шести сроков остаются в списке с возможностью выбора', async () => {
+  open(); await choose();
+  fireEvent.click(screen.getByRole('combobox', { name: 'Срок, мес.' }));
+  fireEvent.click(await screen.findByRole('option', { name: '12' }));
+  expect(screen.getByRole<HTMLInputElement>('combobox', { name: 'Срок, мес.' }).value).toBe('12');
 });
 
 it('показывает профиль только для чтения и предварительный платёж', async () => {
