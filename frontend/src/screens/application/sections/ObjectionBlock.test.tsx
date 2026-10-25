@@ -15,8 +15,8 @@ it.each(['PENDING', 'RESOLVED'] as const)('плашка пересмотра %s 
   const view = (inline: boolean) => <MantineProvider theme={theme} env="test"><QueryClientProvider client={client}><ObjectionBlock application={application} inline={inline} onUpdate={() => {}} onReload={() => Promise.resolve()} onMessage={() => {}} /></QueryClientProvider></MantineProvider>;
   const { rerender } = render(view(true));
   const banner = screen.getByRole('status', { name: 'Пересмотр решения' });
-  expect(banner.classList.contains(css.inline)).toBe(true);
+  expect(banner.classList.contains(css.inline!)).toBe(true);
   expect(banner.textContent).toBe(status === 'PENDING' ? 'Ваше обращение рассматривает специалист банка' : 'Решение проверено специалистом');
   rerender(view(false));
-  expect(screen.getByRole('status', { name: 'Пересмотр решения' }).classList.contains(css.inline)).toBe(false);
+  expect(screen.getByRole('status', { name: 'Пересмотр решения' }).classList.contains(css.inline!)).toBe(false);
 });
