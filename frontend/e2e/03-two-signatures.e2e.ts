@@ -30,10 +30,8 @@ test('03 ooo_load — бухгалтер, директор и две подпи�
     await director.getByRole('button', { name: 'Принять предложение', exact: true }).click();
     const parties = director.getByRole('region', { name: 'Подписание', exact: true });
     await expect(parties.getByText('это вы', { exact: true })).toHaveCount(2);
-    // F-09: B-15 — первым доступно поручительство; кнопки подписи договора нет, хотя этап требует договор.
-    // TODO(lead): восстановить порядок «договор → поручительство»; проверку порядка сохраняем.
-    test.fail(await parties.getByRole('button', { name: 'Подписать поручительство', exact: true }).isVisible(), 'Первым предлагается поручительство вместо договора');
     await expect(director.getByRole('button', { name: 'Подписать договор', exact: true })).toBeVisible({ timeout: 60_000 });
+    await expect(parties.getByRole('button', { name: 'Подписать поручительство', exact: true })).toHaveCount(0);
     await director.getByRole('button', { name: 'Подписать договор', exact: true }).click();
     await confirmOtp(director, 'Подтвердить подпись');
     await expect(parties.getByText('✓ Подписано', { exact: true })).toHaveCount(1);
