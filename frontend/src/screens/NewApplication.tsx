@@ -42,8 +42,19 @@ function readDraft(key: string | null, product: Product): FormDraft | null {
   } catch { return null; }
 }
 
-function clearDraft(key: string | null) {
-  try { if (key) sessionStorage.removeItem(key); } catch { /* Форма доступна без хранилища. */ }
+function readLastSelection(key: string | null): { product_code: string; purpose: Purpose } | null {
+  try {
+    const value: unknown = key ? JSON.parse(sessionStorage.getItem(key) ?? 'null') : null;
+    if (typeof value !== 'object' || value === null || !('product_code' in value) || typeof value.product_code !== 'string' || !('purpose' in value)) return null;
+    const purpose = purposes.find(purpose => purpose === value.purpose);
+    return purpose ? { product_code: value.product_code, purpose } : null;
+  } catch { return null; }
+}
+
+function clearDraft(...keys: (string | null)[]) {
+  for (const key of keys) {
+    try { if (key) sessionStorage.removeItem(key); } catch { /* Форма доступна без хранилища. */ }
+  }
 }
 
 export default function NewApplication() {
@@ -56,20 +67,23 @@ export default function NewApplication() {
 
 function ApplicationSelection({ userId }: { userId: string | undefined }) {
   const { companyId, membership } = useCompany();
-  const [purpose, setPurpose] = useState<Purpose | null>(null);
-  const [product, setProduct] = useState<Product | null>(null);
+  const lastSelectionKey = userId && companyId ? `application-form:last:${userId}:${companyId}` : null;
+  const [lastSelection] = useState(() => readLastSelection(lastSelectionKey));
+  const [purpose, setPurpose] = useState<Purpose | null>(lastSelection?.purpose ?? null);
+  const [productCode, setProductCode] = useState<string | null>(lastSelection?.product_code ?? null);
   const products = useQuery({ queryKey: ['products'], queryFn: async ({ signal }) => {
     const { data, error } = await api.GET('/products', { signal });
     if (error || !data) throw new Error('Не удалось загрузить продукты.');
     return data;
   }, retry: false });
+  const product = products.data?.find(item => item.code === productCode && purpose && item.purposes.includes(purpose));
 
   if (!companyId) return <Text>Для вашей учётной записи пока нет компании.</Text>;
-  if (product && purpose) return <ApplicationForm product={product} initialPurpose={purpose} draftKey={userId ? `application-form:${userId}:${companyId}:${product.code}` : null} onBack={() => setProduct(null)} />;
+  if (product && purpose) return <ApplicationForm product={product} initialPurpose={purpose} draftKey={userId ? `application-form:${userId}:${companyId}:${product.code}` : null} lastSelectionKey={lastSelectionKey} onBack={() => setProductCode(null)} />;
   return <div className={card.page}>
     <header className={card.header}><Text size="sm" c="dimmed">Получить финансирование · Шаг 1 из 2</Text><h1 className={css.heading}>Зачем нужны деньги?</h1><Text c="dimmed">Выберите цель — покажем подходящие продукты и условия.</Text></header>
     <SimpleGrid className={css.purposes} cols={{ base: 1, sm: 2 }} spacing="sm">
-      {purposes.map((value) => <button type="button" className={css.purpose} key={value} aria-pressed={purpose === value} onClick={() => setPurpose(value)}>{purposeLabels[value]}</button>)}
+      {purposes.map((value) => <button type="button" className={css.purpose} key={value} aria-pressed={purpose === value} onClick={() => { setProductCode(null); setPurpose(value); }}>{purposeLabels[value]}</button>)}
     </SimpleGrid>
     {products.isPending && <div className={card.card}><Group role="status"><Loader size="sm" /><Text>Загружаем продукты…</Text></Group></div>}
     {products.isError && <div className={card.card}><Text role="alert">Не удалось загрузить продукты. Попробуйте ещё раз.</Text><Button w="fit-content" variant="default" onClick={() => void products.refetch()}>Повторить</Button></div>}
@@ -83,14 +97,14 @@ function ApplicationSelection({ userId }: { userId: string | undefined }) {
           <Text>ставка от {rate(item.rate_from)}%</Text>
           <Text size="xs" c="dimmed">ключевая ставка ЦБ {rate(item.key_rate)}% на {date(item.key_rate_date)}</Text>
           {membership?.company.kind === 'OOO' && item.requires_guarantor_ooo && <Text size="sm">Нужно поручительство владельца</Text>}
-          <Button className={card.cta} mt="auto" onClick={() => setProduct(item)}>Выбрать</Button>
+          <Button className={card.cta} mt="auto" onClick={() => setProductCode(item.code)}>Выбрать</Button>
         </Stack>
       </Paper>)}
     </SimpleGrid>}
   </div>;
 }
 
-function ApplicationForm({ product, initialPurpose, draftKey, onBack }: { product: Product; initialPurpose: Purpose; draftKey: string | null; onBack: () => void }) {
+function ApplicationForm({ product, initialPurpose, draftKey, lastSelectionKey, onBack }: { product: Product; initialPurpose: Purpose; draftKey: string | null; lastSelectionKey: string | null; onBack: () => void }) {
   const { companyId } = useCompany();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -116,8 +130,9 @@ function ApplicationForm({ product, initialPurpose, draftKey, onBack }: { produc
   useEffect(() => {
     try {
       if (draftKey) sessionStorage.setItem(draftKey, JSON.stringify({ product_code: product.code, amount, term, purpose, purposeText, revenue } satisfies FormDraft));
+      if (lastSelectionKey) sessionStorage.setItem(lastSelectionKey, JSON.stringify({ product_code: product.code, purpose }));
     } catch { /* Форма доступна без хранилища. */ }
-  }, [draftKey, product.code, amount, term, purpose, purposeText, revenue]);
+  }, [draftKey, lastSelectionKey, product.code, amount, term, purpose, purposeText, revenue]);
 
   useEffect(() => {
     if (!validAmount || !validTerm || !ready) return;
@@ -143,7 +158,7 @@ function ApplicationForm({ product, initialPurpose, draftKey, onBack }: { produc
     return result.data;
   }, onSuccess: (data) => {
     if (!data) return;
-    clearDraft(draftKey);
+    clearDraft(draftKey, lastSelectionKey);
     void queryClient.invalidateQueries({ queryKey: ['applications', companyId] });
     void navigate(`/app/applications/${data.id}`);
   }, onError: () => setMessage('Не удалось создать заявку. Проверьте соединение и попробуйте ещё раз.') });
@@ -207,7 +222,7 @@ function ApplicationForm({ product, initialPurpose, draftKey, onBack }: { produc
         </Stack>
         {message && <Notification role="alert" color={stageStatusColor('failed')} withCloseButton={false}>{message}</Notification>}
         <Button className={card.cta} type="submit" disabled={!ready} loading={create.isPending}>Создать заявку</Button>
-        <Button variant="default" onClick={() => { clearDraft(draftKey); onBack(); }} disabled={create.isPending} styles={{ label: { whiteSpace: 'normal' } }} h="auto" py="sm">Назад к выбору продукта</Button>
+        <Button variant="default" onClick={() => { clearDraft(draftKey, lastSelectionKey); onBack(); }} disabled={create.isPending} styles={{ label: { whiteSpace: 'normal' } }} h="auto" py="sm">Назад к выбору продукта</Button>
       </Stack></Paper>
     </SimpleGrid>
   </div>;

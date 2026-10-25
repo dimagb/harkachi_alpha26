@@ -195,6 +195,11 @@ it('503 профиля блокирует создание, повтор заг�
   await waitFor(() => expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Создать заявку' }).disabled).toBe(false));
 });
 
+async function restoredForm() {
+  await screen.findByRole('heading', { name: 'Заявка на финансирование' });
+  await waitFor(() => expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Создать заявку' }).disabled).toBe(false));
+}
+
 it('восстанавливает сумму, срок, цель, пояснение и выручку после перезагрузки формы', async () => {
   open(); await choose('Другое');
   fireEvent.change(screen.getByLabelText('Сумма, ₽'), { target: { value: '1500000' } });
@@ -203,7 +208,7 @@ it('восстанавливает сумму, срок, цель, поясне�
   fireEvent.click(screen.getByRole('combobox', { name: 'Срок, мес.' }));
   fireEvent.click(await screen.findByRole('option', { name: '12' }));
   cleanup();
-  open(); await choose();
+  open(); await restoredForm();
   expect(screen.getByRole<HTMLInputElement>('textbox', { name: 'Сумма, ₽' }).value).toBe('1 500 000');
   expect(screen.getByLabelText<HTMLInputElement>('Выручка за год, ₽').value).toBe('12 000 000');
   expect(screen.getByRole<HTMLInputElement>('combobox', { name: 'Срок, мес.' }).value).toBe('12');
@@ -240,20 +245,22 @@ it('ошибка создания сохраняет введённую форм
   fireEvent.change(screen.getByLabelText('Сумма, ₽'), { target: { value: '1500000' } });
   fireEvent.click(screen.getByRole('button', { name: 'Создать заявку' }));
   await screen.findByRole('alert');
-  cleanup(); open(); await choose();
+  cleanup(); open(); await restoredForm();
   expect(screen.getByLabelText<HTMLInputElement>('Сумма, ₽').value).toBe('1 500 000');
   expect(screen.getByLabelText<HTMLInputElement>('Выручка за год, ₽').value).toBe('12 000 000');
 });
 
-it('черновики разных продуктов восстанавливаются независимо', async () => {
+it('черновики разных продуктов восстанавливаются независимо без указателя последнего выбора', async () => {
   open(); await choose(); revenue();
   fireEvent.change(screen.getByLabelText('Сумма, ₽'), { target: { value: '1500000' } });
-  cleanup(); open(); await choose('Кассовый разрыв', 'Овердрафт');
+  const lastKey = Object.keys(sessionStorage).find(key => key.startsWith('application-form:last:'));
+  expect(lastKey).toBeDefined();
+  cleanup(); sessionStorage.removeItem(lastKey!); open(); await choose('Кассовый разрыв', 'Овердрафт');
   expect(screen.getByLabelText<HTMLInputElement>('Выручка за год, ₽').value).toBe('');
   fireEvent.change(screen.getByLabelText('Сумма, ₽'), { target: { value: '500000' } });
-  cleanup(); open(); await choose();
+  cleanup(); sessionStorage.removeItem(lastKey!); open(); await choose();
   expect(screen.getByLabelText<HTMLInputElement>('Сумма, ₽').value).toBe('1 500 000');
-  cleanup(); open(); await choose('Кассовый разрыв', 'Овердрафт');
+  cleanup(); sessionStorage.removeItem(lastKey!); open(); await choose('Кассовый разрыв', 'Овердрафт');
   expect(screen.getByLabelText<HTMLInputElement>('Сумма, ₽').value).toBe('500 000');
 });
 
@@ -294,16 +301,48 @@ it('черновик отделён от другого пользователя
   open(); await choose();
   expect(screen.getByLabelText<HTMLInputElement>('Сумма, ₽').value).toBe('300 000');
   expect(screen.getByLabelText<HTMLInputElement>('Выручка за год, ₽').value).toBe('');
-  cleanup(); server.resetHandlers(...createHandlers()); open(); await choose();
+  cleanup(); server.resetHandlers(...createHandlers()); open(); await restoredForm();
   expect(screen.getByLabelText<HTMLInputElement>('Сумма, ₽').value).toBe('1 500 000');
 });
 
 it.each(['{invalid', '{"amount":null}'])('повреждённый черновик %s не мешает работе формы', async (stored) => {
   open(); await choose(); revenue();
-  const key = Object.keys(sessionStorage).find(key => key.startsWith('application-form:'));
+  const key = Object.keys(sessionStorage).find(key => key.startsWith('application-form:') && !key.startsWith('application-form:last:'));
   expect(key).toBeDefined();
-  cleanup(); sessionStorage.setItem(key!, stored); open(); await choose();
+  cleanup(); sessionStorage.setItem(key!, stored); open(); await restoredForm();
   expect(screen.getByLabelText<HTMLInputElement>('Сумма, ₽').value).toBe('300 000');
   revenue(); fireEvent.click(screen.getByRole('button', { name: 'Создать заявку' }));
   expect(await screen.findByRole('heading', { name: 'Карточка заявки' })).toBeTruthy();
+});
+
+it('после перезагрузки сразу открывает форму последнего продукта с введённой суммой', async () => {
+  open(); await choose();
+  fireEvent.click(screen.getByRole('combobox', { name: 'Цель' }));
+  fireEvent.click(await screen.findByRole('option', { name: 'Другое' }));
+  fireEvent.change(screen.getByLabelText('Сумма, ₽'), { target: { value: '1500000' } });
+  fireEvent.change(screen.getByLabelText('Опишите цель'), { target: { value: 'Расширение мастерской' } });
+  const lastKey = Object.keys(sessionStorage).find(key => key.startsWith('application-form:last:'));
+  expect(lastKey).toBeDefined();
+  expect(JSON.parse(sessionStorage.getItem(lastKey!)!)).toEqual({ product_code: 'EXPRESS', purpose: 'OTHER' });
+  cleanup(); open();
+  expect(await screen.findByRole('heading', { name: 'Заявка на финансирование' })).toBeTruthy();
+  expect(screen.queryByRole('heading', { name: 'Зачем нужны деньги?' })).toBeNull();
+  expect(screen.getByLabelText<HTMLInputElement>('Сумма, ₽').value).toBe('1 500 000');
+  expect(screen.getByRole<HTMLInputElement>('combobox', { name: 'Цель' }).value).toBe('Другое');
+  expect(screen.getByLabelText<HTMLTextAreaElement>('Опишите цель').value).toBe('Расширение мастерской');
+});
+
+it.each([
+  '{invalid',
+  JSON.stringify({ product_code: 'MISSING', purpose: 'CASH_GAP' }),
+  JSON.stringify({ product_code: 'OVERDRAFT', purpose: 'EQUIPMENT' }),
+])('недоступный или повреждённый последний выбор %s возвращает к выбору продукта', async (stored) => {
+  open(); await choose();
+  const lastKey = Object.keys(sessionStorage).find(key => key.startsWith('application-form:last:'));
+  expect(lastKey).toBeDefined();
+  cleanup(); sessionStorage.setItem(lastKey!, stored); open();
+  expect(await screen.findByRole('heading', { name: 'Зачем нужны деньги?' })).toBeTruthy();
+  fireEvent.click(screen.getByRole('button', { name: 'Кассовый разрыв' }));
+  expect(await screen.findByRole('region', { name: 'Экспресс-кредит' })).toBeTruthy();
+  expect(screen.queryByRole('heading', { name: 'Заявка на финансирование' })).toBeNull();
 });
