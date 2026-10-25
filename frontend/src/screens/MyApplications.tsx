@@ -31,7 +31,7 @@ export default function MyApplications() {
         <Stack gap="md">{applications.data.map((item) => <Link to={`/app/applications/${item.id}`} key={item.id} className={`${card.card} ${css.application}`}>
           <Stack gap="sm">
             <Group justify="space-between"><Text fw={600}>№ {item.number} · {products.data.find(({ code }) => code === item.product_code)?.name}</Text><Text fw={700}>{formatMoney(item.amount)}</Text></Group>
-            <Group justify="space-between"><Group gap="xs"><Badge color={stageStatusColor('current')} variant="light">{item.stage.title}</Badge><Text size="sm" c="dimmed">{stateLabels[item.state]}</Text>{item.awaiting_signature && <Badge color={stageStatusColor('action_required')} variant="light">Ждёт подписи директора</Badge>}</Group><Text size="sm" c="dimmed">{new Date(item.updated_at).toLocaleDateString('ru-RU', { timeZone: 'UTC' })}</Text></Group>
+            <Group justify="space-between"><Group gap="xs"><Badge color={stageStatusColor('current')} variant="light">{item.stage.title}</Badge><Text size="sm" c="var(--mantine-color-text)">{stateLabels[item.state]}</Text>{item.awaiting_signature && <Badge color={stageStatusColor('action_required')} variant="light">Ждёт подписи директора</Badge>}</Group><Text size="sm" c="var(--mantine-color-text)">{new Date(item.updated_at).toLocaleDateString('ru-RU', { timeZone: 'UTC' })}</Text></Group>
           </Stack>
         </Link>)}</Stack>}
       <Button component={Link} to="/app/applications/new" className={card.cta} w="fit-content" maw="100%">Получить финансирование</Button>

@@ -36,7 +36,7 @@ async function consentAndCode() {
   fireEvent.click(screen.getByRole('checkbox', { name: 'Согласен: запрос кредитной истории' }));
   fireEvent.click(screen.getByRole('button', { name: 'Подписать и отправить' }));
   fireEvent.click(screen.getByRole('button', { name: 'Получить код' }));
-  await screen.findByLabelText('Код из SMS');
+  await screen.findByLabelText('Код из СМС');
 }
 it.each(['ip_good', 'ooo_load'])('%s: обязательные согласия, отдельные документы и точное тело подачи', async (login) => {
   otp(); const application = open(login);
@@ -49,9 +49,9 @@ it.each(['ip_good', 'ooo_load'])('%s: обязательные согласия,
   }));
   await consentAndCode();
   expect(screen.getByText('Демо-режим: код 123456')).toBeTruthy();
-  await waitFor(() => expect(document.activeElement).toBe(screen.getByLabelText('Код из SMS')));
-  fireEvent.change(screen.getByLabelText('Код из SMS'), { target: { value: '1a2345678' } });
-  expect((screen.getByLabelText('Код из SMS') as HTMLInputElement).value).toBe('123456');
+  await waitFor(() => expect(document.activeElement).toBe(screen.getByLabelText('Код из СМС')));
+  fireEvent.change(screen.getByLabelText('Код из СМС'), { target: { value: '1a2345678' } });
+  expect((screen.getByLabelText('Код из СМС') as HTMLInputElement).value).toBe('123456');
   fireEvent.click(screen.getByRole('button', { name: 'Подставить' }));
   fireEvent.click(screen.getByRole('button', { name: 'Подтвердить и отправить' }));
   await waitFor(() => expect(submitted).toEqual({ otp_id: 'otp-1', code: '123456', consents: { pdn: true, bki: true, auto_decision: false } }));
@@ -77,7 +77,7 @@ it('ведёт к получению кода после отправки и п�
   expect(scroll).toHaveBeenLastCalledWith({ block: 'center' });
   scroll.mockClear();
   fireEvent.click(request);
-  const input = await screen.findByLabelText('Код из SMS');
+  const input = await screen.findByLabelText('Код из СМС');
   await waitFor(() => expect(document.activeElement).toBe(input));
   expect(scroll).toHaveBeenLastCalledWith({ block: 'center' });
   expect(scroll.mock.instances.at(-1)).toBe(input);
@@ -88,7 +88,7 @@ it('неверный код очищается и ошибка сервера в
   await consentAndCode(); fireEvent.click(screen.getByRole('button', { name: 'Подставить' }));
   fireEvent.click(screen.getByRole('button', { name: 'Подтвердить и отправить' }));
   await screen.findByText('Неверный код. Попробуйте ещё раз.');
-  expect((screen.getByLabelText('Код из SMS') as HTMLInputElement).value).toBe('');
+  expect((screen.getByLabelText('Код из СМС') as HTMLInputElement).value).toBe('');
 });
 it('истечение кода открывает получение нового кода', async () => {
   vi.useFakeTimers({ toFake: ['Date', 'setInterval', 'clearInterval'] });

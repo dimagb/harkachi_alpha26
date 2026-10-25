@@ -20,7 +20,7 @@ export default function SigningSection({ application, onUpdate, onReload, onMess
     {offer && <div className={card.figures}>
       {[['Сумма', formatMoney(offer.amount)], ['Срок', `${offer.term_months} мес.`], ['Ставка', `${offer.rate.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} %`], ['Платёж в месяц', offer.monthly_payment === null ? 'Проценты — только за использованные дни' : formatMoney(offer.monthly_payment)]].map(([label, value]) => <div className={card.figure} key={label}><span className={css.muted}>{label}</span><span className={card.figureValue}>{value}</span></div>)}
     </div>}
-    <p>Подписание — простой электронной подписью: код из SMS</p>
+    <p>Подписание — простой электронной подписью: код из СМС</p>
     <h3 className={card.title}>Участники</h3>
     <ul className={css.parties}>{application.parties.map((party) => <li key={party.id} className={css.party}>
       <strong>{party.role === 'BORROWER_SIGNATORY' ? 'Заёмщик — подписант компании' : 'Поручитель'}</strong>

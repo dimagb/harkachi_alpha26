@@ -37,12 +37,13 @@ async function sign(name: string) {
   expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Получить код' }));
   fireEvent.click(screen.getByRole('button', { name: 'Получить код' }));
   await screen.findByText('Демо-режим: код 123456');
-  await waitFor(() => expect(document.activeElement).toBe(screen.getByLabelText('Код из SMS')));
+  await waitFor(() => expect(document.activeElement).toBe(screen.getByLabelText('Код из СМС')));
   fireEvent.click(screen.getByRole('button', { name: 'Подставить' }));
   fireEvent.click(screen.getByRole('button', { name: 'Подтвердить подпись' }));
 }
 it('директор подписывает договор и поручительство по очереди, с разными purpose и party_id', async () => {
   const { initial, calls } = open();
+  expect(screen.getByText('Подписание — простой электронной подписью: код из СМС')).toBeTruthy();
   expect(screen.getAllByText('это вы')).toHaveLength(2);
   expect(screen.queryByRole('button', { name: 'Подписать поручительство' })).toBeNull();
   let current = initial; const bodies: unknown[] = [];

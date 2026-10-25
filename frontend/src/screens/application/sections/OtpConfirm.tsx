@@ -49,7 +49,7 @@ export default function OtpConfirm({ applicationId, purpose, partyId, confirmLab
   return <div className={css.otp}>
     {otp && seconds === 0 && <p role="status">Код истёк</p>}
     {(!otp || seconds === 0) ? <Button ref={requestRef} disabled={pending} loading={pending} onClick={() => void run(requestCode)}>{otp ? 'Получить новый код' : 'Получить код'}</Button> : <>
-      <label className={css.input}>Код из SMS<input ref={inputRef} inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={code} aria-invalid={!!message} aria-describedby={message ? errorId : undefined} onChange={(event) => setCode(event.currentTarget.value.replace(/\D/g, '').slice(0, 6))} /></label>
+      <label className={css.input}>Код из СМС<input ref={inputRef} inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={code} aria-invalid={!!message} aria-describedby={message ? errorId : undefined} onChange={(event) => setCode(event.currentTarget.value.replace(/\D/g, '').slice(0, 6))} /></label>
       {message && <p id={errorId} role="alert" className={css.error}>{message}</p>}
       <p className={css.muted}>Код действует ещё {Math.floor(seconds / 60)}:{String(seconds % 60).padStart(2, '0')}</p>
       {otp.demo_code && <div className={css.actions}><p>Демо-режим: код {otp.demo_code}</p><Button variant="light" color="gray" disabled={pending} onClick={() => setCode(otp.demo_code)}>Подставить</Button></div>}
