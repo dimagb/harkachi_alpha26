@@ -1,6 +1,6 @@
 import { MantineProvider } from '@mantine/core';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { MemoryRouter } from 'react-router';
@@ -45,6 +45,33 @@ it('выделяет заявку, которая ждёт подписи дир
   server.use(http.get('*/api/v1/applications', () => HttpResponse.json([{ ...applications[1], awaiting_signature: true }])));
   open('ooo_load');
   expect(await screen.findByText('Ждёт подписи директора')).toBeTruthy();
+});
+
+it('сортирует заявки по последнему изменению, новые сверху', async () => {
+  server.use(http.get('*/api/v1/applications', () => HttpResponse.json([
+    { ...applications[1], id: 'old', number: 9901, updated_at: '2026-10-23T23:00:00Z' },
+    { ...applications[1], id: 'new', number: 9902, updated_at: '2026-10-25T00:00:00Z' },
+    { ...applications[1], id: 'middle', number: 9903, updated_at: '2026-10-24T12:00:00Z' },
+  ])));
+  open('ooo_load');
+  await screen.findByRole('link', { name: /№ 9901/ });
+  expect(screen.getAllByRole('link', { name: /№ 990/ }).map(link => link.getAttribute('href'))).toEqual([
+    '/app/applications/new', '/app/applications/middle', '/app/applications/old',
+  ]);
+});
+
+it.each(['INFO_REQUESTED', 'OFFER_ISSUED', 'SIGNING', 'DRAFT'] as const)('отмечает необходимое действие подписанта в %s', async state => {
+  server.use(http.get('*/api/v1/applications', () => HttpResponse.json([{ ...applications[1], state, awaiting_signature: state === 'DRAFT' }])));
+  open('ooo_load');
+  const link = await screen.findByRole('link', { name: /№ 1002/ });
+  expect(within(link).getByText('Нужно ваше действие')).toBeTruthy();
+});
+
+it.each(['ip_good', 'ooo_load_accountant'])('%s: не требует подписи от неподходящего пользователя или обычного черновика', async login => {
+  server.use(http.get('*/api/v1/applications', () => HttpResponse.json([{ ...applications[login === 'ip_good' ? 0 : 1], state: 'DRAFT', awaiting_signature: login === 'ooo_load_accountant' }])));
+  open(login);
+  await screen.findByRole('link', { name: /№ 100/ });
+  expect(screen.queryByText('Нужно ваше действие')).toBeNull();
 });
 
 it('смена компании в шапке загружает её заявки', async () => {

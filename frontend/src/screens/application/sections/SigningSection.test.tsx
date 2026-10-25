@@ -11,9 +11,14 @@ import SigningSection from './SigningSection';
 
 type Application = components['schemas']['ApplicationClient'];
 const server = setupServer();
+const originalScroll = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'scrollIntoView');
 beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterAll(() => server.close());
-afterEach(() => { cleanup(); server.resetHandlers(); setToken(null); vi.useRealTimers(); });
+afterEach(() => {
+  cleanup(); server.resetHandlers(); setToken(null); vi.useRealTimers();
+  if (originalScroll) Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', originalScroll);
+  else Reflect.deleteProperty(HTMLElement.prototype, 'scrollIntoView');
+});
 function open(others = false, state: Application['state'] = 'SIGNING') {
   const base = applications[1]!;
   const initial: Application = { ...base, state, offer: { ...base.offer!, status: 'ACCEPTED' }, allowed_actions: ['SIGN'], parties: [
@@ -34,14 +39,16 @@ function open(others = false, state: Application['state'] = 'SIGNING') {
 }
 async function sign(name: string) {
   fireEvent.click(screen.getByRole('button', { name }));
-  expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Получить код' }));
-  fireEvent.click(screen.getByRole('button', { name: 'Получить код' }));
   await screen.findByText('Демо-режим: код 123456');
-  await waitFor(() => expect(document.activeElement).toBe(screen.getByLabelText('Код из СМС')));
+  const input = screen.getByLabelText('Код из СМС');
+  await waitFor(() => expect(document.activeElement).toBe(input));
+  expect(input).toBeTruthy();
   fireEvent.click(screen.getByRole('button', { name: 'Подставить' }));
   fireEvent.click(screen.getByRole('button', { name: 'Подтвердить подпись' }));
 }
 it('директор подписывает договор и поручительство по очереди, с разными purpose и party_id', async () => {
+  const scroll = vi.fn();
+  Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', { configurable: true, value: scroll });
   const { initial, calls } = open();
   expect(screen.getByText('Подписание — простой электронной подписью: код из СМС')).toBeTruthy();
   expect(screen.getAllByText('это вы')).toHaveLength(2);
@@ -54,9 +61,14 @@ it('директор подписывает договор и поручител
     return HttpResponse.json(current);
   }));
   await sign('Подписать договор');
+  expect(scroll).toHaveBeenLastCalledWith({ block: 'center' });
+  expect(scroll.mock.instances.at(-1)).toBeInstanceOf(HTMLInputElement);
+  scroll.mockClear();
   await screen.findByRole('button', { name: 'Подписать поручительство' });
   expect(screen.getByText(/Вместе с поручительством вы подписываете согласия/)).toBeTruthy();
   await sign('Подписать поручительство');
+  expect(scroll).toHaveBeenLastCalledWith({ block: 'center' });
+  expect(scroll.mock.instances.at(-1)).toBeInstanceOf(HTMLInputElement);
   await screen.findByText('Договор подписан, готовим выдачу');
   expect(calls).toEqual([{ purpose: 'OFFER', party_id: 'borrower' }, { purpose: 'GUARANTEE', party_id: 'guarantor' }]);
   expect(bodies).toEqual([{ otp_id: 'otp-1', code: '123456', party_id: 'borrower' }, { otp_id: 'otp-1', code: '123456', party_id: 'guarantor' }]);

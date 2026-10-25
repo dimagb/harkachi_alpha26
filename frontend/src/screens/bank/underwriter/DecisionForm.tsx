@@ -24,6 +24,7 @@ export default function DecisionForm({ application, decision, onConflict }: { ap
   const products = useQuery({ queryKey: ['products'], queryFn: async ({ signal }) => { const { data, error } = await api.GET('/products', { signal }); if (error || !data) throw new Error('Не удалось загрузить границы продукта'); return data; } });
   const product = products.data?.find(p => p.code === application.product_code);
   const financed = outcome === 'APPROVE' || outcome === 'COUNTER';
+  const stops = decision?.rules_fired.filter(rule => rule.effect === 'STOP') ?? [];
   const selectedAmount = outcome === 'APPROVE' ? application.amount : amount;
   const selectedTerm = outcome === 'APPROVE' ? application.term_months : term;
   const missing: string[] = [];
@@ -74,6 +75,7 @@ export default function DecisionForm({ application, decision, onConflict }: { ap
     {outcome === 'REQUEST_INFO' && <div className={css.questions}><span className={css.caption}>Вопросы клиенту · {questions.length} из 5</span>{questions.map((question, i) => <div className={css.question} key={i}><Textarea label={`Вопрос ${i + 1}`} value={question} onChange={event => setQuestions(previous => previous.map((q, index) => index === i ? event.target.value : q))} minRows={2} autosize maxLength={500} error={fieldErrors[`info_questions.${i}`] ?? fieldErrors[`info_questions[${i}]`]} /><Button variant="subtle" color="gray" aria-label={`Удалить вопрос ${i + 1}`} disabled={questions.length === 1} onClick={() => setQuestions(previous => previous.filter((_, index) => index !== i))}>×</Button></div>)}<Button variant="default" onClick={() => setQuestions(previous => [...previous, ''])} disabled={questions.length >= 5}>Добавить вопрос</Button>{fieldErrors.info_questions && <p className={css.error}>{fieldErrors.info_questions}</p>}</div>}
     <Textarea classNames={{ label: css.fieldLabel, input: css.commentInput }} label="Комментарий (обязательно)" value={comment} onChange={event => setComment(event.target.value)} minRows={3} maxLength={2000} autosize placeholder="Обоснование решения для протокола" error={fieldErrors.comment} />
     {mismatch && <div className={css.warning} role="status">Решение не совпадает с рекомендацией — это будет отмечено в журнале</div>}
+    {financed && stops.map((rule, index) => <div key={`${rule.code}-${index}`} className={css.warning} role="status">Есть стоп-фактор: {rule.title}. Решение вопреки стоп-фактору будет отмечено в истории заявки</div>)}
     {failure && <p role="alert" className={css.error}>{failure}</p>}{fieldErrors.outcome && <p className={css.error}>{fieldErrors.outcome}</p>}
     <Button type="submit" className={css.submit} fullWidth disabled={!!missing.length || loading} loading={loading}>Принять решение</Button>
     {!!missing.length && <div className={css.hint}>{missing.join('. ')}</div>}

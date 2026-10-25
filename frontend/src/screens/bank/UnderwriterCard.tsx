@@ -9,7 +9,7 @@ import Timeline from '../application/Timeline';
 import { useBankQueue } from './BankLayout';
 import { formatAt, outcomeLabels, productLabels, routeLabels, waitingTime } from './labels';
 import DecisionForm from './underwriter/DecisionForm';
-import { Policy, Protocol, Rules, Turnover } from './underwriter/Details';
+import { Parameters, Policy, Protocol, Rules, Turnover } from './underwriter/Details';
 import Factors from './underwriter/Factors';
 import Recommendation from './underwriter/Recommendation';
 import Sources from './underwriter/Sources';
@@ -28,16 +28,18 @@ export default function UnderwriterCard() {
   if (query.isPending) return <p role="status">Загружаем заявку…</p>;
   if (query.isError) return <div role="alert"><p>{query.error.message}</p><Button onClick={() => void query.refetch()}>Повторить</Button><Link to="/bank/queue">Вернуться в очередь</Link></div>;
   const application = query.data;
-  const decision = application.decisions.find(d => d.kind === 'AUTO');
-  const manual = application.decisions.find(d => d.kind === 'MANUAL');
+  const decisions = [...application.decisions].sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at));
+  const decision = decisions.find(d => d.kind === 'AUTO');
+  const manual = decisions.find(d => d.kind === 'MANUAL');
   const route = decision?.route_reason;
   const queued = queue.data?.find(item => item.id === application.id);
   const evaluation = decision?.grade ? `${decision.grade}, ${decision.score === null ? '—' : plural(decision.score, ['балл', 'балла', 'баллов'])}` : '';
   return <div className={css.card}>
     <header className={css.header}><div className={css.headerCopy}><div className={css.headerMeta}><span>Заявка № {application.number}</span>{queued && <span className={css.waiting}>Ждёт {waitingTime(queued.waiting_since, queue.dataUpdatedAt)}</span>}<span>Поступила {formatAt(application.created_at)}</span></div><h1><span>{application.company.name} · {productLabels[application.product_code]}</span><span className={css.headerAmount}>{formatMoney(application.amount)}</span><span>/ {application.term_months} мес.</span></h1></div><div className={css.badges}>{route && <span className={css.badge} data-tone="wait">{routeLabels[route]}{evaluation ? route === 'GRADE_C' ? `: ${evaluation}` : ` · оценка ${evaluation}` : ''}</span>}{application.risk_flags.aml_flag && <span className={css.badge} data-tone="stop">Признаки ПОД/ФТ</span>}{application.risk_flags.fraud_flag && <span className={css.badge} data-tone="stop">Признаки мошенничества</span>}</div></header>
     {conflict && <div role="alert" className={css.warning}>Заявка уже не на рассмотрении</div>}
-    <section className={css.stages} aria-label="Этапы рассмотрения"><Timeline timeline={application.timeline} /><div className={css.statusPanel}><div><span className={css.caption}>Что происходит</span><span>{application.state === 'MANUAL_REVIEW' && route ? `${routeLabels[route]} — система не решает сама.` : application.stage.what_happens}</span></div><div><span className={css.caption}>Что нужно</span><strong>{application.state === 'MANUAL_REVIEW' ? 'Проверьте факторы и примите решение с комментарием.' : application.stage.what_to_do ?? 'Дополнительные действия специалиста не требуются.'}</strong></div></div></section>
+    <section className={css.stages} aria-label="Этапы рассмотрения"><Timeline timeline={application.timeline} /><div className={css.statusPanel}><div><span className={css.caption}>Что происходит</span><span>{application.state === 'MANUAL_REVIEW' && route ? `${routeLabels[route]} — система не решает сама.` : application.stage.what_happens}</span></div><div><span className={css.caption}>{application.state === 'MANUAL_REVIEW' ? 'Что нужно' : 'Клиент видит:'}</span><strong>{application.state === 'MANUAL_REVIEW' ? 'Проверьте факторы и примите решение с комментарием.' : application.stage.what_to_do ?? 'Дополнительные действия не требуются.'}</strong></div></div></section>
     <div className={css.columns}><div className={css.left}>
+      <Parameters application={application} />
       {decision && <Factors application={application} decision={decision} />}
       {decision && <Rules decision={decision} />}
       <Sources application={application} /><Turnover application={application} />{decision && <Policy decision={decision} />}

@@ -1,5 +1,5 @@
 import { Button } from '@mantine/core';
-import { useEffect, useId, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { api } from '../../../api/client';
 import type { components } from '../../../api/schema';
 import css from './SigningSection.module.css';
@@ -16,6 +16,7 @@ export default function OtpConfirm({ applicationId, purpose, partyId, confirmLab
   const errorId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const requestRef = useRef<HTMLButtonElement>(null);
+  const started = useRef(false);
   useEffect(() => {
     if (!otp) return;
     const timer = window.setInterval(() => setNow(Date.now()), 250);
@@ -28,7 +29,7 @@ export default function OtpConfirm({ applicationId, purpose, partyId, confirmLab
     target?.focus({ preventScroll: true });
     target?.scrollIntoView?.({ block: 'center' });
   }, [otp, expired]);
-  async function run(action: () => Promise<void>) {
+  const run = useCallback(async (action: () => Promise<void>) => {
     setPending(true); setMessage('');
     try { await action(); } catch (error) {
       if (error instanceof Error && 'status' in error && typeof error.status === 'number' && 'code' in error && typeof error.code === 'string') {
@@ -40,12 +41,17 @@ export default function OtpConfirm({ applicationId, purpose, partyId, confirmLab
         await onFailure({ status: error.status, code: error.code, message: error.message });
       } else setMessage('Не удалось выполнить действие. Проверьте соединение и попробуйте ещё раз.');
     } finally { setPending(false); }
-  }
-  async function requestCode() {
+  }, [onFailure]);
+  const requestCode = useCallback(async () => {
     const result = await api.POST('/applications/{id}/otp', { params: { path: { id: applicationId } }, body: { purpose, ...(partyId ? { party_id: partyId } : {}) } });
     if (result.error) throw Object.assign(new Error(result.error.error.message), { status: result.response.status, code: result.error.error.code });
     if (result.data) { setOtp(result.data); setCode(''); setNow(Date.now()); }
-  }
+  }, [applicationId, purpose, partyId]);
+  useEffect(() => {
+    if (started.current) return;
+    started.current = true;
+    void run(requestCode);
+  }, [run, requestCode]);
   return <div className={css.otp}>
     {otp && seconds === 0 && <p role="status">Код истёк</p>}
     {(!otp || seconds === 0) ? <Button ref={requestRef} disabled={pending} loading={pending} onClick={() => void run(requestCode)}>{otp ? 'Получить новый код' : 'Получить код'}</Button> : <>

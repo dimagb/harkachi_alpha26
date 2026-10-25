@@ -35,6 +35,45 @@ async function ready(id = 'ooo_border') { open(id); await screen.findByRole('hea
 function choose(label: string) { fireEvent.click(screen.getByRole('radio', { name: label })); }
 function comment(text = 'Первичные сведения проверены') { fireEvent.change(screen.getByLabelText('Комментарий (обязательно)'), { target: { value: text } }); }
 
+it('показывает параметры заявки, условия оферты и московский срок', async () => {
+  const fixture: components['schemas']['ApplicationBank'] = await (await fetch('http://localhost/api/v1/underwriting/applications/ooo_border', { headers: { Authorization: 'Bearer demo:underwriter' } })).json();
+  fixture.state = 'OFFER_ISSUED';
+  fixture.purpose = 'OTHER'; fixture.purpose_text = 'Развитие нового направления';
+  fixture.stage.what_to_do = 'Примите предложение';
+  fixture.offer = { id: 'offer', version: 1, kind: 'APPROVED', status: 'ACTIVE', product_code: 'EXPRESS', amount: 900000, term_months: 18, rate: 24.5, monthly_payment: 60235, expires_at: '2026-11-01T22:30:00Z', explanation: [], requested: null, counter_reason: null };
+  server.use(http.get('*/api/v1/underwriting/applications/ooo_border', () => HttpResponse.json(fixture)));
+  await ready();
+  const parameters = screen.getByRole('region', { name: 'Параметры заявки' });
+  expect(within(parameters).getAllByText('Экспресс-кредит')).toHaveLength(2);
+  for (const text of ['24 мес.', 'Развитие нового направления']) expect(within(parameters).getByText(text)).toBeTruthy();
+  expect(within(parameters).getByText(/12\s000\s000\s₽/)).toBeTruthy();
+  expect(within(parameters).getByText(/900\s000\s₽/)).toBeTruthy();
+  expect(within(parameters).getByText(/24,50/)).toBeTruthy();
+  expect(within(parameters).getByText(/60\s235\s₽/)).toBeTruthy();
+  expect(within(parameters).getByText(/Действует до 02.11.2026 01:30/)).toBeTruthy();
+  expect(screen.getByText('Клиент видит:').parentElement?.textContent).toContain('Примите предложение');
+});
+
+it('показывает вопросы открытого дозапроса и срок ответа по Москве', async () => {
+  const fixture: components['schemas']['ApplicationBank'] = await (await fetch('http://localhost/api/v1/underwriting/applications/ooo_border', { headers: { Authorization: 'Bearer demo:underwriter' } })).json();
+  fixture.state = 'INFO_REQUESTED';
+  fixture.info_request = { id: 'request', due_at: '2026-10-26T22:30:00Z', items: [{ item_code: 'UNDERWRITER_QUESTION', question: 'Подтвердите годовую выручку', requires_value: false }] };
+  server.use(http.get('*/api/v1/underwriting/applications/ooo_border', () => HttpResponse.json(fixture)));
+  await ready();
+  const parameters = screen.getByRole('region', { name: 'Параметры заявки' });
+  expect(within(parameters).getByText('Оборотные средства')).toBeTruthy();
+  expect(within(parameters).getByText('Подтвердите годовую выручку')).toBeTruthy();
+  expect(within(parameters).getByText(/Ответить до 27.10.2026 01:30/)).toBeTruthy();
+});
+
+it.each([['CASH_GAP', 'Кассовый разрыв'], ['EQUIPMENT', 'Оборудование и развитие'], ['OTHER', 'Другое']] as const)('показывает цель %s русским названием', async (purpose, title) => {
+  const fixture: components['schemas']['ApplicationBank'] = await (await fetch('http://localhost/api/v1/underwriting/applications/ooo_border', { headers: { Authorization: 'Bearer demo:underwriter' } })).json();
+  fixture.purpose = purpose; fixture.purpose_text = null;
+  server.use(http.get('*/api/v1/underwriting/applications/ooo_border', () => HttpResponse.json(fixture)));
+  await ready();
+  expect(within(screen.getByRole('region', { name: 'Параметры заявки' })).getByText(title)).toBeTruthy();
+});
+
 it('показывает эталонные группы, итог, рекомендацию и платёж', async () => {
   await ready();
   const personas = JSON.parse(readFileSync('../contracts/personas.json', 'utf8'));
@@ -153,9 +192,43 @@ it('даёт повторить сбор только для SOURCE_UNAVAILABLE'
 it('показывает признаки ПОД/ФТ, внутренний стоп-фактор и скрывает форму', async () => {
   open('ooo_aml');
   await screen.findByText('Признаки ПОД/ФТ');
-  expect(screen.getByText('SF_ADDITIONAL')).toBeTruthy();
+  expect(screen.getByTitle('SF_ADDITIONAL')).toBeTruthy();
+  expect(screen.queryByText('SF_ADDITIONAL')).toBeNull();
   expect(screen.getByText('Стоп-фактор')).toBeTruthy();
+  expect(screen.getByText('Клиент видит:').parentElement?.textContent).not.toContain('специалиста');
   expect(screen.queryByLabelText('Комментарий (обязательно)')).toBeNull();
+});
+
+it('предупреждает о стоп-факторе последнего AUTO только при одобрении и встречном', async () => {
+  const fixture: components['schemas']['ApplicationBank'] = await (await fetch('http://localhost/api/v1/underwriting/applications/ooo_border', { headers: { Authorization: 'Bearer demo:underwriter' } })).json();
+  const auto = fixture.decisions[0]!;
+  fixture.decisions = [
+    { ...auto, id: 'old', created_at: '2026-10-22T12:00:00Z', rules_fired: [] },
+    { ...auto, id: 'manual', kind: 'MANUAL', created_at: '2026-10-25T12:00:00Z', rules_fired: [] },
+    { ...auto, id: 'latest', created_at: '2026-10-24T12:00:00Z', rules_fired: [{ code: 'SF_OVERDUE', title: 'Есть текущая просрочка', value: '35 000 ₽', threshold: 'Нет просрочки', effect: 'STOP' }] },
+  ];
+  server.use(http.get('*/api/v1/underwriting/applications/ooo_border', () => HttpResponse.json(fixture)));
+  await ready();
+  const warning = 'Есть стоп-фактор: Есть текущая просрочка. Решение вопреки стоп-фактору будет отмечено в истории заявки';
+  expect(screen.getByText(warning)).toBeTruthy();
+  choose('Встречное');
+  expect(screen.getByText(warning)).toBeTruthy();
+  choose('Отказать');
+  expect(screen.queryByText(warning)).toBeNull();
+  choose('Запросить данные');
+  expect(screen.queryByText(warning)).toBeNull();
+});
+
+it('не предупреждает по стоп-фактору устаревшего AUTO', async () => {
+  const fixture: components['schemas']['ApplicationBank'] = await (await fetch('http://localhost/api/v1/underwriting/applications/ooo_border', { headers: { Authorization: 'Bearer demo:underwriter' } })).json();
+  const auto = fixture.decisions[0]!;
+  fixture.decisions = [
+    { ...auto, id: 'old', created_at: '2026-10-22T12:00:00Z', rules_fired: [{ code: 'SF_OVERDUE', title: 'Есть текущая просрочка', value: '35 000 ₽', threshold: 'Нет просрочки', effect: 'STOP' }] },
+    { ...auto, id: 'latest', created_at: '2026-10-24T12:00:00Z', rules_fired: [] },
+  ];
+  server.use(http.get('*/api/v1/underwriting/applications/ooo_border', () => HttpResponse.json(fixture)));
+  await ready();
+  expect(screen.queryByText(/Есть стоп-фактор:/)).toBeNull();
 });
 
 it('даёт фокус графику поступлений для прокрутки с клавиатуры', async () => {

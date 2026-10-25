@@ -35,7 +35,6 @@ async function consentAndCode() {
   fireEvent.click(screen.getByRole('checkbox', { name: 'Согласен: обработка персональных данных' }));
   fireEvent.click(screen.getByRole('checkbox', { name: 'Согласен: запрос кредитной истории' }));
   fireEvent.click(screen.getByRole('button', { name: 'Подписать и отправить' }));
-  fireEvent.click(screen.getByRole('button', { name: 'Получить код' }));
   await screen.findByLabelText('Код из СМС');
 }
 it.each(['ip_good', 'ooo_load'])('%s: обязательные согласия, отдельные документы и точное тело подачи', async (login) => {
@@ -65,18 +64,13 @@ it('ИП может отдельно согласиться на автомат�
   fireEvent.click(screen.getByRole('button', { name: 'Подтвердить и отправить' }));
   await waitFor(() => expect(submitted).toMatchObject({ consents: { auto_decision: true } }));
 });
-it('ведёт к получению кода после отправки и прокручивает поле кода в центр с фокусом', async () => {
+it('после отправки сразу запрашивает код и прокручивает поле в центр с фокусом', async () => {
   const scroll = vi.fn();
   Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', { configurable: true, value: scroll });
   otp(); open();
   fireEvent.click(screen.getByRole('checkbox', { name: 'Согласен: обработка персональных данных' }));
   fireEvent.click(screen.getByRole('checkbox', { name: 'Согласен: запрос кредитной истории' }));
   fireEvent.click(screen.getByRole('button', { name: 'Подписать и отправить' }));
-  const request = screen.getByRole('button', { name: 'Получить код' });
-  expect(document.activeElement).toBe(request);
-  expect(scroll).toHaveBeenLastCalledWith({ block: 'center' });
-  scroll.mockClear();
-  fireEvent.click(request);
   const input = await screen.findByLabelText('Код из СМС');
   await waitFor(() => expect(document.activeElement).toBe(input));
   expect(scroll).toHaveBeenLastCalledWith({ block: 'center' });

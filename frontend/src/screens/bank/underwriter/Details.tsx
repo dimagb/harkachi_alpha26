@@ -1,10 +1,38 @@
 import { Tabs } from '@mantine/core';
 import { formatMoney } from '../../../ui/status';
-import { effectLabels, eventLabels, formatAt, formatPercent, outcomeLabels, stateLabels, type BankApplication, type BankDecision } from '../labels';
+import { purposeLabels } from '../../../ui/labels';
+import { effectLabels, eventLabels, formatAt, formatPercent, internalReasonLabel, outcomeLabels, productLabels, stateLabels, type BankApplication, type BankDecision } from '../labels';
 import css from './Underwriter.module.css';
 
+function deadline(at: string) {
+  return new Intl.DateTimeFormat('ru-RU', { timeZone: 'Europe/Moscow', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(new Date(at)).replace(',', '');
+}
+
+export function Parameters({ application }: { application: BankApplication }) {
+  const offer = application.offer;
+  const request = application.state === 'INFO_REQUESTED' ? application.info_request : null;
+  return <section className={css.section} aria-label="Параметры заявки"><h2>Параметры заявки</h2>
+    <dl className={css.sourceDetails} style={{ margin: 0 }}>
+      <dt>Продукт</dt><dd>{productLabels[application.product_code]}</dd>
+      <dt>Сумма</dt><dd>{formatMoney(application.amount)}</dd>
+      <dt>Срок</dt><dd>{application.term_months} мес.</dd>
+      <dt>Цель</dt><dd>{application.purpose_text || purposeLabels[application.purpose]}</dd>
+      <dt>Заявленная выручка за год</dt><dd>{formatMoney(application.declared_revenue_year)}</dd>
+    </dl>
+    {offer && <><h3>Условия предложения</h3><dl className={css.sourceDetails} style={{ margin: 0 }}>
+      <dt>Продукт</dt><dd>{productLabels[offer.product_code]}</dd>
+      <dt>Сумма</dt><dd>{formatMoney(offer.amount)}</dd>
+      <dt>Срок</dt><dd>{offer.term_months} мес.</dd>
+      <dt>Ставка</dt><dd>{offer.rate.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} %</dd>
+      <dt>Платёж в месяц</dt><dd>{offer.monthly_payment === null ? 'Проценты — только за использованные дни' : formatMoney(offer.monthly_payment)}</dd>
+    </dl><p>Действует до {deadline(offer.expires_at)} (Москва)</p></>}
+    {request && <><h3>Запрошенные данные</h3><ul>{request.items.map((item, index) => <li key={`${item.item_code}-${index}`}>{item.question}</li>)}</ul><p>Ответить до {deadline(request.due_at)} (Москва)</p></>}
+  </section>;
+}
+
 export function Rules({ decision }: { decision: BankDecision }) {
-  return !!decision.rules_fired.length && <section className={css.section} aria-label="Сработавшие правила"><h2>Сработавшие правила</h2>{decision.rules_fired.map((rule, index) => <div key={`${rule.code}-${index}`} className={css.rule}><div className={css.ruleCopy}><strong title={rule.code}>{rule.title}</strong><span>Факт: {rule.value}</span><span>Порог: {rule.threshold}</span></div><span className={css.badge} data-tone={rule.effect === 'STOP' ? 'stop' : rule.effect === 'ROUTE' ? 'wait' : 'gray'}>{effectLabels[rule.effect]}</span><code className={css.ruleCode}>{rule.code}</code></div>)}{!!decision.internal_reasons.length && <ul>{decision.internal_reasons.map((text, i) => <li key={i}>{text}</li>)}</ul>}</section>;
+  const reasons = [...new Set(decision.internal_reasons)].filter(code => !decision.rules_fired.some(rule => rule.code === code));
+  return (!!decision.rules_fired.length || !!reasons.length) && <section className={css.section} aria-label="Сработавшие правила"><h2>Сработавшие правила</h2>{decision.rules_fired.map((rule, index) => <div key={`${rule.code}-${index}`} className={css.rule}><div className={css.ruleCopy}><strong title={rule.code}>{rule.title}</strong><span>Факт: {rule.value}</span><span>Порог: {rule.threshold}</span></div><span className={css.badge} data-tone={rule.effect === 'STOP' ? 'stop' : rule.effect === 'ROUTE' ? 'wait' : 'gray'}>{effectLabels[rule.effect]}</span></div>)}{!!reasons.length && <ul>{reasons.map(code => <li key={code} title={code}>{internalReasonLabel(code)}</li>)}</ul>}</section>;
 }
 
 export function Turnover({ application }: { application: BankApplication }) {
