@@ -1823,7 +1823,7 @@ uv run --no-project --python 3.12 --with pytest --with httpx --with jsonschema p
 
 ### F-17 — Черновик формы заявки переживает перезагрузку · Катя (Codex) · ≤40 мин
 **Зачем.** Требование F6 и критерий кейса 4 «данные сохраняются и используются по ходу процесса»: до «Создать заявку» форма живёт в `useState` (`frontend/src/screens/NewApplication.tsx:65–69`), F5 или случайное закрытие вкладки стирает ввод. Заодно F8: доказать тестом, что сумма, введённая с пробелами-разделителями, уходит в API целым числом.
-**Файлы:** `frontend/src/screens/NewApplication.tsx`; `frontend/src/screens/NewApplication.test.tsx` — **только новые** тесты, существующие не менять; при необходимости маленький хук рядом (`src/screens/application/useFormDraft.ts`).
+**Файлы:** `frontend/src/screens/NewApplication.tsx`; `frontend/src/screens/NewApplication.test.tsx` — **только новые** тесты, существующие не менять; при необходимости маленький хук рядом (`src/screens/application/useFormDraft.ts`); `frontend/src/App.tsx` — **только** строка маршрута `/app/applications/new`: передать `userId={me.data.user.id}`, как у `ApplicationCard` (разрешено тимлидом по QUESTION F-17).
 **Читать:** `NewApplication.tsx` (состояние формы и отправка), `NewApplication.test.tsx` (как устроены тесты, MSW), `src/api/client.ts` (как создаётся заявка).
 **Сделать:**
 1. Черновик в `sessionStorage` (ключ с id пользователя и кодом продукта): продукт, цель, сумма, срок, пояснение цели, выручка. Сохранять при изменении (без дебаунса — поля маленькие), восстанавливать при открытии формы того же продукта, **очищать** после успешного создания заявки и по кнопке «Отмена/Назад», если она есть. Ошибки `sessionStorage` (приватный режим) — молча игнорировать, форма работает как раньше.
