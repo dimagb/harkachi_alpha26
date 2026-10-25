@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import process from 'node:process';
 
 export type Offer = { amount: number; term_months: number; rate: number; monthly_payment: number };
-type Expected = { offer?: Offer; after_info?: { offer: Offer }; recommendation?: { offer: Offer; score: number; grade: string } };
+type Expected = { offer?: Offer; after_info?: { offer: Offer }; recommendation?: { offer: Offer; score: number; grade: string; points: Record<string, number> } };
 export type Persona = {
   code: string;
   kind: string;
@@ -28,6 +28,7 @@ type Fixtures = {
   expected4xx: Expected4xx[];
   audit: { check: () => void; watch: (context: BrowserContext) => void };
   step: Step;
+  actor: (account: string) => Promise<Page>;
 };
 
 export const test = base.extend<Fixtures>({
@@ -51,11 +52,26 @@ export const test = base.extend<Fixtures>({
     const check = () => { expect(errors, 'На каждом шаге: без ошибок браузера, 5xx и неожиданных 4xx').toEqual([]); };
     watch(context);
     await use({ check, watch });
-    await testInfo.attach('browser-api-audit', { body: JSON.stringify({ errors, observed }, null, 2), contentType: 'application/json' });
+    await testInfo.attach('browser-api-audit', { body: JSON.stringify({ errors, observed, annotations: testInfo.annotations }, null, 2), contentType: 'application/json' });
     check();
   }, { auto: true }],
   step: async ({ audit }, provide) => {
     await provide(async (name, body) => { await base.step(name, async () => { await body(); audit.check(); }); });
+  },
+  actor: async ({ browser, baseURL, viewport, audit }, provide, testInfo) => {
+    const actors: { account: string; context: BrowserContext; page: Page }[] = [];
+    await provide(async account => {
+      const context = await browser.newContext({ baseURL, viewport: viewport ?? undefined, serviceWorkers: 'block', reducedMotion: 'reduce' });
+      audit.watch(context);
+      const page = await context.newPage();
+      actors.push({ account, context, page });
+      await login(page, account);
+      return page;
+    });
+    for (const { account, context, page } of actors) {
+      await testInfo.attach(`${account}-screen`, { body: await page.screenshot({ fullPage: true }), contentType: 'image/png' });
+      await context.close();
+    }
   },
 });
 export { expect };
@@ -68,13 +84,14 @@ export async function login(page: Page, account: string) {
   await expect(page.getByRole('heading', { name: account === 'underwriter' ? 'Очередь' : 'Мои заявки', exact: true })).toBeVisible();
 }
 
-const purposes: Record<string, string> = { WORKING_CAPITAL: 'Оборотные средства', EQUIPMENT: 'Оборудование' };
+const purposes: Record<string, string> = { WORKING_CAPITAL: 'Оборотные средства', EQUIPMENT: 'Оборудование и развитие' };
 const products: Record<string, string> = { EXPRESS: 'Экспресс-кредит', WORKING_CAPITAL: 'Оборотный кредит' };
 
-export async function createApplication(page: Page, customer: Persona, account = customer.code) {
+export async function createApplication(page: Page, customer: Persona, account = customer.code, inspect: () => Promise<void> = async () => {}) {
   await login(page, account);
   await page.goto('/app/applications/new');
   await page.getByRole('button', { name: 'Кассовый разрыв', exact: true }).click();
+  await inspect();
   const product = page.locator('article, section').filter({ has: page.getByRole('heading', { name: products[customer.demo.app.product], exact: true }) });
   await product.getByRole('button', { name: 'Выбрать', exact: true }).click();
   await page.getByLabel('Сумма, ₽', { exact: true }).fill(String(customer.demo.app.amount));
@@ -83,11 +100,14 @@ export async function createApplication(page: Page, customer: Persona, account =
   await page.getByRole('combobox', { name: 'Цель', exact: true }).click();
   await page.getByRole('option', { name: purposes[customer.demo.app.purpose], exact: true }).click();
   await page.getByLabel('Выручка за год, ₽', { exact: true }).fill(String(customer.demo.app.declared_revenue_year));
+  await inspect();
   await page.getByRole('button', { name: 'Создать заявку', exact: true }).click();
   await expect(page).toHaveURL(/\/app\/applications\/[0-9a-f-]{36}$/);
   const id = new URL(page.url()).pathname.split('/').pop()!;
   expect(id).toMatch(/^[0-9a-f-]{36}$/);
   test.info().annotations.push({ type: 'application', description: id });
+  await expect(page.getByRole('region', { name: 'Согласия и отправка', exact: true })).toBeVisible();
+  await inspect();
   return id;
 }
 
@@ -129,4 +149,12 @@ export async function acceptAndSign(page: Page, guarantor: boolean) {
     await page.getByRole('button', { name: 'Подписать поручительство', exact: true }).click();
     await confirmOtp(page, 'Подтвердить подпись');
   }
+}
+
+export async function approve(bank: Page, comment: string) {
+  const form = bank.getByRole('region', { name: 'Решение', exact: true });
+  await form.getByText('Одобрить', { exact: true }).click();
+  await form.getByLabel('Комментарий (обязательно)', { exact: true }).fill(comment);
+  await form.getByRole('button', { name: 'Принять решение', exact: true }).click();
+  await expect(bank.getByRole('region', { name: 'Решение принято', exact: true })).toBeVisible({ timeout: 60_000 });
 }
