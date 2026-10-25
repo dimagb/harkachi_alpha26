@@ -1,4 +1,5 @@
 import re
+from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 import pytest
@@ -8,7 +9,14 @@ from sqlalchemy import event, func, select
 from app.auth.deps import current_user
 from app.integrations.registry import FakeRegistryProvider
 from app.main import app
-from app.models import Application, ApplicationEvent, Decision, ExternalCheck, User
+from app.models import (
+    Application,
+    ApplicationEvent,
+    Decision,
+    ExternalCheck,
+    Objection,
+    User,
+)
 
 
 def decide(client, application_id, **body):
@@ -147,6 +155,124 @@ def test_bank_card_ignores_invalid_event_route(
     ]
     assert len(events) == 1
     assert events[0]["note"] is None
+
+
+def test_bank_card_objection_note_and_client_projection(
+    bank_context, pipeline_factory, run_persona
+):
+    application_id = run_persona("ip_bad")
+    client, _ = bank_context
+    before = client.get(f"/api/v1/underwriting/applications/{application_id}").json()[
+        "events"
+    ]
+    with pipeline_factory() as session:
+        application = session.get(Application, application_id)
+        user = session.get(User, application.created_by)
+    original = app.dependency_overrides[current_user]
+    app.dependency_overrides[current_user] = lambda: user
+    text = "Просрочка погашена 20.10, справка есть"
+    try:
+        response = client.post(
+            f"/api/v1/applications/{application_id}/objection", json={"text": text}
+        )
+        assert response.status_code == 200, response.text
+        assert text not in response.text
+        public = client.get(f"/api/v1/applications/{application_id}")
+        assert public.status_code == 200, public.text
+        assert text not in public.text
+    finally:
+        app.dependency_overrides[current_user] = original
+
+    response = client.get(f"/api/v1/underwriting/applications/{application_id}")
+    assert response.status_code == 200, response.text
+    events = response.json()["events"]
+    review = [entry for entry in events if entry["to_state"] == "MANUAL_REVIEW"]
+    assert len(review) == 1
+    assert review[0]["note"] == (
+        "Клиент не согласен с решением: «Просрочка погашена 20.10, справка есть»"
+    )
+    assert "OBJECTION" not in review[0]["note"]
+    assert events[: len(before)] == before
+
+
+@pytest.mark.parametrize("count", [1, 10])
+def test_objection_event_note_uses_latest_text_in_one_query(
+    pipeline_factory, run_persona, count
+):
+    from app.underwriting.card import _events
+
+    identity = run_persona("ip_bad")
+    other = run_persona("ip_bad")
+    now = datetime.now(UTC)
+    with pipeline_factory.begin() as session:
+        session.add_all(
+            [
+                Objection(
+                    application_id=identity,
+                    text="Старое возражение",
+                    created_at=now - timedelta(days=1),
+                ),
+                Objection(
+                    application_id=identity,
+                    text="Актуальное возражение",
+                    created_at=now,
+                ),
+                Objection(
+                    application_id=other,
+                    text="Чужое возражение",
+                    created_at=now + timedelta(days=1),
+                ),
+            ]
+        )
+        for _ in range(count):
+            session.add(
+                ApplicationEvent(
+                    application_id=identity,
+                    from_state="DECLINED",
+                    to_state="MANUAL_REVIEW",
+                    event_type="STATE_CHANGED",
+                    actor_type="CLIENT",
+                    payload={"route_reason": "OBJECTION"},
+                )
+            )
+        session.add(
+            ApplicationEvent(
+                application_id=identity,
+                from_state="MANUAL_REVIEW",
+                to_state="DECLINED",
+                event_type="STATE_CHANGED",
+                actor_type="SYSTEM",
+                payload={"route_reason": "OBJECTION"},
+            )
+        )
+
+    statements = []
+    engine = pipeline_factory.kw["bind"]
+
+    def record(*args):
+        statements.append(args[2])
+
+    with pipeline_factory() as session:
+        application = session.get(Application, identity)
+        event.listen(engine, "before_cursor_execute", record)
+        try:
+            entries = _events(session, application)
+        finally:
+            event.remove(engine, "before_cursor_execute", record)
+    review = [entry for entry in entries if entry.to_state == "MANUAL_REVIEW"]
+    assert len(review) == count
+    assert all(
+        entry.note == "Клиент не согласен с решением: «Актуальное возражение»"
+        for entry in review
+    )
+    declined = [
+        entry
+        for entry in entries
+        if entry.from_state == "MANUAL_REVIEW" and entry.to_state == "DECLINED"
+    ]
+    assert len(declined) == 1
+    assert declined[0].note == "Клиент не согласен с решением"
+    assert len(statements) == 1
 
 
 def test_queue_current_event_order_and_constant_queries(
