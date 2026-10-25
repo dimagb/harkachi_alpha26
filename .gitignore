@@ -18,3 +18,5 @@ drafts/telegram-bus/bus.db*
 drafts/telegram-bus/.env
 # Playwright CLI output (may contain credentials)
 .playwright-cli/
+# Временные копии самопроверки агентов
+.review-tmp-*/
