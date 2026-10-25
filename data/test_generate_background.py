@@ -57,6 +57,41 @@ def test_generator_available():
     assert GENERATOR.is_file(), "В A-02 ещё отсутствует генератор generate(path)"
 
 
+def test_names_are_human_and_do_not_overlap_personas(companies, personas):
+    names = {p["name"] for p in personas}
+    people = {u["full_name"] for p in personas for u in p["users"]}
+    assert len({p["name"] for p in companies}) == 40
+    for company in companies:
+        assert company["name"] not in names
+        assert "Фоновая компания" not in company["name"]
+        assert not any(c.isdigit() for c in company["name"])
+        for user in company["users"]:
+            assert user["full_name"] not in people
+            assert len(user["full_name"].split()) == 3
+            assert not any(c.isdigit() for c in user["full_name"])
+
+
+def test_renaming_preserves_original_financial_data(tmp_path):
+    def without_names(value):
+        if isinstance(value, dict):
+            return {
+                k: without_names(v)
+                for k, v in value.items()
+                if k not in {"name", "full_name", "director", "founders"}
+            }
+        if isinstance(value, list):
+            return [without_names(v) for v in value]
+        return value
+
+    output = tmp_path / "background.json"
+    load_module("generate_background", GENERATOR).generate(output)
+    payload = without_names(json.loads(output.read_text("utf-8")))
+    digest = hashlib.sha256(
+        json.dumps(payload, sort_keys=True, ensure_ascii=False).encode()
+    ).hexdigest()
+    assert digest == "15850db47c1295f154b10a317eb5f84eef48cdb3a82aa6eddf51f76e5b14ea39"
+
+
 def test_determinism_and_serialization(tmp_path):
     generator = load_module("generate_background", GENERATOR)
     first, second = tmp_path / "first.json", tmp_path / "second.json"

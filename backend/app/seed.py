@@ -1,6 +1,7 @@
 """Idempotent demo data loader: python -m app.seed."""
 
 import json
+import logging
 from datetime import date
 from decimal import Decimal
 
@@ -20,6 +21,8 @@ from app.models import (
     User,
 )
 from app.security import hash_password
+
+logger = logging.getLogger(__name__)
 
 # TODO(lead): replace PRODUCTS from decision_reference.py with B-02 DEFAULT_CONFIG.
 PRODUCT_PARAMS = {
@@ -222,10 +225,9 @@ def get_or_create[Model: Base](
     return instance
 
 
-def seed(session: Session) -> None:
+def seed_companies(session: Session, companies: list[dict]) -> None:
     settings = get_settings()
-    data = json.loads((settings.contracts_dir / "personas.json").read_text("utf-8"))
-    for persona in data["personas"]:
+    for persona in companies:
         company = get_or_create(
             session,
             Company,
@@ -266,6 +268,11 @@ def seed(session: Session) -> None:
             )
         get_or_create(session, RiskFlag, {"company_id": company.id}, **persona["risk"])
 
+
+def seed(session: Session) -> None:
+    settings = get_settings()
+    data = json.loads((settings.contracts_dir / "personas.json").read_text("utf-8"))
+    seed_companies(session, data["personas"])
     for staff in data["staff"]:
         if session.scalar(select(User).where(User.login == staff["login"])) is None:
             get_or_create(
@@ -306,11 +313,26 @@ def seed(session: Session) -> None:
             client_visible=visible,
             bki_reason_code=bki_code,
         )
+    if settings.demo_background:
+        try:
+            with session.begin_nested():
+                background = json.loads(settings.background_path.read_text("utf-8"))
+                seed_companies(session, background["companies"])
+        except Exception:
+            logger.warning("Фоновые компании не загружены")
 
 
 def main() -> None:
+    logging.basicConfig(level=get_settings().log_level)
     with SessionLocal.begin() as session:
         seed(session)
+    if get_settings().demo_background:
+        try:
+            from app.demo.background import run_background
+
+            run_background(SessionLocal)
+        except Exception:
+            logger.warning("Фоновые заявки не загружены; персонажи сохранены")
 
 
 if __name__ == "__main__":

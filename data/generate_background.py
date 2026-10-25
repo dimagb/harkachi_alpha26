@@ -14,6 +14,34 @@ AS_OF = date(2026, 10, 23)
 SEED = 20261023
 COMMON = ("DRAFT", "SUBMITTED", "WITHDRAWN")
 OFFER = ("OFFER_ISSUED", "SIGNED", "DISBURSED", "EXPIRED")
+COMPANY_ROOTS = (
+    "Север",
+    "Вектор",
+    "Горизонт",
+    "Спектр",
+    "Меридиан",
+    "Исток",
+    "Контур",
+    "Ресурс",
+)
+COMPANY_INDUSTRIES = ("Логистика", "Сервис", "Торг", "Строй", "Технологии")
+SURNAMES = (
+    "Крылов",
+    "Белов",
+    "Миронов",
+    "Фролов",
+    "Захаров",
+    "Титов",
+    "Власов",
+    "Савельев",
+)
+GIVEN_NAMES = (
+    "Артём Павлович",
+    "Михаил Викторович",
+    "Денис Олегович",
+    "Роман Ильич",
+    "Антон Григорьевич",
+)
 
 
 def inn10(b):
@@ -111,9 +139,11 @@ def make_companies(rng, reference):
         okved = rng.choice(tuple(reference.INDUSTRY)) + ".10"
         if i in stop:
             okved = "92.10" if i == stop[0] else "64.91"
-        director = f"Иванов Алексей Сергеевич {i + 1}"
+        director = f"{SURNAMES[i % 8]} {GIVEN_NAMES[i // 8]}"
         name = (
-            f"ООО «Фоновая компания {i + 1:02d}»" if kind == "OOO" else f"ИП {director}"
+            f"ООО «{COMPANY_ROOTS[i % 8]} {COMPANY_INDUSTRIES[i // 8]}»"
+            if kind == "OOO"
+            else f"ИП {director}"
         )
         ogrn_prefix = (
             "12677" if kind == "OOO" else "32677"
