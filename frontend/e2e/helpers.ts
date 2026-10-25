@@ -33,11 +33,27 @@ type Fixtures = {
 
 export const test = base.extend<Fixtures>({
   expected4xx: [[], { option: true }],
-  audit: [async ({ context, expected4xx }, use, testInfo) => {
+  audit: [async ({ context, expected4xx, baseURL }, use, testInfo) => {
     const errors: string[] = [];
+    const ignored: string[] = [];
     const observed: Expected4xx[] = [];
     function watch(target: BrowserContext) {
-      target.on('console', message => { if (message.type() === 'error') errors.push(`console.error: ${message.text()}`); });
+      target.on('console', message => {
+        if (message.type() !== 'error') return;
+        const text = message.text();
+        const blockedScript = /^Loading the script '([^']+)' violates the following Content Security Policy\b/.exec(text);
+        if (blockedScript && baseURL) {
+          try {
+            if (new URL(blockedScript[1]).origin !== new URL(baseURL).origin) {
+              ignored.push(`console.error: ${text}`);
+              return;
+            }
+          } catch {
+            // Нераспознанный URL остаётся ошибкой: фильтруем только доказанно чужие скрипты.
+          }
+        }
+        errors.push(`console.error: ${text}`);
+      });
       target.on('weberror', event => errors.push(`pageerror: ${event.error().message}`));
       target.on('response', response => {
         const path = new URL(response.url()).pathname;
@@ -52,7 +68,7 @@ export const test = base.extend<Fixtures>({
     const check = () => { expect(errors, 'На каждом шаге: без ошибок браузера, 5xx и неожиданных 4xx').toEqual([]); };
     watch(context);
     await use({ check, watch });
-    await testInfo.attach('browser-api-audit', { body: JSON.stringify({ errors, observed, annotations: testInfo.annotations }, null, 2), contentType: 'application/json' });
+    await testInfo.attach('browser-api-audit', { body: JSON.stringify({ errors, ignored, observed, annotations: testInfo.annotations }, null, 2), contentType: 'application/json' });
     check();
   }, { auto: true }],
   step: async ({ audit }, provide) => {
