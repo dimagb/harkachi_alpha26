@@ -29,10 +29,32 @@ def test_overdraft(turnover, amount, expected, offered, persona_data, build_inpu
     assert (offer.amount if offer else None) == offered
     assert calc.requested_payment is None
     assert calc.ptr_requested is None
+    assert calc.steps[2].startswith("Лимит овердрафта: меньшее из ")
+    assert " и " in calc.steps[2]
+    assert calc.steps[2].endswith("; нагрузка не проверяется.")
+    assert "min(" not in " ".join(calc.steps)
     assert all(rule.code == "HIGH_LOAD" for rule in rules)
     if offer:
         assert offer.monthly_payment is None
         assert offer.term_months == 12
+
+
+def test_reduced_credit_amount_explanation_is_in_russian(persona_data, build_inputs):
+    inputs = build_inputs(persona_data["personas"][0])
+    inputs = replace(
+        inputs,
+        turnover=(1_000_000,) * 12,
+        bureau=replace(inputs.bureau, monthly_payments_total=0),
+        app=replace(
+            inputs.app, product_code="EXPRESS", amount=2_500_000, term_months=36
+        ),
+    )
+    outcome, offer, calc, _ = apply_policy(inputs, DEFAULT_CONFIG, "A")
+    assert outcome == "COUNTER"
+    assert offer.amount == 2_000_000
+    assert calc.steps[-2].startswith("Сумма на 36 мес.: меньшее из 2 000 000 ₽ и ")
+    assert calc.steps[-2].endswith("с округлением вниз до 50 000 ₽ = 2 000 000 ₽.")
+    assert "min(" not in " ".join(calc.steps)
 
 
 def test_counter_extends_term_before_reducing_amount(persona_data, build_inputs):
