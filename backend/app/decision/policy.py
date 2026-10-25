@@ -64,7 +64,7 @@ def apply_policy(
     if overdraft:
         limit = min(app.amount, cap)
         steps.append(
-            f"Лимит овердрафта: min({money(app.amount)}, {money(cap)}) "
+            f"Лимит овердрафта: меньшее из {money(app.amount)} и {money(cap)} "
             f"= {money(limit)}; нагрузка не проверяется."
         )
         if limit < product.min_amount:
@@ -152,7 +152,8 @@ def _credit_offer(
     affordable = present_value(free, rate, product.max_term)
     amount = floor_amount(min(cap, affordable), cfg)
     steps.append(
-        f"Сумма на {product.max_term} мес.: min({money(cap)}, {money(affordable)}) "
+        f"Сумма на {product.max_term} мес.: меньшее из "
+        f"{money(cap)} и {money(affordable)} "
         f"с округлением вниз до {money(cfg.counter_step)} = {money(amount)}."
     )
     if amount >= product.min_amount:
