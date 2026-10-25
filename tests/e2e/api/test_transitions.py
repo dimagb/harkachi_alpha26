@@ -3,7 +3,16 @@
 import json
 
 import pytest
+from client import ApiClient
+from conftest import require_ready
 from test_personas import find_persona, start_application
+
+
+@pytest.fixture(scope="module", autouse=True)
+def stand_ready():
+    # TODO(lead): как в A-03, без стенда модуль пропускается; на стенде пропусков нет.
+    with ApiClient() as api:
+        require_ready(str(api.http.base_url))
 
 
 def started(client, persona_data, code, state):
