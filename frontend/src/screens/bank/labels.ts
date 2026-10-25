@@ -11,6 +11,29 @@ export const routeLabels = {
 export const outcomeLabels = { APPROVE: 'Одобрить', COUNTER: 'Встречное', DECLINE: 'Отказать', REQUEST_INFO: 'Запросить данные', RETRY_ENRICHMENT: 'Повторить сбор сведений', MANUAL: 'К специалисту' } satisfies Record<BankDecision['outcome'], string>;
 export const productLabels = { EXPRESS: 'Экспресс-кредит', WORKING_CAPITAL: 'Оборотный кредит', OVERDRAFT: 'Овердрафт' };
 export const effectLabels = { STOP: 'Стоп-фактор', ROUTE: 'К специалисту', INFO: 'Запрос данных', POLICY: 'Политика' };
+export const internalReasonLabels: Record<string, string> = {
+  ...routeLabels,
+  SF_INACTIVE: 'Компания не действует',
+  SF_BANKRUPTCY: 'Процедура банкротства',
+  SF_AGE: 'Недостаточный срок бизнеса',
+  SF_OVERDUE: 'Просроченная задолженность',
+  SF_TAX_DEBT: 'Налоги и обязательства',
+  SF_OKVED: 'Вид деятельности не подходит',
+  SF_ADDITIONAL: 'Дополнительные проверки',
+  ADDITIONAL_CHECKS: 'Дополнительные проверки',
+  LOW_SCORE: 'Недостаточная оценка финансовых показателей',
+  HIGH_LOAD: 'Высокая долговая нагрузка',
+  UNDERWRITER_DECLINE: 'Отказ специалиста банка',
+  CLIENT_REJECTED_OFFER: 'Клиент отказался от предложения',
+  CLIENT_WITHDREW: 'Клиент отозвал заявку',
+  EXPIRED_INFO: 'Срок ответа на запрос истёк',
+  EXPIRED_OFFER: 'Срок действия предложения истёк',
+  VAL_REVENUE_MISMATCH: 'Нужно подтвердить выручку',
+  VAL_PURPOSE_UNCLEAR: 'Нужно описать цель',
+};
+export function internalReasonLabel(code: string) {
+  return internalReasonLabels[code] ?? (/^[A-Z][A-Z0-9_]+$/.test(code) ? 'Внутренняя причина решения' : code);
+}
 export const sourceLabels = { EGRUL: 'ЕГРЮЛ/ЕГРИП', BKI: 'БКИ', FNS: 'ФНС', BANK: 'Обороты по счёту в банке' };
 export const eventLabels: Record<string, string> = {
   STATE_CHANGED: 'Состояние изменено', SIGNATURE_REQUESTED: 'Запрошена подпись', CONSENT_SIGNED: 'Согласия подписаны',

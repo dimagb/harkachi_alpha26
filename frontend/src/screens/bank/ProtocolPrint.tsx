@@ -51,6 +51,7 @@ export default function ProtocolPrint() {
   if (query.isError) return <main className={css.page}><div role="alert"><p>{query.error.message}</p><Button onClick={() => void query.refetch()}>Повторить</Button></div></main>;
   const app = query.data;
   return <main className={css.page}>
+    <style media="print">{`.${css.footer} { position: static; margin-top: 16px; break-inside: avoid; }`}</style>
     <div className={css.toolbar}><span>Версия для печати · время по Москве</span><Button color="gray" onClick={() => window.print()}>Печать</Button></div>
     <header className={css.header}><h1>Протокол решения по заявке № {app.number}</h1><p><strong>{app.company.name}</strong> · ИНН {app.company.inn} · ОГРН {app.company.ogrn}</p><p>{productLabels[app.product_code]} · {formatMoney(app.amount)} · {app.term_months} мес.</p><p>Дата печати: {new Intl.DateTimeFormat('ru-RU', { dateStyle: 'long', timeStyle: 'short', timeZone: 'Europe/Moscow' }).format(new Date())}</p></header>
     {[...app.decisions].sort((a, b) => b.created_at.localeCompare(a.created_at)).map(decision => <DecisionSection key={decision.id} decision={decision} />)}
