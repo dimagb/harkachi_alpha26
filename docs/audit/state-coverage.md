@@ -1,7 +1,9 @@
 # A-07 — покрытие автомата по журналу событий
 
 Дата: 25.10.2026, Москва (UTC+3). Проверяемый `main`:
-`6af011f76d228d2c0e1b8ababc831c9934a6f108`.
+`7947184ea905452520990ab13aec927731c4df80` (после обязательного rebase).
+Первый прогон проводился на `6af011f76d228d2c0e1b8ababc831c9934a6f108`;
+затем стенд пересобран на обновлённом `main`, выполнена повторная приёмка.
 Общий стенд: `harkachi_alpha26`, `http://localhost:8080`.
 
 ## Подготовка и воспроизведение
@@ -22,7 +24,9 @@ uv run --no-project --python 3.12 --with pytest --with httpx --with jsonschema p
 Первый полный прогон: `257 passed, 1 skipped in 246.23s (0:04:06)`.
 Пропуск: `tests/e2e/api/test_races.py:147` — `docker compose недоступен:
 перезапуск worker не проверить`; в этом процессе Docker ещё не был в PATH.
-Тесты не менялись; повторная проверка проводится с исправленным окружением.
+Тесты не менялись. После rebase полный набор повторён с исправленным окружением:
+`258 passed in 309.15s (0:05:09)`, failed = 0, skipped = 0, xfail = 0.
+В том числе прошёл `test_races.py::test_worker_restart_keeps_application`.
 
 UI-проверка из `frontend`: `npm run e2e:ui` → код 1,
 `npm error Missing script: "e2e:ui"`. В проверяемом `main` эта команда отсутствует;
@@ -68,41 +72,42 @@ uv run --no-project python tests/e2e/state_coverage.py
 
 ## Снимок покрытия
 
-Дата UTC: 2026-10-25T17:14:55.743742+00:00
+Дата UTC: 2026-10-25T17:22:06.834471+00:00
 Проект Compose: harkachi_alpha26
+
 | Из | В | Кто по модели | Кто в журнале | Событий | Покрытие |
 | --- | --- | --- | --- | ---: | --- |
-| ASSESSMENT | DECLINED | система | SYSTEM: 29 | 29 | покрыто |
-| ASSESSMENT | MANUAL_REVIEW | система | SYSTEM: 23 | 23 | покрыто |
-| ASSESSMENT | OFFER_ISSUED | система | SYSTEM: 70 | 70 | покрыто |
+| ASSESSMENT | DECLINED | система | SYSTEM: 34 | 34 | покрыто |
+| ASSESSMENT | MANUAL_REVIEW | система | SYSTEM: 26 | 26 | покрыто |
+| ASSESSMENT | OFFER_ISSUED | система | SYSTEM: 79 | 79 | покрыто |
 | ASSESSMENT | WITHDRAWN | клиент | — | 0 | не покрыто |
-| DECLINED | MANUAL_REVIEW | клиент-ИП | CLIENT: 10 | 10 | покрыто |
+| DECLINED | MANUAL_REVIEW | клиент-ИП | CLIENT: 12 | 12 | покрыто |
 | DECLINED | WITHDRAWN | клиент | — | 0 | не покрыто |
-| DRAFT | SUBMITTED | подписант | CLIENT: 122 | 122 | покрыто |
-| DRAFT | WITHDRAWN | клиент | CLIENT: 35 | 35 | покрыто |
-| ENRICHMENT | ASSESSMENT | система | SYSTEM: 122 | 122 | покрыто |
+| DRAFT | SUBMITTED | подписант | CLIENT: 139 | 139 | покрыто |
+| DRAFT | WITHDRAWN | клиент | CLIENT: 39 | 39 | покрыто |
+| ENRICHMENT | ASSESSMENT | система | SYSTEM: 139 | 139 | покрыто |
 | ENRICHMENT | MANUAL_REVIEW | система | — | 0 | не покрыто |
 | ENRICHMENT | WITHDRAWN | клиент | — | 0 | не покрыто |
 | INFO_REQUESTED | EXPIRED | система | — | 0 | не покрыто |
 | INFO_REQUESTED | MANUAL_REVIEW | клиент | — | 0 | не покрыто |
-| INFO_REQUESTED | VALIDATION | клиент | CLIENT: 11 | 11 | покрыто |
+| INFO_REQUESTED | VALIDATION | клиент | CLIENT: 12 | 12 | покрыто |
 | INFO_REQUESTED | WITHDRAWN | клиент | — | 0 | не покрыто |
 | MANUAL_REVIEW | DECLINED | андеррайтер | — | 0 | не покрыто |
 | MANUAL_REVIEW | ENRICHMENT | андеррайтер | — | 0 | не покрыто |
 | MANUAL_REVIEW | INFO_REQUESTED | андеррайтер | — | 0 | не покрыто |
-| MANUAL_REVIEW | OFFER_ISSUED | андеррайтер | UNDERWRITER: 27 | 27 | покрыто |
+| MANUAL_REVIEW | OFFER_ISSUED | андеррайтер | UNDERWRITER: 31 | 31 | покрыто |
 | MANUAL_REVIEW | WITHDRAWN | клиент | — | 0 | не покрыто |
 | OFFER_ISSUED | EXPIRED | система | — | 0 | не покрыто |
-| OFFER_ISSUED | SIGNING | подписант | CLIENT: 38 | 38 | покрыто |
+| OFFER_ISSUED | SIGNING | подписант | CLIENT: 43 | 43 | покрыто |
 | OFFER_ISSUED | WITHDRAWN | клиент | — | 0 | не покрыто |
-| SIGNED | DISBURSED | система | SYSTEM: 23 | 23 | покрыто |
+| SIGNED | DISBURSED | система | SYSTEM: 26 | 26 | покрыто |
 | SIGNING | EXPIRED | система | — | 0 | не покрыто |
-| SIGNING | SIGNED | подписант (+ поручитель) | CLIENT: 23 | 23 | покрыто |
+| SIGNING | SIGNED | подписант (+ поручитель) | CLIENT: 26 | 26 | покрыто |
 | SIGNING | WITHDRAWN | клиент | — | 0 | не покрыто |
-| SUBMITTED | VALIDATION | система | SYSTEM: 122 | 122 | покрыто |
+| SUBMITTED | VALIDATION | система | SYSTEM: 139 | 139 | покрыто |
 | SUBMITTED | WITHDRAWN | клиент | — | 0 | не покрыто |
-| VALIDATION | ENRICHMENT | система | SYSTEM: 122 | 122 | покрыто |
-| VALIDATION | INFO_REQUESTED | система | SYSTEM: 11 | 11 | покрыто |
+| VALIDATION | ENRICHMENT | система | SYSTEM: 139 | 139 | покрыто |
+| VALIDATION | INFO_REQUESTED | система | SYSTEM: 12 | 12 | покрыто |
 | VALIDATION | WITHDRAWN | клиент | — | 0 | не покрыто |
 
 **покрыто 15 из 32**
@@ -115,9 +120,9 @@ uv run --no-project python tests/e2e/state_coverage.py
 
 Нет: у каждого нефинального состояния есть выход.
 
-Событий без смены состояния или с пустой границей: 1665; они исключены из покрытия и лишних переходов.
+Событий без смены состояния или с пустой границей: 1893; они исключены из покрытия и лишних переходов.
 
-Время: 0.39 с
+Время: 0.37 с
 
 ## Как покрыть отсутствующие переходы
 
@@ -161,6 +166,11 @@ uv run --no-project --with ruff ruff format --check tests/e2e/state_coverage.py
 Ruff: `All checks passed!`, формат: `1 file already formatted`.
 Новые зависимости: нет. Версии: Python 3.14.5 (скрипт), Ruff 0.17.2,
 Node.js 24.19.0, npm 11.17.0; API-набор запущен через Python 3.12.
+
+Встроенное ревью: `codex review --base origin/main` — actionable-дефектов
+в пределах A-07 не найдено. Ревьюер не запускал проверку БД и не смог
+запустить самотесты из-за отсутствия Python в своём PATH; команды приёмки
+и самотесты выполнены основным агентом отдельно, результаты приведены выше.
 
 ## Вопросы тимлиду
 
