@@ -3,6 +3,7 @@ import os
 import subprocess
 import sys
 from collections import Counter
+from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
@@ -13,7 +14,7 @@ from sqlalchemy.orm import sessionmaker
 
 from app import seed as seed_module
 from app.config import Settings, get_settings
-from app.models import Application, Company, Job, User
+from app.models import Application, Company, Job, Offer, Party, Signature, User
 
 
 @pytest.fixture
@@ -219,3 +220,87 @@ def test_time_budget_stops_before_next_application(
     with factory() as session:
         assert background_apps(session) == []
     assert "45" in caplog.text
+
+
+def test_stage_two_disburses_with_both_signatures_and_expires(background_factory):
+    from app.demo.background import run_background
+
+    factory, _ = background_factory
+    run_background(factory)
+    with factory() as session:
+        apps = background_apps(session)
+        counts = Counter(a.state for a in apps)
+        assert counts["DISBURSED"] >= 3
+        assert counts["EXPIRED"] >= 3
+        both_signatures = False
+        for application in apps:
+            if application.state == "EXPIRED":
+                assert (
+                    session.get(Offer, application.current_offer_id).status == "EXPIRED"
+                )
+            if application.state != "DISBURSED":
+                continue
+            parties = list(
+                session.scalars(
+                    select(Party).where(Party.application_id == application.id)
+                )
+            )
+            assert all(p.status == "SIGNED" for p in parties)
+            signatures = list(
+                session.scalars(
+                    select(Signature).where(
+                        Signature.application_id == application.id,
+                        Signature.object_type.in_(("OFFER", "GUARANTEE")),
+                    )
+                )
+            )
+            assert len(signatures) == len(parties)
+            if session.get(Company, application.company_id).kind == "OOO":
+                assert {p.role for p in parties} == {"BORROWER_SIGNATORY", "GUARANTOR"}
+                assert {s.object_type for s in signatures} == {"OFFER", "GUARANTEE"}
+                both_signatures = True
+        assert both_signatures
+        assert set(session.scalars(select(Job.status))) == {"DONE"}
+        before = {a.id for a in apps}
+    run_background(factory)
+    with factory() as session:
+        assert {a.id for a in background_apps(session)} == before
+
+
+def test_unexpected_pipeline_state_is_not_forced_to_target(
+    background_factory, monkeypatch, tmp_path, caplog
+):
+    from app.demo import background
+    from app.integrations.registry import ProviderUnavailable
+
+    factory, _ = background_factory
+    data = json.loads(get_settings().background_path.read_text("utf-8"))
+    company, item = next(
+        (company, item)
+        for company in data["companies"]
+        for item in company["demo"]["apps"]
+        if item["target_state"] == "EXPIRED"
+    )
+    company["demo"]["apps"] = [item]
+    data["companies"] = [company]
+    path = tmp_path / "background.json"
+    path.write_text(json.dumps(data), "utf-8")
+    monkeypatch.setattr(get_settings(), "background_path", path)
+    normal_providers = background.providers_for([company])
+
+    class UnavailableBureau:
+        def get(self, inn, consent_id):
+            raise ProviderUnavailable("sensitive-source-error")
+
+    monkeypatch.setattr(
+        background,
+        "providers_for",
+        lambda _: replace(normal_providers, bureau=UnavailableBureau()),
+    )
+    with caplog.at_level("INFO"):
+        background.run_background(factory)
+    with factory() as session:
+        assert [a.state for a in background_apps(session)] == ["MANUAL_REVIEW"]
+        assert session.scalar(select(func.count()).select_from(Offer)) == 0
+    assert "не совпало: 1" in caplog.text
+    assert "sensitive-source-error" not in caplog.text

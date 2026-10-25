@@ -11,14 +11,16 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.config import get_settings
+from app.expiry.service import time_shift
 from app.integrations.bureau import FakeBureauProvider
 from app.integrations.registry import FakeRegistryProvider
 from app.integrations.tax import FakeTaxProvider
-from app.models import Application, Company, Job, User
-from app.offers.actions import withdraw
+from app.models import Application, Company, Job, Offer, Party, User
+from app.offers.actions import accept, withdraw
 from app.pipeline.steps import Providers, process_step
-from app.schemas.api import OtpRequest, SubmitRequest
+from app.schemas.api import AcceptOfferRequest, OtpRequest, SignRequest, SubmitRequest
 from app.signing import otp
+from app.signing.sign import sign
 from app.signing.submit import submit
 
 logger = logging.getLogger(__name__)
@@ -169,9 +171,64 @@ def run_background(session_factory: sessionmaker[Session]) -> None:
                             session_factory, application_id, providers, as_of, deadline
                         )
                     session.expire_all()
+                    application = session.get(Application, application_id)
+                    if application.state == "OFFER_ISSUED":
+                        if target == "EXPIRED":
+                            time_shift(session, str(application_id), 31)
+                        elif target in {"SIGNED", "DISBURSED"}:
+                            offer = session.get(Offer, application.current_offer_id)
+                            accept(
+                                session,
+                                application_id,
+                                AcceptOfferRequest(offer_version=offer.version),
+                                user,
+                            )
+                            parties = list(
+                                session.scalars(
+                                    select(Party)
+                                    .where(
+                                        Party.application_id == application_id,
+                                        Party.required_signature.is_(True),
+                                    )
+                                    .order_by(Party.role)
+                                )
+                            )
+                            for party in parties:
+                                signer = session.get(User, party.user_id)
+                                code = otp.issue(
+                                    session,
+                                    application_id,
+                                    OtpRequest(
+                                        purpose="OFFER"
+                                        if party.role == "BORROWER_SIGNATORY"
+                                        else "GUARANTEE",
+                                        party_id=str(party.id),
+                                    ),
+                                    signer,
+                                )
+                                sign(
+                                    session,
+                                    application_id,
+                                    SignRequest(
+                                        party_id=str(party.id),
+                                        otp_id=code.otp_id,
+                                        code=code.demo_code,
+                                    ),
+                                    signer,
+                                )
+                            drain(
+                                session_factory,
+                                application_id,
+                                providers,
+                                as_of,
+                                deadline,
+                            )
+                    session.expire_all()
                     state = session.get(Application, application_id).state
                     states[state] += 1
-                    mismatched += state != target
+                    mismatched += state != (
+                        "DISBURSED" if target == "SIGNED" else target
+                    )
                 except Exception:
                     session.rollback()
                     logger.warning("Фоновая заявка не проведена")
