@@ -312,3 +312,21 @@ passed!`, `1 file already formatted`.
 - Ручное отключение сети — действие человека, предусмотренное карточкой.
 
 Уведомления QUESTION отправлены. Исправления найденного в приложении не делались.
+
+## Доля автоматических решений (25.10, тимлид)
+
+Стенд с нуля на `main` 5808672 (`docker compose down -v` → `up -d --build --wait`), в БД только 60 фоновых заявок B-10b, заявок персонажей нет. Первый выход каждой заявки из оценки по журналу `application_event`:
+
+```sql
+WITH first_exit AS (
+  SELECT DISTINCT ON (e.application_id) e.application_id, e.from_state, e.to_state
+  FROM application_event e
+  WHERE e.from_state IN ('ASSESSMENT','ENRICHMENT')
+    AND e.to_state IN ('OFFER_ISSUED','DECLINED','MANUAL_REVIEW')
+  ORDER BY e.application_id, e.created_at)
+SELECT from_state, to_state, count(*) FROM first_exit GROUP BY 1, 2 ORDER BY 1, 2;
+```
+
+Результат: `ASSESSMENT → OFFER_ISSUED` 19, `ASSESSMENT → DECLINED` 6, `ASSESSMENT → MANUAL_REVIEW` 11; сбоев источников (`ENRICHMENT → MANUAL_REVIEW`) нет. Из 36 заявок, дошедших до решения, **25 (69 %) решены без специалиста**, 11 (31 %) — у специалиста. Остальные 24 из 60 — черновики, отозванные до решения и т. п.
+
+**Ограничение.** Распределение задано генератором синтетических данных (`data/generate_background.py`) и не является прогнозом доли автоматических решений на реальном потоке. Цифра показывает, что механизм работает и измеряется по журналу одним запросом; на реальных данных это метрика STP (доля заявок без ручного шага).
