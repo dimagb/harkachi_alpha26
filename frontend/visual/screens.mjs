@@ -124,11 +124,15 @@ try {
     await reason.waitFor();
     if (width === 1440) {
       await page.getByRole('contentinfo').scrollIntoViewIfNeeded();
+      assert(await page.evaluate(() => globalThis.scrollY > 0), 'Длинная карточка действительно прокручена');
       const navbar = page.getByRole('navigation', { name: 'Главная навигация', exact: true });
       assert(await navbar.evaluate(element => {
         const box = element.getBoundingClientRect();
-        return box.top <= 0 && box.bottom >= globalThis.innerHeight && box.height >= globalThis.document.documentElement.scrollHeight && globalThis.getComputedStyle(element).backgroundColor === 'rgb(255, 255, 255)';
-      }), 'Левая панель белая до низа длинной страницы после прокрутки');
+        const style = globalThis.getComputedStyle(element);
+        return style.position === 'fixed' && Math.abs(box.top) <= 1 && Math.abs(box.bottom - globalThis.innerHeight) <= 1 && style.backgroundColor === 'rgb(255, 255, 255)';
+      }), 'Левая панель закреплена и занимает всё окно после прокрутки');
+      const navigationLink = await navbar.getByRole('link', { name: 'Мои заявки', exact: true }).boundingBox();
+      assert(navigationLink && navigationLink.y >= 0 && navigationLink.y + navigationLink.height <= 1100, 'Ссылки навигации остаются в окне после прокрутки');
     } else {
       assert.equal(await page.getByRole('navigation', { name: 'Главная навигация', exact: true }).count(), 0, '375 px: остаётся бургер без боковой панели');
     }
