@@ -65,7 +65,7 @@ it.each([['ip_good', '/app', 'Мои заявки'], ['underwriter', '/bank/queu
   await screen.findByRole('heading', { name: title });
   const logo = screen.getByRole('img', { name: 'Альфа-Банк' });
   expect(logo.closest('a')?.getAttribute('href')).toBe(path);
-  expect(logo.getAttribute('src')).toBe(alfaLogo);
+  expect(logo.getAttribute('src')).toBe(`${alfaLogo}#svgView(viewBox(152,97,189,288))`);
   const footer = screen.getByRole('contentinfo');
   expect(footer.textContent).toContain('Данные синтетические.');
   expect(footer.textContent).toContain('не являются публичной офертой.');
