@@ -1,6 +1,5 @@
 // A-08: автообход интерфейса на настоящем стенде (без MSW), только чтение.
 // VISUAL_BROWSER=chrome VISUAL_APP_URL=http://localhost:8080 node visual/audit.mjs
-// TODO(lead): закрепить @axe-core/playwright в devDependencies: после npm ci пакет для аудита отсутствует.
 import console from 'node:console';
 import process from 'node:process';
 import { mkdir, writeFile } from 'node:fs/promises';
