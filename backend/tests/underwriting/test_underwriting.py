@@ -14,6 +14,7 @@ from app.models import (
     ApplicationEvent,
     Decision,
     ExternalCheck,
+    InfoRequest,
     Objection,
     User,
 )
@@ -193,6 +194,302 @@ def test_bank_card_objection_note_and_client_projection(
     )
     assert "OBJECTION" not in review[0]["note"]
     assert events[: len(before)] == before
+
+
+@pytest.mark.parametrize(
+    "recommendation, expected",
+    [
+        ({"outcome": "APPROVE", "amount": 800_000, "term_months": 24}, "800 000"),
+        ({"outcome": "APPROVE", "amount": 1_000_000, "term_months": 12}, "12 мес."),
+        (
+            {"outcome": "COUNTER", "amount": 1_000_000, "term_months": 24},
+            "Встречное предложение",
+        ),
+    ],
+)
+def test_approval_note_marks_different_recommendation(
+    bank_context, pipeline_factory, run_persona, recommendation, expected
+):
+    identity = run_persona("ooo_border")
+    client, _ = bank_context
+    with pipeline_factory.begin() as session:
+        auto = session.scalar(
+            select(Decision).where(
+                Decision.application_id == identity, Decision.kind == "AUTO"
+            )
+        )
+        auto.recommendation = {**recommendation, "rate": 26}
+    response = decide(client, identity)
+    assert response.status_code == 200, response.text
+    notes = [
+        e["note"]
+        for e in response.json()["events"]
+        if e["event_type"] == "DECISION_MADE" and e["actor"].startswith("Андеррайтер")
+    ]
+    assert len(notes) == 1
+    assert notes[0].startswith("Проверены данные компании")
+    assert "Решение отличается от рекомендации системы" in notes[0]
+    assert expected in notes[0]
+    public = client_get(client, pipeline_factory, identity)
+    assert "Решение отличается" not in public.text
+
+
+def test_matching_recommendation_keeps_only_specialist_comment(
+    bank_context, run_persona
+):
+    identity = run_persona("ooo_border")
+    client, _ = bank_context
+    response = decide(client, identity)
+    assert response.status_code == 200, response.text
+    notes = [
+        e["note"]
+        for e in response.json()["events"]
+        if e["event_type"] == "DECISION_MADE" and e["actor"].startswith("Андеррайтер")
+    ]
+    assert notes == ["Проверены данные компании"]
+
+
+@pytest.mark.parametrize("count", [1, 10])
+def test_manual_notes_use_historical_recommendation_with_constant_queries(
+    pipeline_factory, run_persona, count
+):
+    from app.underwriting.card import _events
+
+    identity = run_persona("ooo_border")
+    now = datetime.now(UTC)
+    with pipeline_factory.begin() as session:
+        auto = session.scalar(
+            select(Decision).where(Decision.application_id == identity)
+        )
+        auto.recommendation = {
+            "outcome": "APPROVE",
+            "amount": 800_000,
+            "term_months": 24,
+            "rate": 26,
+        }
+        for index in range(count):
+            at = now + timedelta(minutes=index)
+            session.add(
+                Decision(
+                    application_id=identity,
+                    kind="MANUAL",
+                    outcome="APPROVE",
+                    factors=[],
+                    rules_fired=[],
+                    internal_reasons=[],
+                    config_version=auto.config_version,
+                    inputs_snapshot={
+                        "amount": 1_000_000 if index % 2 == 0 else 800_000,
+                        "term_months": 24,
+                    },
+                    comment=f"Решение {index}",
+                    created_at=at,
+                )
+            )
+            session.add(
+                ApplicationEvent(
+                    application_id=identity,
+                    event_type="DECISION_MADE",
+                    actor_type="UNDERWRITER",
+                    payload={"comment": f"Решение {index}"},
+                    created_at=at + timedelta(seconds=1),
+                )
+            )
+        session.add(
+            Decision(
+                application_id=identity,
+                kind="AUTO",
+                outcome="APPROVE",
+                factors=[],
+                rules_fired=[],
+                internal_reasons=[],
+                config_version=auto.config_version,
+                inputs_snapshot={},
+                recommendation={
+                    "outcome": "APPROVE",
+                    "amount": 1_000_000,
+                    "term_months": 24,
+                    "rate": 26,
+                },
+                created_at=now + timedelta(days=1),
+            )
+        )
+    statements = []
+    engine = pipeline_factory.kw["bind"]
+
+    def record(*args):
+        statements.append(args[2])
+
+    with pipeline_factory() as session:
+        application = session.get(Application, identity)
+        event.listen(engine, "before_cursor_execute", record)
+        try:
+            entries = _events(session, application)
+        finally:
+            event.remove(engine, "before_cursor_execute", record)
+    notes = [
+        e.note
+        for e in entries
+        if e.event_type == "DECISION_MADE" and e.actor.startswith("Андеррайтер")
+    ]
+    assert len(notes) == count
+    for index, note in enumerate(notes):
+        if index % 2 == 0:
+            assert note.startswith(f"Решение {index}; Решение отличается")
+            assert "800 000" in note
+        else:
+            assert note == f"Решение {index}"
+    assert len(statements) <= 3
+
+
+def test_approval_after_objection_marks_stop_factor(
+    bank_context, pipeline_factory, run_persona
+):
+    identity = run_persona("ip_bad", app_params={"amount": 1_000_000, "term": 24})
+    client, _ = bank_context
+    with pipeline_factory() as session:
+        user = session.get(User, session.get(Application, identity).created_by)
+    previous = app.dependency_overrides[current_user]
+    app.dependency_overrides[current_user] = lambda: user
+    try:
+        response = client.post(
+            f"/api/v1/applications/{identity}/objection",
+            json={"text": "Просрочка уже погашена, прошу пересмотреть"},
+        )
+        assert response.status_code == 200, response.text
+    finally:
+        app.dependency_overrides[current_user] = previous
+    response = decide(client, identity)
+    assert response.status_code == 200, response.text
+    notes = [
+        e["note"]
+        for e in response.json()["events"]
+        if e["event_type"] == "DECISION_MADE" and e["actor"].startswith("Андеррайтер")
+    ]
+    assert len(notes) == 1
+    assert notes[0].startswith("Проверены данные компании")
+    assert "Решение вопреки стоп-фактору:" in notes[0]
+    assert "просроч" in notes[0].lower()
+    assert "SF_" not in notes[0] and "APPROVE" not in notes[0]
+    public = client_get(client, pipeline_factory, identity)
+    assert "стоп-фактор" not in public.text
+
+
+def test_gap_response_note_contains_question_value_and_comment(
+    bank_context, pipeline_factory, run_persona
+):
+    identity = run_persona("ooo_gap")
+    client, _ = bank_context
+    public = client_get(client, pipeline_factory, identity).json()
+    question = public["info_request"]["items"][0]["question"]
+    with pipeline_factory() as session:
+        user = session.get(User, session.get(Application, identity).created_by)
+    previous = app.dependency_overrides[current_user]
+    app.dependency_overrides[current_user] = lambda: user
+    try:
+        response = client.post(
+            f"/api/v1/applications/{identity}/info-response",
+            json={
+                "answers": [
+                    {
+                        "item_code": "REVENUE_CONFIRM",
+                        "value": 7_200_000,
+                        "comment": "Подтверждаю выручку по отчётности",
+                    }
+                ]
+            },
+        )
+        assert response.status_code == 200, response.text
+        before = client.get(f"/api/v1/applications/{identity}").json()
+    finally:
+        app.dependency_overrides[current_user] = previous
+    response = client.get(f"/api/v1/underwriting/applications/{identity}")
+    assert response.status_code == 200, response.text
+    entries = [
+        e for e in response.json()["events"] if e["from_state"] == "INFO_REQUESTED"
+    ]
+    assert len(entries) == 1
+    note = entries[0]["note"]
+    assert note.startswith("Клиент ответил:")
+    assert question in note and "7 200 000" in note
+    assert "комментарий: «Подтверждаю выручку по отчётности»" in note
+    assert "REVENUE_CONFIRM" not in note
+    assert client_get(client, pipeline_factory, identity).json() == before
+
+
+@pytest.mark.parametrize("count", [1, 10])
+def test_response_notes_keep_each_round_and_constant_queries(
+    pipeline_factory, run_persona, count
+):
+    from app.underwriting.card import _events
+
+    identity = run_persona("ooo_gap")
+    other = run_persona("ooo_gap")
+    now = datetime.now(UTC)
+    with pipeline_factory.begin() as session:
+        for index in range(count):
+            at = now + timedelta(minutes=index)
+            session.add(
+                InfoRequest(
+                    application_id=identity,
+                    source="UNDERWRITER",
+                    items=[
+                        {
+                            "item_code": "UNDERWRITER_QUESTION",
+                            "question": f"Вопрос {index}",
+                            "requires_value": False,
+                        }
+                    ],
+                    response=[
+                        {
+                            "item_code": "UNDERWRITER_QUESTION",
+                            "comment": f"Ответ {index}",
+                        }
+                    ],
+                    due_at=at + timedelta(days=1),
+                    responded_at=at,
+                )
+            )
+            session.add(
+                ApplicationEvent(
+                    application_id=identity,
+                    event_type="STATE_CHANGED",
+                    actor_type="CLIENT",
+                    from_state="INFO_REQUESTED",
+                    to_state="MANUAL_REVIEW",
+                    payload={"route_reason": "INFO_RESPONSE"},
+                    created_at=at + timedelta(seconds=1),
+                )
+            )
+        session.add(
+            InfoRequest(
+                application_id=other,
+                source="UNDERWRITER",
+                items=[],
+                response=[],
+                due_at=now + timedelta(days=1),
+                responded_at=now + timedelta(days=1),
+            )
+        )
+    statements = []
+    engine = pipeline_factory.kw["bind"]
+
+    def record(*args):
+        statements.append(args[2])
+
+    with pipeline_factory() as session:
+        application = session.get(Application, identity)
+        event.listen(engine, "before_cursor_execute", record)
+        try:
+            entries = _events(session, application)
+        finally:
+            event.remove(engine, "before_cursor_execute", record)
+    notes = [e.note for e in entries if e.from_state == "INFO_REQUESTED"]
+    assert len(notes) == count
+    for index, note in enumerate(notes):
+        assert f"Вопрос {index}" in note and f"«Ответ {index}»" in note
+        assert "UNDERWRITER_QUESTION" not in note
+    assert len(statements) <= 3
 
 
 @pytest.mark.parametrize("count", [1, 10])

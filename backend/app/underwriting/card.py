@@ -17,6 +17,7 @@ from app.models import (
     Decision,
     DecisionConfig,
     ExternalCheck,
+    InfoRequest,
     Objection,
     RiskFlag,
     User,
@@ -127,6 +128,54 @@ def _decisions(session: Session, application: Application) -> list[DecisionBank]
     ]
 
 
+def _response_note(info: InfoRequest) -> str:
+    answers = []
+    for item, answer in zip(info.items, info.response or [], strict=True):
+        text = item["question"]
+        value = answer.get("value")
+        if value is not None:
+            text += f" — {value:,}".replace(",", " ")
+        comment = answer.get("comment")
+        if comment:
+            separator = "; " if value is not None else " — "
+            text += f"{separator}комментарий: «{comment}»"
+        answers.append(text)
+    return "Клиент ответил: " + "; ".join(answers)
+
+
+def _manual_note(manual: Decision, auto: Decision | None, note: str | None):
+    if auto is None:
+        return note
+    parts = [note] if note else []
+    recommended = auto.recommendation
+    if recommended is None and auto.outcome in {"APPROVE", "COUNTER", "DECLINE"}:
+        recommended = {"outcome": auto.outcome}
+    if recommended:
+        differs = manual.outcome != recommended["outcome"]
+        if manual.outcome in {"APPROVE", "COUNTER"}:
+            differs = differs or any(
+                manual.inputs_snapshot.get(key) != recommended.get(key)
+                for key in ("amount", "term_months")
+            )
+        if differs:
+            label = {
+                "APPROVE": "Одобрение",
+                "COUNTER": "Встречное предложение",
+                "DECLINE": "Отказ",
+            }[recommended["outcome"]]
+            if recommended.get("amount") is not None:
+                amount = f"{recommended['amount']:,}".replace(",", " ")
+                label += f", {amount} ₽"
+            if recommended.get("term_months") is not None:
+                label += f", {recommended['term_months']} мес."
+            parts.append(f"Решение отличается от рекомендации системы ({label})")
+    if manual.outcome in {"APPROVE", "COUNTER"}:
+        stops = [rule["title"] for rule in auto.rules_fired if rule["effect"] == "STOP"]
+        if stops:
+            parts.append("Решение вопреки стоп-фактору: " + "; ".join(stops))
+    return "; ".join(parts) or None
+
+
 def _events(session: Session, application: Application) -> list[EventBank]:
     latest_objection_text = (
         select(Objection.text)
@@ -140,6 +189,34 @@ def _events(session: Session, application: Application) -> list[EventBank]:
         .outerjoin(User, User.id == ApplicationEvent.actor_id)
         .where(ApplicationEvent.application_id == application.id)
         .order_by(ApplicationEvent.created_at, ApplicationEvent.id)
+    ).all()
+    responses = (
+        list(
+            session.scalars(
+                select(InfoRequest)
+                .where(
+                    InfoRequest.application_id == application.id,
+                    InfoRequest.responded_at.is_not(None),
+                )
+                .order_by(InfoRequest.responded_at.desc(), InfoRequest.id.desc())
+            )
+        )
+        if any(entry.from_state == "INFO_REQUESTED" for entry, _, _ in rows)
+        else []
+    )
+    decisions = (
+        list(
+            session.scalars(
+                select(Decision)
+                .where(Decision.application_id == application.id)
+                .order_by(Decision.created_at.desc(), Decision.id.desc())
+            )
+        )
+        if any(
+            entry.event_type == "DECISION_MADE" and entry.actor_type == "UNDERWRITER"
+            for entry, _, _ in rows
+        )
+        else []
     )
     result = []
     for entry, full_name, objection_text in rows:
@@ -154,6 +231,36 @@ def _events(session: Session, application: Application) -> list[EventBank]:
             and objection_text is not None
         ):
             note = f"Клиент не согласен с решением: «{objection_text}»"
+        if (
+            entry.event_type == "STATE_CHANGED"
+            and entry.from_state == "INFO_REQUESTED"
+            and entry.actor_type == "CLIENT"
+        ):
+            info = next(
+                (info for info in responses if info.responded_at <= entry.created_at),
+                None,
+            )
+            if info is not None:
+                note = _response_note(info)
+        if entry.event_type == "DECISION_MADE" and entry.actor_type == "UNDERWRITER":
+            manual = next(
+                (
+                    d
+                    for d in decisions
+                    if d.kind == "MANUAL" and d.created_at <= entry.created_at
+                ),
+                None,
+            )
+            if manual is not None:
+                auto = next(
+                    (
+                        d
+                        for d in decisions
+                        if d.kind == "AUTO" and d.created_at <= manual.created_at
+                    ),
+                    None,
+                )
+                note = _manual_note(manual, auto, note)
         actor = (
             "Система"
             if entry.actor_type == "SYSTEM"
