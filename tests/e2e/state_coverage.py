@@ -21,6 +21,23 @@ ACTORS = {
     "подписант (+ поручитель)": {"CLIENT", "GUARANTOR"},
     "андеррайтер": {"UNDERWRITER"},
 }
+MODULE_TESTS = {
+    (state, "WITHDRAWN"): (
+        f"backend/tests/offers/test_actions.py::test_withdraw_before_signing[{state}]"
+    )
+    for state in ("SUBMITTED", "VALIDATION", "ENRICHMENT", "ASSESSMENT")
+}
+MODULE_TESTS.update(
+    {
+        ("ENRICHMENT", "MANUAL_REVIEW"): (
+            "backend/tests/pipeline/test_pipeline.py::"
+            "test_bureau_retry_and_other_sources_still_run[3]"
+        ),
+        ("MANUAL_REVIEW", "ENRICHMENT"): (
+            "backend/tests/underwriting/test_underwriting.py::test_retry_only_unavailable"
+        ),
+    }
+)
 
 
 def parse_model(text):
@@ -48,9 +65,13 @@ def parse_model(text):
             continue
         if len(cells) != 5 or cells[3] not in ACTORS:
             raise ValueError(f"Неизвестный формат строки или исполнитель: {line}")
-        # TODO(lead): подтвердить, включает ли «* до SIGNED» состояние DECLINED.
         sources = (
-            sorted(states - FINAL_STATES - {"SIGNED"})
+            sorted(
+                states
+                - FINAL_STATES
+                - {"SIGNED"}
+                - ({"DECLINED"} if "DECLINED" in cells[4] else set())
+            )
             if cells[0] == "* до SIGNED"
             else re.split(r"\s*[/,]\s*", cells[0])
         )
@@ -84,10 +105,11 @@ def parse_events(text):
 
 def render_report(model, states, events, ignored):
     lines = [
-        "| Из | В | Кто по модели | Кто в журнале | Событий | Покрытие |",
-        "| --- | --- | --- | --- | ---: | --- |",
+        "| Из | В | Кто по модели | Кто в журнале | Событий | Покрытие | Модульный тест |",
+        "| --- | --- | --- | --- | ---: | --- | --- |",
     ]
     covered = 0
+    module_covered = 0
     for (source, target), (labels, actors) in sorted(model.items()):
         observed = {
             actor: count
@@ -96,16 +118,23 @@ def render_report(model, states, events, ignored):
         }
         matches = sum(count for actor, count in observed.items() if actor in actors)
         covered += bool(matches)
+        module_test = MODULE_TESTS.get((source, target))
+        module_covered += bool(module_test) and not matches
+        coverage = "стенд" if matches else "модульный" if module_test else "не покрыто"
         who = ", ".join(
             f"{actor}: {count}" for actor, count in sorted(observed.items())
         )
         lines.append(
             f"| {source} | {target} | {', '.join(sorted(labels))} | {who or '—'} | "
-            f"{sum(observed.values())} | {'покрыто' if matches else 'не покрыто'} |"
+            f"{sum(observed.values())} | {coverage} | {module_test or '—'} |"
         )
     lines += [
         "",
         f"**покрыто {covered} из {len(model)}**",
+        (
+            f"**на стенде {covered} из {len(model)}, модульными тестами "
+            f"{module_covered}, не покрыто {len(model) - covered - module_covered}**"
+        ),
         "",
         "### Лишние переходы",
         "",
@@ -261,6 +290,22 @@ stateDiagram-v2
         self.assertIn("| DRAFT | SIGNED | SYSTEM | 2 |", report)
         self.assertIn("SIGNED", report.split("Тупики", 1)[1])
         self.assertEqual(ignored, 7)
+
+    def test_withdraw_condition_excludes_declined(self):
+        conditional = self.fixture.replace(
+            "| * до SIGNED | WITHDRAWN | action | клиент | — |",
+            "| * до SIGNED | WITHDRAWN | action | клиент | кроме DECLINED |",
+        )
+        model, _ = parse_model(conditional)
+        self.assertNotIn(("DECLINED", "WITHDRAWN"), model)
+        self.assertIn(("SUBMITTED", "WITHDRAWN"), model)
+
+    def test_module_evidence_does_not_count_as_stand(self):
+        model = {("ENRICHMENT", "MANUAL_REVIEW"): ({"система"}, {"SYSTEM"})}
+        report = render_report(model, {"ENRICHMENT", "MANUAL_REVIEW"}, Counter(), 0)
+        self.assertIn("Модульный тест", report)
+        self.assertIn("test_bureau_retry_and_other_sources_still_run[3]", report)
+        self.assertIn("на стенде 0 из 1, модульными тестами 1, не покрыто 0", report)
 
     def test_unknown_actor_and_missing_table_fail_closed(self):
         with self.assertRaises(ValueError):
