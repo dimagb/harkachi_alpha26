@@ -17,6 +17,7 @@ from app.models import (
     Decision,
     DecisionConfig,
     ExternalCheck,
+    Objection,
     RiskFlag,
     User,
 )
@@ -127,16 +128,32 @@ def _decisions(session: Session, application: Application) -> list[DecisionBank]
 
 
 def _events(session: Session, application: Application) -> list[EventBank]:
+    latest_objection_text = (
+        select(Objection.text)
+        .where(Objection.application_id == application.id)
+        .order_by(Objection.created_at.desc(), Objection.id.desc())
+        .limit(1)
+        .scalar_subquery()
+    )
     rows = session.execute(
-        select(ApplicationEvent, User.full_name)
+        select(ApplicationEvent, User.full_name, latest_objection_text)
         .outerjoin(User, User.id == ApplicationEvent.actor_id)
         .where(ApplicationEvent.application_id == application.id)
         .order_by(ApplicationEvent.created_at, ApplicationEvent.id)
     )
     result = []
-    for entry, full_name in rows:
+    for entry, full_name, objection_text in rows:
         payload = entry.payload or {}
         route = payload.get("route_reason")
+        note = payload.get("comment") or (
+            ROUTE_LABELS.get(route) if isinstance(route, str) else None
+        )
+        if (
+            entry.to_state == "MANUAL_REVIEW"
+            and route == "OBJECTION"
+            and objection_text is not None
+        ):
+            note = f"Клиент не согласен с решением: «{objection_text}»"
         actor = (
             "Система"
             if entry.actor_type == "SYSTEM"
@@ -151,8 +168,7 @@ def _events(session: Session, application: Application) -> list[EventBank]:
                 to_state=entry.to_state,
                 actor=actor,
                 reason_code=entry.reason_code,
-                note=payload.get("comment")
-                or (ROUTE_LABELS.get(route) if isinstance(route, str) else None),
+                note=note,
             )
         )
     return result
