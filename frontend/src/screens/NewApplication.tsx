@@ -69,6 +69,7 @@ function ApplicationSelection({ userId }: { userId: string | undefined }) {
   const { companyId, membership } = useCompany();
   const lastSelectionKey = userId && companyId ? `application-form:last:${userId}:${companyId}` : null;
   const [lastSelection] = useState(() => readLastSelection(lastSelectionKey));
+  const [purposeChosen, setPurposeChosen] = useState(false);
   const [purpose, setPurpose] = useState<Purpose | null>(lastSelection?.purpose ?? null);
   const [productCode, setProductCode] = useState<string | null>(lastSelection?.product_code ?? null);
   const products = useQuery({ queryKey: ['products'], queryFn: async ({ signal }) => {
@@ -79,11 +80,11 @@ function ApplicationSelection({ userId }: { userId: string | undefined }) {
   const product = products.data?.find(item => item.code === productCode && purpose && item.purposes.includes(purpose));
 
   if (!companyId) return <Text>Для вашей учётной записи пока нет компании.</Text>;
-  if (product && purpose) return <ApplicationForm product={product} initialPurpose={purpose} draftKey={userId ? `application-form:${userId}:${companyId}:${product.code}` : null} lastSelectionKey={lastSelectionKey} onBack={() => setProductCode(null)} />;
+  if (product && purpose) return <ApplicationForm product={product} initialPurpose={purpose} preferInitialPurpose={purposeChosen} draftKey={userId ? `application-form:${userId}:${companyId}:${product.code}` : null} lastSelectionKey={lastSelectionKey} onBack={() => setProductCode(null)} />;
   return <div className={card.page}>
     <header className={card.header}><Text size="sm" c="dimmed">Получить финансирование · Шаг 1 из 2</Text><h1 className={css.heading}>Зачем нужны деньги?</h1><Text c="dimmed">Выберите цель — покажем подходящие продукты и условия.</Text></header>
     <SimpleGrid className={css.purposes} cols={{ base: 1, sm: 2 }} spacing="sm">
-      {purposes.map((value) => <button type="button" className={css.purpose} key={value} aria-pressed={purpose === value} onClick={() => { setProductCode(null); setPurpose(value); }}>{purposeLabels[value]}</button>)}
+      {purposes.map((value) => <button type="button" className={css.purpose} key={value} aria-pressed={purpose === value} onClick={() => { setProductCode(null); setPurpose(value); setPurposeChosen(true); }}>{purposeLabels[value]}</button>)}
     </SimpleGrid>
     {products.isPending && <div className={card.card}><Group role="status"><Loader size="sm" /><Text>Загружаем продукты…</Text></Group></div>}
     {products.isError && <div className={card.card}><Text role="alert">Не удалось загрузить продукты. Попробуйте ещё раз.</Text><Button w="fit-content" variant="default" onClick={() => void products.refetch()}>Повторить</Button></div>}
@@ -104,14 +105,14 @@ function ApplicationSelection({ userId }: { userId: string | undefined }) {
   </div>;
 }
 
-function ApplicationForm({ product, initialPurpose, draftKey, lastSelectionKey, onBack }: { product: Product; initialPurpose: Purpose; draftKey: string | null; lastSelectionKey: string | null; onBack: () => void }) {
+function ApplicationForm({ product, initialPurpose, preferInitialPurpose, draftKey, lastSelectionKey, onBack }: { product: Product; initialPurpose: Purpose; preferInitialPurpose: boolean; draftKey: string | null; lastSelectionKey: string | null; onBack: () => void }) {
   const { companyId } = useCompany();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [draft] = useState(() => readDraft(draftKey, product));
   const [amount, setAmount] = useState<string | number>(draft?.amount ?? product.min_amount);
   const [term, setTerm] = useState<string | null>(draft ? draft.term : String(product.min_term_months));
-  const [purpose, setPurpose] = useState<Purpose>(draft?.purpose ?? initialPurpose);
+  const [purpose, setPurpose] = useState<Purpose>(preferInitialPurpose ? initialPurpose : draft?.purpose ?? initialPurpose);
   const [purposeText, setPurposeText] = useState(draft?.purposeText ?? '');
   const [revenue, setRevenue] = useState<string | number>(draft?.revenue ?? '');
   const [fields, setFields] = useState<Record<string, string>>({});
