@@ -50,3 +50,4 @@
 - `.env` закрыт настройками доступа — не читать.
 - Агентам Codex на ноутбуке Ани: если не находится `uv` — `$env:Path = "$env:USERPROFILE\.local\bin;$env:Path"` и `$env:UV_PYTHON_INSTALL_DIR = "$env:TEMP/a09b-python"`.
 - Ответы в чате — коротко и по-русски, подробности — в файлы `docs/`. STATE.md — не больше 60 строк.
+- Codex и тимлид на одном ноутбуке — **разные клоны** (у Кати: тимлид — `harkachi_alpha26`, Codex — `harkachi_a07`); общий стенд — через `COMPOSE_PROJECT_NAME=harkachi_alpha26`.
