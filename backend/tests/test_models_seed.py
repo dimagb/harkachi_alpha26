@@ -1,6 +1,9 @@
 import importlib
 import json
+import os
 import re
+import subprocess
+import sys
 from datetime import date
 from decimal import Decimal
 from pathlib import Path
@@ -277,6 +280,26 @@ def test_seed_data_and_idempotency(migrated_database):
             dict(session.execute(select(User.login, User.password_hash)).all())
             == hashes
         )
+
+
+def test_seed_subprocess_accepts_lowercase_log_level(migrated_database):
+    engine, _ = migrated_database
+    result = subprocess.run(
+        [sys.executable, "-m", "app.seed"],
+        cwd=ROOT / "backend",
+        env={
+            **os.environ,
+            "DATABASE_URL": engine.url.render_as_string(hide_password=False),
+            "DEMO_PASSWORD": "b03-test-password",
+            "LOG_LEVEL": "info",
+            "DEMO_BACKGROUND": "false",
+        },
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        timeout=60,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
 
 
 def test_migration_matches_models_and_indexes(migrated_database):
