@@ -20,6 +20,20 @@ export default function StatusPanel({ application, status }: { application: Appl
     <span aria-hidden="true" className={css.caret} style={{ left: `calc(${index} * 100% / 6 + var(--cc-stage-node) / 2 - 6px)` }} />
     <div className={css.panelCopy}><span className={css.panelLabel}>Что происходит</span><span className={css.panelText}>{application.stage.what_happens}</span></div>
     <div className={css.panelCopy}><span className={css.panelLabel} style={{ color: `var(--mantine-color-${tone}-7)` }}>Что от вас нужно</span><span className={css.panelText} style={{ fontWeight: 500 }}>{application.stage.what_to_do ?? 'Ничего, мы сообщим, когда понадобится ваше участие'}</span></div>
-    {action && <Button component={Link} to={action[1]} variant={retryLater ? 'default' : undefined} className={css.cta} onClick={() => { if (action[1].startsWith('#')) document.getElementById(action[1].slice(1))?.scrollIntoView?.({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'start' }); }}>{action[0]}</Button>}
+    {action && <Button component={Link} to={action[1]} variant={retryLater ? 'default' : undefined} className={css.cta} onClick={(event) => {
+      if (!action[1].startsWith('#')) return;
+      const section = document.getElementById(action[1].slice(1));
+      if (action[1] === '#signing') {
+        const target = section?.querySelector<HTMLInputElement>('input[autocomplete="one-time-code"]')
+          ?? section?.querySelector<HTMLButtonElement>('[data-signing-action]');
+        if (target) {
+          event.preventDefault();
+          target.focus({ preventScroll: true });
+          target.scrollIntoView?.({ behavior: 'instant', block: 'center' });
+          return;
+        }
+      }
+      section?.scrollIntoView?.({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'start' });
+    }}>{action[0]}</Button>}
   </section>;
 }
