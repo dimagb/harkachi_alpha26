@@ -11,6 +11,8 @@ class Settings(BaseSettings):
     jwt_secret: str = "local-demo-secret-change-before-deployment"
     jwt_ttl_hours: int = 8
     demo_mode: bool = True
+    demo_background: bool = False
+    background_path: Path = Path(__file__).resolve().parents[2] / "data/background.json"
     demo_password: str = "demo2026"
     contracts_dir: Path = Path(__file__).resolve().parents[2] / "contracts"
     mocks_url: str = "http://localhost:8001/mock/v1"
