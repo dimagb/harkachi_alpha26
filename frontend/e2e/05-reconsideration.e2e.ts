@@ -32,7 +32,7 @@ test('05 ip_bad — отказ, пересмотр и одобрение', async
     await expect(bank.getByRole('tabpanel')).toContainText(objection);
   });
   await step('Одобрение, отметка о стоп-факторе и оферта клиенту', async () => {
-    await approve(bank, 'Проверил обращение F-09, одобряю вопреки стоп-фактору');
+    await approve(bank, 'Проверил обращение F-09 и сведения об исполнении обязательств, одобряю');
     await expect(bank.getByRole('tabpanel')).toContainText(/вопреки стоп-фактору/i);
     await expect(page.getByRole('button', { name: 'Принять предложение', exact: true })).toBeVisible({ timeout: 60_000 });
     await expect(page.getByText(/^Банк одобрил/)).toContainText(money(customer.demo.app.amount));
