@@ -8,6 +8,7 @@ import { formatMoney } from '../../../ui/status';
 import KeyFigures from '../KeyFigures';
 import card from '../Card.module.css';
 import css from './DecisionSection.module.css';
+import ObjectionBlock from './ObjectionBlock';
 
 type Schema = components['schemas'];
 type Application = Schema['ApplicationClient'];
@@ -42,7 +43,9 @@ export default function DecisionSection({ application, product, companyKind, use
       {reason && <section className={css.reason} aria-label="Причина отказа">
         <div className={css.reasonCopy}><span className={css.reasonLabel}>Причина</span>{reason.category && <h3 className={card.title}>{reason.category}</h3>}<p>{reason.text}</p></div>
         <div className={css.reasonCopy}><h3 className={css.smallTitle}>Что можно сделать</h3><p>{reason.action ?? 'Можно подать новую заявку'}</p>{reason.retry_after && !/\d{2}\.\d{2}\.\d{4}|\d{4}-\d{2}-\d{2}/.test(reason.action ?? '') && <p>Подать новую заявку можно с {date(reason.retry_after)}</p>}</div>
+        <ObjectionBlock application={application} onUpdate={onUpdate} onReload={onReload} onMessage={onMessage} inline />
       </section>}
+      {!reason && <ObjectionBlock application={application} onUpdate={onUpdate} onReload={onReload} onMessage={onMessage} />}
     </section>;
   }
   if (application.state !== 'OFFER_ISSUED' || !offer || offer.status !== 'ACTIVE') return null;
@@ -72,5 +75,5 @@ export default function DecisionSection({ application, product, companyKind, use
 }
 
 export function DecisionLinks() {
-  return <div className={css.actions}><Button component={Link} to="/app" variant="light" color="gray" className={card.cta}>Вернуться к заявкам</Button></div>;
+  return <div className={`${css.actions} ${css.links}`}><Button component={Link} to="/app" variant="light" color="gray" className={card.cta}>Вернуться к заявкам</Button></div>;
 }

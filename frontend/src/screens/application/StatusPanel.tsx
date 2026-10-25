@@ -11,6 +11,7 @@ const actions: Partial<Record<Application['allowed_actions'][number], [string, s
 };
 export default function StatusPanel({ application, status }: { application: Application; status: StageStatus }) {
   const action = application.allowed_actions.map((code) => actions[code]).find((item) => !!item);
+  const retryLater = action === actions.NEW_APPLICATION && application.state === 'DECLINED' && !!application.client_reason?.retry_after;
   const approved = application.state === 'OFFER_ISSUED' && application.offer?.kind === 'APPROVED';
   const tone = approved ? 'ok' : stageStatusColor(status);
   const shade = tone === 'wait' ? 4 : tone === 'gray' ? 9 : 6;
@@ -19,6 +20,6 @@ export default function StatusPanel({ application, status }: { application: Appl
     <span aria-hidden="true" className={css.caret} style={{ left: `calc(${index} * 100% / 6 + var(--cc-stage-node) / 2 - 6px)` }} />
     <div className={css.panelCopy}><span className={css.panelLabel}>Что происходит</span><span className={css.panelText}>{application.stage.what_happens}</span></div>
     <div className={css.panelCopy}><span className={css.panelLabel} style={{ color: `var(--mantine-color-${tone}-7)` }}>Что от вас нужно</span><span className={css.panelText} style={{ fontWeight: 500 }}>{application.stage.what_to_do ?? 'Ничего, мы сообщим, когда понадобится ваше участие'}</span></div>
-    {action && <Button component={Link} to={action[1]} className={css.cta} onClick={() => { if (action[1].startsWith('#')) document.getElementById(action[1].slice(1))?.scrollIntoView?.({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'start' }); }}>{action[0]}</Button>}
+    {action && <Button component={Link} to={action[1]} variant={retryLater ? 'default' : undefined} className={css.cta} onClick={() => { if (action[1].startsWith('#')) document.getElementById(action[1].slice(1))?.scrollIntoView?.({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'start' }); }}>{action[0]}</Button>}
   </section>;
 }

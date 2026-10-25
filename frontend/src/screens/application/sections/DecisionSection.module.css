@@ -6,6 +6,7 @@
 .offerFigure { padding:calc(var(--cc-space-16) + var(--cc-space-4)); }
 .offerValue { font:var(--cc-text-h1); letter-spacing:var(--cc-tracking-heading); overflow-wrap:normal; }
 .actions { display:flex; flex-wrap:wrap; gap:var(--cc-space-12); }
+.links { border-top:1px solid var(--cc-line); padding-top:var(--cc-space-24); }
 .offerColumns .actions { border-top:1px solid var(--cc-line); padding-top:var(--cc-space-24); margin-top:auto; }
 .expiry,.signatory { color:var(--cc-ink-2); }
 .explanation { gap:var(--cc-space-16); }
