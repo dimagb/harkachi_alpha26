@@ -163,7 +163,7 @@ flowchart LR
 | `POSTGRES_PASSWORD` | `credit` | пароль PostgreSQL |
 | `POSTGRES_DB` | `credit` | имя базы данных |
 | `DATABASE_URL` | `postgresql+psycopg://credit:credit@db:5432/credit` | подключение `api` и `worker` к БД; при смене учётных данных PostgreSQL поменяйте и его |
-| `JWT_SECRET` | `local-demo-secret-change-before-deployment` | ключ подписи токенов входа; перед развёртыванием не локально замените |
+| `JWT_SECRET` | `local-demo-secret-change-before-deployment` | ключ подписи токенов входа; при `DEMO_MODE=false` обязателен свой секрет (не короче 32 символов), иначе API и worker не стартуют |
 | `JWT_TTL_HOURS` | `8` | срок жизни токена входа, часы |
 | `DEMO_MODE` | `true` | показывает код подтверждения на экране (кнопка «Подставить») и включает перемотку времени в журнале банка. При `false` код не показывается, а перемотка отвечает 404, поэтому для демо не выключать |
 | `DEMO_PASSWORD` | `demo2026` | пароль демо-учёток |
