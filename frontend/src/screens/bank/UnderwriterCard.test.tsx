@@ -150,12 +150,21 @@ it('даёт повторить сбор только для SOURCE_UNAVAILABLE'
   await screen.findByRole('heading', { name: 'Решение принято' });
 });
 
-it('показывает AML, внутренний стоп-фактор и скрывает форму', async () => {
+it('показывает признаки ПОД/ФТ, внутренний стоп-фактор и скрывает форму', async () => {
   open('ooo_aml');
-  await screen.findByText('Признаки AML');
+  await screen.findByText('Признаки ПОД/ФТ');
   expect(screen.getByText('SF_ADDITIONAL')).toBeTruthy();
   expect(screen.getByText('Стоп-фактор')).toBeTruthy();
   expect(screen.queryByLabelText('Комментарий (обязательно)')).toBeNull();
+});
+
+it('даёт фокус графику поступлений для прокрутки с клавиатуры', async () => {
+  await ready();
+  const chart = screen.getByLabelText('График поступлений');
+  expect(chart.tabIndex).toBe(0);
+  chart.focus();
+  expect(document.activeElement).toBe(chart);
+  expect(within(chart).getByRole('img', { name: 'Поступления за 12 месяцев, значения в тысячах рублей' })).toBeTruthy();
 });
 
 it('показывает очередь в серверном порядке с ожиданием, переходит в карточку', async () => {
