@@ -3,7 +3,7 @@
 from datetime import timedelta
 from zoneinfo import ZoneInfo
 
-from sqlalchemy import select
+from sqlalchemy import case, select
 from sqlalchemy.orm import Session
 
 from app.auth.deps import member_company
@@ -128,7 +128,11 @@ def _presentation(
         session.scalars(
             select(Party)
             .where(Party.application_id == application.id)
-            .order_by(Party.created_at, Party.id)
+            .order_by(
+                case((Party.role == "BORROWER_SIGNATORY", 0), else_=1),
+                Party.created_at,
+                Party.id,
+            )
         )
     )
     events = list(
