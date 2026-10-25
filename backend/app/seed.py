@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.config import get_settings
 from app.db import Base, SessionLocal
+from app.logging import configure_logging
 from app.models import (
     AccountTurnover,
     Company,
@@ -323,7 +324,7 @@ def seed(session: Session) -> None:
 
 
 def main() -> None:
-    logging.basicConfig(level=get_settings().log_level)
+    configure_logging(get_settings().log_level)
     with SessionLocal.begin() as session:
         seed(session)
     if get_settings().demo_background:
