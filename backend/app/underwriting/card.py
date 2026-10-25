@@ -234,6 +234,7 @@ def _events(session: Session, application: Application) -> list[EventBank]:
         if (
             entry.event_type == "STATE_CHANGED"
             and entry.from_state == "INFO_REQUESTED"
+            and entry.to_state in {"VALIDATION", "MANUAL_REVIEW"}
             and entry.actor_type == "CLIENT"
         ):
             info = next(

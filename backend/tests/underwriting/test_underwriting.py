@@ -471,6 +471,18 @@ def test_response_notes_keep_each_round_and_constant_queries(
                 responded_at=now + timedelta(days=1),
             )
         )
+        session.add(
+            ApplicationEvent(
+                application_id=identity,
+                event_type="STATE_CHANGED",
+                actor_type="CLIENT",
+                from_state="INFO_REQUESTED",
+                to_state="WITHDRAWN",
+                reason_code="CLIENT_WITHDREW",
+                payload={},
+                created_at=now + timedelta(days=1),
+            )
+        )
     statements = []
     engine = pipeline_factory.kw["bind"]
 
@@ -484,7 +496,14 @@ def test_response_notes_keep_each_round_and_constant_queries(
             entries = _events(session, application)
         finally:
             event.remove(engine, "before_cursor_execute", record)
-    notes = [e.note for e in entries if e.from_state == "INFO_REQUESTED"]
+    withdrawn = [e for e in entries if e.to_state == "WITHDRAWN"]
+    assert len(withdrawn) == 1
+    assert withdrawn[0].note is None
+    notes = [
+        e.note
+        for e in entries
+        if e.from_state == "INFO_REQUESTED" and e.to_state == "MANUAL_REVIEW"
+    ]
     assert len(notes) == count
     for index, note in enumerate(notes):
         assert f"Вопрос {index}" in note and f"«Ответ {index}»" in note
