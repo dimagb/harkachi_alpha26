@@ -17,7 +17,7 @@
 .badge { display: inline-flex; align-items: center; min-height: 32px; padding: 5px 12px; border: 1px solid var(--cc-line); border-radius: var(--cc-radius-sm); background: var(--cc-surface); color: var(--cc-ink-2); font-weight: 500; }
 .badge[data-tone=wait] { color: var(--cc-wait-text); background: var(--cc-wait-bg); border-color: var(--cc-wait-border); }
 .badge[data-tone=stop] { color: var(--cc-stop-text); background: var(--cc-stop-bg); border-color: var(--cc-stop-border); }
-.stages { border: 1px solid var(--cc-line); border-radius: var(--cc-radius-md); padding: 20px 24px; display: flex; flex-direction: column; gap: 20px; }
+.stages { background: var(--cc-paper); border: 1px solid var(--cc-line); border-radius: var(--cc-radius-md); padding: 20px 24px; display: flex; flex-direction: column; gap: 20px; }
 .statusPanel { position: relative; background: var(--cc-wait-bg); box-shadow: inset 4px 0 0 var(--mantine-color-wait-4); border-radius: 8px; padding: 14px 20px 14px 24px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
 .statusPanel::before { content: ''; position: absolute; top: -6px; left: calc(3 * 100% / 6 + 8px); width: 12px; height: 12px; background: var(--cc-wait-bg); border-radius: 2px; transform: rotate(45deg); }
 .statusPanel > div { display: flex; flex-direction: column; gap: 2px; }
@@ -26,7 +26,7 @@
 .columns { display: grid; grid-template-columns: minmax(0, 1fr) 440px; gap: 24px; align-items: start; }
 .left { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
 .aside { position: sticky; top: 24px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
-.section, .factors, .formSection { border: 1px solid var(--cc-line); border-radius: var(--cc-radius-md); padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.section, .factors, .formSection { background: var(--cc-paper); border: 1px solid var(--cc-line); border-radius: var(--cc-radius-md); padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 .factors { gap: 12px; }
 .sectionHeading { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
 .factorColumns, .groupRow, .factorRow { display: grid; grid-template-columns: minmax(0, 1fr) 200px 140px 64px; gap: 0 16px; align-items: center; font-variant-numeric: tabular-nums; }
@@ -40,6 +40,7 @@
 .factorValue { color: var(--cc-ink-2); }
 .points { text-align: right; }
 .points > span { color: var(--cc-ink-3); }
+.factorRow:hover .points > span, .factorRow[aria-expanded=true] .points > span { color: var(--cc-ink-2); }
 .bar { display: flex; height: 6px; background: var(--cc-surface); border-radius: 3px; overflow: hidden; }
 .groupRow .bar { background: var(--cc-line); }
 .sourceIcon { width: 16px; height: 16px; border-radius: var(--cc-radius-round); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; font: 600 11px/11px var(--cc-font); }
@@ -81,7 +82,7 @@
 .recommendationText { font: 600 20px/28px var(--cc-font); font-variant-numeric: tabular-nums; text-wrap: pretty; }
 .payment { display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid var(--cc-ok-border); font-variant-numeric: tabular-nums; gap: 8px; }
 .payment strong { font-weight: 600; white-space: nowrap; }
-.whatIf { border: 1px solid var(--cc-line); border-radius: var(--cc-radius-md); padding: 16px 20px; display: flex; flex-direction: column; gap: 4px; }
+.whatIf { background: var(--cc-paper); border: 1px solid var(--cc-line); border-radius: var(--cc-radius-md); padding: 16px 20px; display: flex; flex-direction: column; gap: 4px; }
 .whatIf ul { padding: 0; list-style: none; }
 .formSection { padding: 20px; }
 .form { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
@@ -97,7 +98,7 @@
 .questions { display: flex; flex-direction: column; gap: 8px; }
 .question { display: grid; grid-template-columns: minmax(0, 1fr) 32px; align-items: end; gap: 6px; }
 .question button { padding: 0; }
-.protocol { border: 1px solid var(--cc-line); border-radius: var(--cc-radius-md); overflow: hidden; }
+.protocol { background: var(--cc-paper); border: 1px solid var(--cc-line); border-radius: var(--cc-radius-md); overflow: hidden; }
 .protocol [role=tablist] { gap: 24px; padding: 0 24px; }
 .protocol [role=tab] { height: 44px; padding: 0 12px; font: 500 14px/20px var(--cc-font); color: var(--cc-ink-2); }
 .protocol [role=tab][aria-selected=true] { font-weight: 600; color: var(--cc-ink); border-color: var(--cc-ink); }

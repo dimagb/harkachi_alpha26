@@ -57,7 +57,7 @@
   /* Радиусы */
   --cc-radius-xs: 4px;          /* чекбокс, полоска прогресса */
   --cc-radius-sm: 6px;          /* кнопки, поля, бейджи */
-  --cc-radius-md: 12px;         /* карточки */
+  --cc-radius-md: 24px;         /* карточки, 16 px на мобильном */
   --cc-radius-lg: 16px;         /* модальные окна */
   --cc-radius-stage-line: 1px;  /* линия ленты этапов */
   --cc-stage-node: 24px;        /* узел этапа, круг */
@@ -74,6 +74,10 @@
   --cc-duration-fast: 120ms;
   --cc-duration-stage: 320ms;
   --cc-ease: cubic-bezier(0.2, 0, 0, 1);
+}
+
+@media (max-width: 47.999em) {
+  :root { --cc-radius-md: 16px; }
 }
 
 .cc-money { font-variant-numeric: tabular-nums; white-space: nowrap; }

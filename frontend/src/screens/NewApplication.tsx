@@ -1,4 +1,4 @@
-import { Badge, Button, Divider, Fieldset, Group, Loader, Notification, NumberInput, Paper, Select, SimpleGrid, Stack, Text, Textarea, Title } from '@mantine/core';
+import { Badge, Button, Chip, Divider, Fieldset, Group, Loader, Notification, NumberInput, Paper, Select, SimpleGrid, Stack, Text, Textarea, Title } from '@mantine/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
@@ -36,8 +36,8 @@ function ApplicationSelection() {
   if (product && purpose) return <ApplicationForm product={product} initialPurpose={purpose} onBack={() => setProduct(null)} />;
   return <div className={card.page}>
     <header className={card.header}><Text size="sm" c="dimmed">Получить финансирование · Шаг 1 из 2</Text><h1 className={css.heading}>Зачем нужны деньги?</h1><Text c="dimmed">Выберите цель — покажем подходящие продукты и условия.</Text></header>
-    <SimpleGrid className={card.card} cols={{ base: 1, sm: 2 }} spacing="sm" style={{ display: 'grid' }}>
-      {purposes.map((value) => <Button key={value} variant={purpose === value ? 'light' : 'default'} aria-pressed={purpose === value} onClick={() => setPurpose(value)} h="auto" py="lg" styles={{ label: { whiteSpace: 'normal' } }}>{purposeLabels[value]}</Button>)}
+    <SimpleGrid className={css.purposes} cols={{ base: 1, sm: 2 }} spacing="sm">
+      {purposes.map((value) => <button type="button" className={css.purpose} key={value} aria-pressed={purpose === value} onClick={() => setPurpose(value)}>{purposeLabels[value]}</button>)}
     </SimpleGrid>
     {products.isPending && <div className={card.card}><Group role="status"><Loader size="sm" /><Text>Загружаем продукты…</Text></Group></div>}
     {products.isError && <div className={card.card}><Text role="alert">Не удалось загрузить продукты. Попробуйте ещё раз.</Text><Button w="fit-content" variant="default" onClick={() => void products.refetch()}>Повторить</Button></div>}
@@ -72,6 +72,7 @@ function ApplicationForm({ product, initialPurpose, onBack }: { product: Product
   const [calculationInput, setCalculationInput] = useState<Schema['CalculatorRequest'] | null>(null);
   const validAmount = typeof amount === 'number' && Number.isSafeInteger(amount) && amount >= product.min_amount && amount <= product.max_amount;
   const validTerm = !!term && Number.isInteger(Number(term)) && Number(term) >= product.min_term_months && Number(term) <= product.max_term_months;
+  const terms = Array.from({ length: product.max_term_months - product.min_term_months + 1 }, (_, index) => String(product.min_term_months + index));
   const profile = useQuery({ queryKey: ['company-profile', companyId], queryFn: async ({ signal }) => {
     const { data, error } = await api.GET('/companies/{id}/profile', { params: { path: { id: companyId! } }, signal });
     if (error || !data) throw new Error('Реестр временно недоступен, попробуйте позже');
@@ -141,7 +142,15 @@ function ApplicationForm({ product, initialPurpose, onBack }: { product: Product
         <Title order={2} size="h3">Параметры заявки</Title>
         <Fieldset variant="unstyled" disabled={!ready || create.isPending}><Stack>
           <NumberInput hideControls label="Сумма, ₽" value={amount} onChange={setAmount} min={product.min_amount} max={product.max_amount} step={10000} thousandSeparator=" " allowDecimal={false} clampBehavior="none" error={fields.amount} />
-          <Select label="Срок, мес." value={term} onChange={setTerm} allowDeselect={false} disabled={product.code === 'OVERDRAFT'} data={Array.from({ length: product.max_term_months - product.min_term_months + 1 }, (_, index) => String(product.min_term_months + index))} error={fields.term_months} />
+          {terms.length > 6
+            ? <Select label="Срок, мес." value={term} onChange={setTerm} allowDeselect={false} disabled={product.code === 'OVERDRAFT'} data={terms} error={fields.term_months} />
+            : <div role="group" aria-label="Срок, мес." aria-describedby={fields.term_months ? 'term-error' : undefined}>
+              <Text size="sm" fw={500} mb="xs">Срок, мес.</Text>
+              <Chip.Group value={term} onChange={setTerm}><Group gap="xs">
+                {terms.map(value => <Chip key={value} value={value} disabled={product.code === 'OVERDRAFT'} classNames={{ label: css.term }} aria-invalid={!!fields.term_months}>{value}</Chip>)}
+              </Group></Chip.Group>
+              {fields.term_months && <Text id="term-error" size="xs" c="stop.7" mt="xs">{fields.term_months}</Text>}
+            </div>}
           <Select label="Цель" value={purpose} onChange={(value) => { const selected = product.purposes.find((item) => item === value); if (selected) setPurpose(selected); }} allowDeselect={false} data={product.purposes.map((value) => ({ value, label: purposeLabels[value] }))} error={fields.purpose} />
           {purpose === 'OTHER' && <Textarea label="Опишите цель" description={`${purposeText.length} / 500`} value={purposeText} onChange={(event) => setPurposeText(event.currentTarget.value)} minLength={10} maxLength={500} rows={3} error={fields.purpose_text} />}
           <NumberInput hideControls label="Выручка за год, ₽" value={revenue} onChange={setRevenue} min={1} allowDecimal={false} thousandSeparator=" " clampBehavior="none" description={profile.data ? `По оборотам в нашем банке — около ${formatMoney(profile.data.avg_monthly_turnover * 12)}` : undefined} error={fields.declared_revenue_year} />

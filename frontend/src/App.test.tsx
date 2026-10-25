@@ -11,6 +11,7 @@ import { api } from './api/client';
 import type { components } from './api/schema';
 import { applications, products } from './mocks/fixtures';
 import { bankApplications } from './mocks/bank/fixtures';
+import alfaLogo from './assets/alfa-logo.svg';
 
 type Me = components['schemas']['MeResponse'];
 const client: Me = {
@@ -57,6 +58,18 @@ async function login(name: string) {
   fireEvent.change(screen.getByLabelText(/^Пароль/), { target: { value: 'demo2026' } });
   fireEvent.click(screen.getByRole('button', { name: 'Войти' }));
 }
+
+it.each([['ip_good', '/app', 'Мои заявки'], ['underwriter', '/bank/queue', 'Очередь']])('оболочка %s показывает бренд и предупреждение о прототипе', async (token, path, title) => {
+  sessionStorage.setItem('access_token', token);
+  open(path);
+  await screen.findByRole('heading', { name: title });
+  const logo = screen.getByRole('img', { name: 'Альфа-Банк' });
+  expect(logo.closest('a')?.getAttribute('href')).toBe(path);
+  expect(logo.getAttribute('src')).toBe(alfaLogo);
+  const footer = screen.getByRole('contentinfo');
+  expect(footer.textContent).toContain('Данные синтетические.');
+  expect(footer.textContent).toContain('не являются публичной офертой.');
+});
 
 it.each([['ip_good', '/app', 'Мои заявки'], ['underwriter', '/bank/queue', 'Очередь']])('вход %s открывает главную по роли', async (name, path, title) => {
   open();

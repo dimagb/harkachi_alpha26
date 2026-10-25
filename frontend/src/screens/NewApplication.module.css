@@ -1,2 +1,9 @@
 .heading { margin: 0; font: var(--cc-text-display); letter-spacing: var(--cc-tracking-display); overflow-wrap: anywhere; }
+.purposes { min-width: 0; }
+.purpose { min-height: 96px; padding: var(--cc-space-24); border: 2px solid var(--cc-line); border-radius: var(--cc-radius-md); background: var(--cc-paper); color: var(--cc-ink); font: var(--cc-text-h3); text-align: left; cursor: pointer; }
+.purpose:hover { border-color: var(--cc-ink-2); }
+.purpose[aria-pressed=true] { border-color: var(--cc-ink); }
+.term { border-radius: var(--cc-radius-round); background: var(--cc-paper); color: var(--cc-ink); border-color: var(--cc-line-input); }
+.term[data-checked], .term[data-checked]:hover { background: var(--cc-ink); color: var(--cc-paper); border-color: var(--cc-ink); }
+.term[data-disabled], .term[data-disabled][data-checked] { opacity: 1; background: var(--cc-ink); color: var(--cc-paper); border-color: var(--cc-ink); }
 @media (max-width: 47.999em) { .heading { font: var(--cc-text-h1); } }
