@@ -156,6 +156,28 @@ class ApiClient:
             client_view=True,
         )
 
+    def withdraw(self, app_id):
+        return self.request(
+            "withdraw", "POST", f"applications/{app_id}/withdraw", client_view=True
+        )
+
+    def time_shift(self, app_id, days):
+        return self.request(
+            "time-shift",
+            "POST",
+            "demo/time-shift",
+            json={"application_id": app_id, "days": days},
+        )
+
+    def decline_offer(self, app_id, offer_version):
+        # Контракт api.md: offer/reject без тела, версия в запрос не передаётся.
+        return self.request(
+            "decline-offer",
+            "POST",
+            f"applications/{app_id}/offer/reject",
+            client_view=True,
+        )
+
     def sign(self, app_id, body):
         return self.request(
             "sign", "POST", f"applications/{app_id}/sign", json=body, client_view=True
