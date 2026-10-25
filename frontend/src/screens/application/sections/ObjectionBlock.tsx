@@ -21,7 +21,7 @@ export default function ObjectionBlock({ application, onUpdate, onReload, onMess
       if (result.response.status === 409) await onReload();
     } else if (result.data) { setOpened(false); onUpdate(result.data); }
   }, onError: () => setFailure('Не удалось отправить обращение. Проверьте соединение и попробуйте ещё раз.') });
-  if (application.objection) return <section aria-label="Пересмотр решения" className={css.block} data-status={application.objection.status} role="status">{application.objection.status === 'PENDING' ? 'Ваше обращение рассматривает специалист банка' : application.objection.outcome_text}</section>;
+  if (application.objection) return <section aria-label="Пересмотр решения" className={`${css.block} ${inline ? css.inline : ''}`} data-status={application.objection.status} role="status">{application.objection.status === 'PENDING' ? 'Ваше обращение рассматривает специалист банка' : application.objection.outcome_text}</section>;
   if (!application.allowed_actions.includes('OBJECT')) return null;
   return <>
     <section aria-label="Пересмотр решения" className={`${css.block} ${inline ? css.inline : ''}`}><div className={css.copy}><strong>Не согласны с решением?</strong><span>Его пересмотрит специалист банка</span></div><Button variant="default" className={card.cta} onClick={() => { setFailure(''); setOpened(true); }}>Попросить пересмотр</Button></section>

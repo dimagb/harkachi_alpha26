@@ -346,3 +346,31 @@ it.each([
   expect(await screen.findByRole('region', { name: 'Экспресс-кредит' })).toBeTruthy();
   expect(screen.queryByRole('heading', { name: 'Заявка на финансирование' })).toBeNull();
 });
+
+it('новая цель с первого шага важнее черновика, остальные поля сохраняются', async () => {
+  open(); await choose('Другое'); revenue();
+  fireEvent.change(screen.getByLabelText('Сумма, ₽'), { target: { value: '1500000' } });
+  fireEvent.change(screen.getByLabelText('Опишите цель'), { target: { value: 'Расширение мастерской' } });
+  fireEvent.click(screen.getByRole('combobox', { name: 'Срок, мес.' }));
+  fireEvent.click(await screen.findByRole('option', { name: '12' }));
+  const lastKey = Object.keys(sessionStorage).find(key => key.startsWith('application-form:last:'))!;
+  cleanup(); sessionStorage.removeItem(lastKey); open(); await choose('Оборудование и развитие');
+  expect(screen.getByRole<HTMLInputElement>('combobox', { name: 'Цель' }).value).toBe('Оборудование и развитие');
+  expect(screen.getByLabelText<HTMLInputElement>('Сумма, ₽').value).toBe('1 500 000');
+  expect(screen.getByLabelText<HTMLInputElement>('Выручка за год, ₽').value).toBe('12 000 000');
+  expect(screen.getByRole<HTMLInputElement>('combobox', { name: 'Срок, мес.' }).value).toBe('12');
+  fireEvent.click(screen.getByRole('combobox', { name: 'Цель' }));
+  fireEvent.click(await screen.findByRole('option', { name: 'Другое' }));
+  expect(screen.getByLabelText<HTMLTextAreaElement>('Опишите цель').value).toBe('Расширение мастерской');
+});
+
+it('автоматическое открытие после перезагрузки берёт цель черновика при другом последнем выборе', async () => {
+  open(); await choose('Другое');
+  fireEvent.change(screen.getByLabelText('Сумма, ₽'), { target: { value: '1500000' } });
+  const lastKey = Object.keys(sessionStorage).find(key => key.startsWith('application-form:last:'))!;
+  cleanup();
+  sessionStorage.setItem(lastKey, JSON.stringify({ product_code: 'EXPRESS', purpose: 'CASH_GAP' }));
+  open(); await restoredForm();
+  expect(screen.getByRole<HTMLInputElement>('combobox', { name: 'Цель' }).value).toBe('Другое');
+  expect(screen.getByLabelText<HTMLInputElement>('Сумма, ₽').value).toBe('1 500 000');
+});
