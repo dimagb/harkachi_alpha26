@@ -85,6 +85,28 @@ it('DECLINED: новая заявка предлагается один раз �
   expect(screen.getAllByRole('link', { name: 'Подать новую заявку' })).toHaveLength(1);
   expect(within(screen.getByRole('region', { name: 'Что происходит с заявкой' })).getByRole('link', { name: 'Подать новую заявку' })).toBeTruthy();
   expect(screen.getByRole('link', { name: 'Вернуться к заявкам' }).getAttribute('href')).toBe('/app');
+  expect(within(screen.getByRole('region', { name: 'Параметры заявки' })).getByRole('link', { name: 'Вернуться к заявкам' })).toBeTruthy();
+});
+it('DECLINED: пересмотр — последняя строка внутри карточки причины', async () => {
+  open({ ...applications[0]!, id: badId }, 'ip_bad');
+  const reason = await screen.findByRole('region', { name: 'Причина отказа' });
+  const objection = within(reason).getByRole('region', { name: 'Пересмотр решения' });
+  expect(within(objection).getByText('Не согласны с решением?')).toBeTruthy();
+  expect(within(objection).getByText('Его пересмотрит специалист банка')).toBeTruthy();
+  expect(within(objection).getByRole('button', { name: 'Попросить пересмотр' }).getAttribute('data-variant')).toBe('default');
+  const advice = within(reason).getByRole('heading', { name: 'Что можно сделать' });
+  expect(advice.compareDocumentPosition(objection) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  expect(screen.getAllByRole('button', { name: 'Попросить пересмотр' })).toHaveLength(1);
+});
+it.each([
+  ['не ИП', 'ooo_load'], ['срок пересмотра вышел', 'ip_good'],
+] as const)('DECLINED, %s: нет строки приглашения без доступного пересмотра', async (_case, login) => {
+  const declined = await (await fetch(`http://localhost/api/v1/applications/${badId}`, { headers: { Authorization: 'Bearer demo:ip_bad' } })).json() as Application;
+  const application: Application = { ...applications[0]!, state: 'DECLINED', offer: null, allowed_actions: ['NEW_APPLICATION'], client_reason: declined.client_reason };
+  serve(application); open(application, login);
+  await screen.findByRole('region', { name: 'Причина отказа' });
+  expect(screen.queryByText('Не согласны с решением?')).toBeNull();
+  expect(screen.queryByRole('button', { name: 'Попросить пересмотр' })).toBeNull();
 });
 it('одобрение показывает условия, срок действия и три объяснения', async () => {
   open();
@@ -251,4 +273,5 @@ it('завершённое обращение показывает outcome_text 
   serve(application); open(application);
   expect(await screen.findByText('Решение проверено специалистом')).toBeTruthy();
   expect(screen.queryByRole('button', { name: 'Попросить пересмотр' })).toBeNull();
+  expect(screen.queryByText('Не согласны с решением?')).toBeNull();
 });

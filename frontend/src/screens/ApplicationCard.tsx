@@ -96,8 +96,7 @@ function CardContent({ id, companies, userId }: CardProps & { id: string }) {
     <div className={`${css.card} ${css.stageCard}`}><Timeline timeline={data.timeline} /><StatusPanel application={data} status={status} /></div>
     {message && <Notification role="alert" color="stop" withCloseButton={false}>{message}</Notification>}
     <DecisionSection {...sectionProps} userId={userId} product={product} companyKind={companies.find(({ company }) => company.id === data.company_id)?.company.kind} />
-    <ObjectionBlock {...sectionProps} />
-    {data.state === 'DECLINED' && <DecisionLinks />}
+    {data.state !== 'DECLINED' && <ObjectionBlock {...sectionProps} />}
     {data.info_request && <InfoRequestSection key={data.info_request.id} {...sectionProps} />}
     <SubmitSection {...sectionProps} companyKind={companies.find(({ company }) => company.id === data.company_id)?.company.kind} />
     <SigningSection {...sectionProps} />
@@ -105,6 +104,7 @@ function CardContent({ id, companies, userId }: CardProps & { id: string }) {
     <div className={css.columns}>
       <section className={css.card} aria-label="Параметры заявки"><h3 className={css.title}>Параметры заявки</h3>{showFigures && <KeyFigures application={data} calculation={calculation.data} error={calculation.isError} onRetry={() => void calculation.refetch()} />}<Details application={data} company={companies.find(({ company }) => company.id === data.company_id)?.company} sourceNote={profile.data?.source_note} showRequestedTerms={!showFigures} />
         {data.allowed_actions.includes('WITHDRAW') && <div className={css.withdraw}><button type="button" className={css.textButton} onClick={() => { setMessage(''); setConfirm(true); }}>Отозвать заявку</button></div>}
+        {data.state === 'DECLINED' && <DecisionLinks />}
       </section>
       <History timeline={data.timeline} />
     </div>

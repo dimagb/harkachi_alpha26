@@ -7,7 +7,7 @@ import card from '../Card.module.css';
 import css from './ObjectionBlock.module.css';
 
 type Application = components['schemas']['ApplicationClient'];
-export default function ObjectionBlock({ application, onUpdate, onReload, onMessage }: { application: Application; onUpdate: (application: Application) => void; onReload: () => Promise<unknown>; onMessage: (message: string) => void }) {
+export default function ObjectionBlock({ application, onUpdate, onReload, onMessage, inline = false }: { application: Application; onUpdate: (application: Application) => void; onReload: () => Promise<unknown>; onMessage: (message: string) => void; inline?: boolean }) {
   const [opened, setOpened] = useState(false);
   const [text, setText] = useState('');
   const [error, setError] = useState('');
@@ -24,7 +24,7 @@ export default function ObjectionBlock({ application, onUpdate, onReload, onMess
   if (application.objection) return <section aria-label="Пересмотр решения" className={css.block} data-status={application.objection.status} role="status">{application.objection.status === 'PENDING' ? 'Ваше обращение рассматривает специалист банка' : application.objection.outcome_text}</section>;
   if (!application.allowed_actions.includes('OBJECT')) return null;
   return <>
-    <section aria-label="Пересмотр решения" className={css.block}><div className={css.copy}><strong>Не согласны с решением?</strong><span>Его пересмотрит специалист банка</span></div><Button variant="default" className={card.cta} onClick={() => { setFailure(''); setOpened(true); }}>Попросить пересмотр</Button></section>
+    <section aria-label="Пересмотр решения" className={`${css.block} ${inline ? css.inline : ''}`}><div className={css.copy}><strong>Не согласны с решением?</strong><span>Его пересмотрит специалист банка</span></div><Button variant="default" className={card.cta} onClick={() => { setFailure(''); setOpened(true); }}>Попросить пересмотр</Button></section>
     <Modal opened={opened} onClose={() => { if (!send.isPending) setOpened(false); }} title="Попросить пересмотр" centered>
       <form onSubmit={(event) => { event.preventDefault(); if (text.length < 10 || text.length > 2000 || text.trim().length < 10) { setError('Введите от 10 до 2000 символов'); return; } setError(''); setFailure(''); send.mutate(); }}>
         <Textarea label="Почему вы не согласны" value={text} onChange={(event) => setText(event.currentTarget.value)} description={`${text.length} / 2000`} error={error} rows={4} disabled={send.isPending} />

@@ -118,6 +118,33 @@ try {
     await login('ip_good');
     await page.getByRole('link', { name: /№ 1001/ }).waitFor();
     await capture('applications');
+    await login('ip_bad');
+    await page.goto(`${appUrl}/app/applications/30000000-0000-4000-8000-000000000201`);
+    const reason = page.getByRole('region', { name: 'Причина отказа' });
+    await reason.waitFor();
+    if (width === 1440) {
+      await page.getByRole('contentinfo').scrollIntoViewIfNeeded();
+      const navbar = page.getByRole('navigation', { name: 'Главная навигация', exact: true });
+      assert(await navbar.evaluate(element => {
+        const box = element.getBoundingClientRect();
+        return box.top <= 0 && box.bottom >= globalThis.innerHeight && box.height >= globalThis.document.documentElement.scrollHeight && globalThis.getComputedStyle(element).backgroundColor === 'rgb(255, 255, 255)';
+      }), 'Левая панель белая до низа длинной страницы после прокрутки');
+    } else {
+      assert.equal(await page.getByRole('navigation', { name: 'Главная навигация', exact: true }).count(), 0, '375 px: остаётся бургер без боковой панели');
+    }
+    const objection = reason.getByRole('region', { name: 'Пересмотр решения' });
+    await objection.getByRole('button', { name: 'Попросить пересмотр', exact: true }).waitFor();
+    const objectionStyle = await objection.evaluate(element => {
+      const style = globalThis.getComputedStyle(element);
+      return { border: style.borderTopColor, width: style.borderTopWidth, background: style.backgroundColor };
+    });
+    assert.deepEqual(objectionStyle, { border: 'rgb(228, 230, 234)', width: '1px', background: 'rgba(0, 0, 0, 0)' }, 'Пересмотр: нижняя строка причины через --cc-line');
+    const newApplication = page.getByRole('link', { name: 'Подать новую заявку', exact: true });
+    assert.equal(await newApplication.evaluate(element => globalThis.getComputedStyle(element).backgroundColor), 'rgb(255, 255, 255)', 'Отказ с датой повтора: новая заявка — белая вторичная кнопка');
+    const back = page.getByRole('link', { name: 'Вернуться к заявкам', exact: true });
+    assert(await back.evaluate(element => !!element.closest('section[class*="card_"]')), 'Возврат к заявкам внутри белой карточки');
+    await capture('decline');
+    await login('ip_good');
     if (width === 375) {
       for (const name of ['ip_good', 'ooo_load', 'ip_bad', 'ooo_aml']) {
         if (name !== 'ip_good') await login(name);

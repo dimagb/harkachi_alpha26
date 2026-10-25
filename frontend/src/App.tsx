@@ -40,8 +40,8 @@ function Shell({ me }: { me: Me }) {
   const company = me.companies.length > 1
     ? <Select id="company" label="Компания" value={companyId ?? me.companies[0]?.company.id} onChange={setCompanyId} allowDeselect={false} data={me.companies.map(({ company }) => ({ value: company.id, label: company.name }))} />
     : membership && <span className={css.muted}>{membership.company.name}</span>;
-  return <AppShell navbar={{ width: 240, breakpoint: 'md', collapsed: { mobile: true } }}>
-    {desktop ? <AppShell.Navbar className={css.navbar} component="nav" aria-label="Главная навигация">
+  return <AppShell className={shell.clientShell} navbar={{ width: 240, breakpoint: 'md', collapsed: { mobile: true } }}>
+    {desktop ? <AppShell.Navbar className={`${css.navbar} ${shell.clientNavbar}`} component="nav" aria-label="Главная навигация">
       <div className={css.navTop}><Link className={`${css.brand} ${shell.brand}`} to={home}><img className={shell.logo} src={alfaLogoView} alt="Альфа-Банк" /><span>Кредитный кабинет</span></Link>{me.companies.length > 1 && company}<div className={css.navLinks}>{links.map(([to, label]) => <Link key={to} to={to!} className={css.navLink} aria-current={(to === '/app' ? pathname.startsWith('/app') && pathname !== '/app/applications/new' : pathname === to) ? 'page' : undefined}>{label}</Link>)}</div></div>
       <div className={css.navBottom}><span style={{ fontWeight: 500 }}>{me.user.full_name}</span><button type="button" className={css.textButton} style={{ alignSelf: 'flex-start', height: 'auto', fontSize: 'var(--mantine-font-size-sm)', fontWeight: 400 }} onClick={() => setToken(null)}>Выйти</button></div>
     </AppShell.Navbar> : null}
