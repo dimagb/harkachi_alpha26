@@ -98,8 +98,7 @@ try {
               await page.getByRole('checkbox', { name: 'Согласен: запрос кредитной истории' }).check();
             }
             await page.getByRole('button', { name: application.number === 1301 ? 'Подписать и отправить' : 'Подписать договор', exact: true }).click();
-            await page.getByRole('button', { name: 'Получить код', exact: true }).click();
-            const input = page.getByLabel('Код из SMS');
+            const input = page.getByLabel('Код из СМС');
             await input.waitFor();
             assert(await input.evaluate(element => element === globalThis.document.activeElement), `${label}: фокус в поле кода`);
             const box = await input.boundingBox();
