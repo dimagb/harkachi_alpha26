@@ -114,8 +114,7 @@ GET /api/v1/bank/applications?page=15052842692487972973998667464704&size=68&stat
 {"error":{"code":"INTERNAL_ERROR","message":"Внутренняя ошибка сервера","details":{}}}
 ```
 
-`TODO(lead):` выдать отдельную карточку на обработку чрезмерного `page`.
-Ошибка не исправлялась. Название severity `critical` в Schemathesis относится
+**Исправлено 24.10** (`backend/app/bank/journal.py`: страница за пределами диапазона возвращает пустой список и общее число, а не 500; тест `backend/tests/bank/test_journal.py::test_journal_huge_page_returns_empty_with_filtered_total`). Название severity `critical` в Schemathesis относится
 к ST101 и не прибавляется к числу CVE рабочих зависимостей.
 
 **Ограничения:** в клиентском прогоне 6 операций возвращали только 401/403,
@@ -305,7 +304,7 @@ passed!`, `1 file already formatted`.
 
 ## Вопросы тимлиду
 
-- `TODO(lead):` отдельная карточка на 500 банковского журнала при большом page.
+- Ошибка 500 журнала банка при огромном `page` — исправлена 24.10 (см. выше).
 - `TODO(lead):` учесть исключения лицензий из [licenses.md](licenses.md).
 - `TODO(lead):` учитывать чувствительность frontend-тестов с покрытием
   к параллелизму; исходный красный прогон не скрыт и тесты не ослаблялись.
