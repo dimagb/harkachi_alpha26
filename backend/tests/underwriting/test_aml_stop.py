@@ -53,7 +53,9 @@ def test_aml_stop_rejects_offer_without_side_effects(
     error = response.json()["error"]
     assert error["code"] == "VALIDATION_ERROR"
     assert error["details"]["fields"] == {
-        "outcome": "Заявка не прошла дополнительные проверки банка — одобрение недоступно"
+        "outcome": (
+            "Заявка не прошла дополнительные проверки банка — одобрение недоступно"
+        )
     }
     with pipeline_factory() as session:
         assert session.get(Application, aml_application).state == "MANUAL_REVIEW"
