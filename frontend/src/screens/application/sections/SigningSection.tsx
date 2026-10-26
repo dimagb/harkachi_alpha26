@@ -28,7 +28,7 @@ export default function SigningSection({ application, onUpdate, onReload, onMess
       <span className={css.badge} data-signed={party.signed}>{party.signed ? '✓ Подписано' : 'Ждёт подписи'}</span>
       {next?.id === party.id && <>
         {party.role === 'GUARANTOR' && <p>Вместе с поручительством вы подписываете согласия на обработку персональных данных и запрос в бюро кредитных историй как поручитель</p>}
-        <div className={css.actions}><Button className={card.cta} onClick={() => setConfirming(party.id)}>{party.role === 'BORROWER_SIGNATORY' ? 'Подписать договор' : 'Подписать поручительство'}</Button></div>
+        <div className={css.actions}><Button data-signing-action className={card.cta} onClick={() => setConfirming(party.id)}>{party.role === 'BORROWER_SIGNATORY' ? 'Подписать договор' : 'Подписать поручительство'}</Button></div>
         {confirming === party.id && <OtpConfirm key={party.id} applicationId={application.id} purpose={party.role === 'BORROWER_SIGNATORY' ? 'OFFER' : 'GUARANTEE'} partyId={party.id} confirmLabel="Подтвердить подпись" onFailure={failure} onConfirm={async (otp) => {
           onMessage('');
           const result = await api.POST('/applications/{id}/sign', { params: { path: { id: application.id } }, body: { ...otp, party_id: party.id } });

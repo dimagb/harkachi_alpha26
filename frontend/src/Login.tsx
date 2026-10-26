@@ -5,6 +5,9 @@ import { setToken } from './auth/session';
 import { demoAccounts } from './demoAccounts';
 import card from './screens/application/Card.module.css';
 import css from './Login.module.css';
+import shell from './App.module.css';
+import alfaLogo from './assets/alfa-logo.svg';
+import PrototypeFooter from './PrototypeFooter';
 
 export default function Login() {
   const [login, setLogin] = useState('');
@@ -33,9 +36,10 @@ export default function Login() {
   }
 
   return (
-    <Container size={520} py="xl" className={css.page}>
+    <div className={css.page}>
+    <Container size={520} py="xl" className={css.content}>
       <Stack gap="xl">
-        <div><Text fw={600}>Кредитный кабинет</Text><Text size="sm" c="dimmed">Для вашего бизнеса</Text></div>
+        <div className={css.brand}><img className={shell.logo} src={`${alfaLogo}#svgView(viewBox(152,97,189,288))`} alt="Альфа-Банк" /><div><Text fw={600}>Кредитный кабинет</Text><Text size="sm" c="dimmed">Для вашего бизнеса</Text></div></div>
         <section className={card.card} aria-label="Вход в кабинет">
           <form onSubmit={submit}>
             <Stack>
@@ -74,5 +78,7 @@ export default function Login() {
         </section>
       </Stack>
     </Container>
+    <PrototypeFooter />
+    </div>
   );
 }
