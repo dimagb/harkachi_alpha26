@@ -39,6 +39,7 @@
 .panel { position:relative; border-radius:var(--cc-radius-md); padding:var(--cc-space-24) var(--cc-space-24) var(--cc-space-24) calc(var(--cc-space-24) + var(--cc-space-4)); display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto; gap:var(--cc-space-32); align-items:start; }
 .panelCopy { display:flex; flex-direction:column; align-items:flex-start; gap:var(--cc-space-4); }
 .panel[data-action=false] { grid-template-columns:repeat(2,minmax(0,1fr)); }
+@media(min-width:62em) { .panel[data-first=true] { border-top-left-radius:var(--cc-radius-sm); } }
 .panelLabel { font:500 14px/20px var(--cc-font); color:var(--cc-ink-2); }
 .panelText { text-wrap:pretty; }
 .caret { position:absolute; top:-6px; width:12px; height:12px; border-radius:2px; transform:rotate(45deg); background:inherit; transition:left var(--cc-duration-stage); }
