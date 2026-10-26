@@ -6,6 +6,7 @@ import type { SubmitProps } from './SubmitSection';
 import OtpConfirm, { type SigningFailure } from './OtpConfirm';
 import card from '../Card.module.css';
 import css from './SigningSection.module.css';
+import decisionCss from './DecisionSection.module.css';
 
 export default function SigningSection({ application, onUpdate, onReload, onMessage }: Omit<SubmitProps, 'companyKind'>) {
   const [confirming, setConfirming] = useState<string | null>(null);
@@ -20,6 +21,7 @@ export default function SigningSection({ application, onUpdate, onReload, onMess
     {offer && <div className={card.figures}>
       {[['Сумма', formatMoney(offer.amount)], ['Срок', `${offer.term_months} мес.`], ['Ставка', `${offer.rate.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} %`], ['Платёж в месяц', offer.monthly_payment === null ? 'Проценты — только за использованные дни' : formatMoney(offer.monthly_payment)]].map(([label, value]) => <div className={card.figure} key={label}><span className={css.muted}>{label}</span><span className={card.figureValue}>{value}</span></div>)}
     </div>}
+    {offer && application.state === 'SIGNING' && application.parties.some((party) => !party.signed) && <p className={decisionCss.expiry}>Подписать нужно до {new Date(offer.expires_at).toLocaleDateString('ru-RU', { timeZone: 'Europe/Moscow' })}</p>}
     <p>Подписание — простой электронной подписью: код из СМС</p>
     <h3 className={card.title}>Участники</h3>
     <ul className={css.parties}>{application.parties.map((party) => <li key={party.id} className={css.party}>
