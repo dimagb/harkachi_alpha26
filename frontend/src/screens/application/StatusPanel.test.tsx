@@ -25,3 +25,13 @@ it.each([
   expect(link.getAttribute('data-variant')).toBe(variant);
   expect(link.getAttribute('href')).toBe('/app/applications/new');
 });
+
+it.each([
+  [0, 'true'],
+  [1, 'false'],
+] as const)('этап %i: прямой угол под указателем — %s', async (step, first) => {
+  const declined = await (await fetch('http://localhost/api/v1/applications/30000000-0000-4000-8000-000000000201', { headers: { Authorization: 'Bearer demo:ip_bad' } })).json() as Application;
+  const application: Application = { ...declined, stage: { ...declined.stage, code: declined.timeline[step]!.stage_code } };
+  render(<MantineProvider env="test"><MemoryRouter><StatusPanel application={application} status="current" /></MemoryRouter></MantineProvider>);
+  expect(screen.getByRole('region', { name: 'Что происходит с заявкой' }).getAttribute('data-first')).toBe(first);
+});

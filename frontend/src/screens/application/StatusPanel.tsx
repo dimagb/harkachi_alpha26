@@ -16,7 +16,7 @@ export default function StatusPanel({ application, status }: { application: Appl
   const tone = approved ? 'ok' : stageStatusColor(status);
   const shade = tone === 'wait' ? 4 : tone === 'gray' ? 9 : 6;
   const index = Math.max(0, application.timeline.findIndex((step) => step.stage_code === application.stage.code));
-  return <section aria-label="Что происходит с заявкой" className={css.panel} data-tone={tone} data-action={!!action} style={{ background: `var(--mantine-color-${tone}-0)`, boxShadow: `inset 4px 0 0 var(--mantine-color-${tone}-${shade})` }}>
+  return <section aria-label="Что происходит с заявкой" className={css.panel} data-tone={tone} data-action={!!action} data-first={index === 0} style={{ background: `var(--mantine-color-${tone}-0)`, boxShadow: `inset 4px 0 0 var(--mantine-color-${tone}-${shade})` }}>
     <span aria-hidden="true" className={css.caret} style={{ left: `calc(${index} * 100% / 6 + var(--cc-stage-node) / 2 - 6px)` }} />
     <div className={css.panelCopy}><span className={css.panelLabel}>Что происходит</span><span className={css.panelText}>{application.stage.what_happens}</span></div>
     <div className={css.panelCopy}><span className={css.panelLabel} style={{ color: `var(--mantine-color-${tone}-7)` }}>Что от вас нужно</span><span className={css.panelText} style={{ fontWeight: 500 }}>{application.stage.what_to_do ?? 'Ничего, мы сообщим, когда понадобится ваше участие'}</span></div>
