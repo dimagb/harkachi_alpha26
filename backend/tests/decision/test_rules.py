@@ -129,7 +129,9 @@ def test_grade_c_precedes_amount_route(persona_data, build_inputs):
         result.factors, key=lambda f: f.max_points - f.points, reverse=True
     )[:2]
     assert result.what_if[-2:] == [
-        f"Оценка выше при: {factor.title}" for factor in deficiencies
+        f"«{factor.title}»: сейчас {factor.value} — "
+        f"{factor.points} из {factor.max_points} баллов; шкала: {factor.rule}"
+        for factor in deficiencies
     ]
 
 

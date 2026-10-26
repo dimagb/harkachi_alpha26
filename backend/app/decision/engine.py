@@ -259,7 +259,9 @@ def decide(inputs: DecisionInputs, cfg: DecisionConfig) -> DecisionResult:
             what_if=[
                 *result.what_if,
                 *[
-                    f"Оценка выше при: {factor.title}"
+                    f"«{factor.title}»: сейчас {factor.value} — "
+                    f"{factor.points} из {factor.max_points} баллов; "
+                    f"шкала: {factor.rule}"
                     for factor in deficient[: cfg.what_if_factor_count]
                 ],
             ],
