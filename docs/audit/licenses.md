@@ -1,5 +1,7 @@
 # A-09b — лицензии рабочих зависимостей
 
+**Актуально на 26.10:** с даты отчёта lock-файлы (`backend/uv.lock`, `mocks/uv.lock`, `frontend/package-lock.json`) и состав зависимостей не менялись (в `frontend/package.json` добавлен только скрипт `e2e:ui`). Итог перенесён в [THIRD_PARTY_NOTICES.md](../../THIRD_PARTY_NOTICES.md).
+
 Проверка 24.10.2026, `main` / `origin/main` / база ветки: `17d41c9`.
 Это инвентаризация для `THIRD_PARTY_NOTICES`, который готовит тимлид.
 Зависимости, манифесты и lock-файлы не изменялись.
