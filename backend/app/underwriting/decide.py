@@ -52,6 +52,11 @@ def _validate(
     if not 5 <= len(body.comment.strip()) <= 2000:
         _invalid("comment", "Введите комментарий от 5 до 2000 символов")
     if body.outcome in {"APPROVE", "COUNTER"}:
+        if auto and any(rule["code"] == "SF_ADDITIONAL" for rule in auto.rules_fired):
+            _invalid(
+                "outcome",
+                "Заявка не прошла дополнительные проверки банка — одобрение недоступно",
+            )
         if body.amount is None:
             _invalid("amount", "Укажите сумму кредита")
         if body.term_months is None:
